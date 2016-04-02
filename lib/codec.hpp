@@ -129,11 +129,11 @@ public:
 
 	// TODO: since blocksize is now set internally, remove all these block size parameters
 
-	int get_num_blocks(int block_size);
-	XStr get_single_block(int block_num, int block_size);
-	XStr embed_single_block(XStr str, int block_num, int block_size);
-	XStr get_multiple_block(int start_block_num, int end_block_num, int block_size);
-	XStr embed_multiple_block(XStr str, int block_idx, int num_blocks, int block_size);
+	int get_num_blocks();
+	XStr get_single_block(int block_num);
+	XStr embed_single_block(XStr str, int block_num);
+	XStr get_multiple_block(int start_block_num, int end_block_num);
+	XStr embed_multiple_block(XStr str, int block_idx, int num_blocks);
 
 	/* functions related to padding */
 	XStr add_padding(PaddingType type, int num_bytes);

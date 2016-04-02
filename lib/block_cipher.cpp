@@ -553,7 +553,7 @@ EncryptType detect_ECB_or_CBC_encryption(XStr (*encryption_fnc)(XStr message)){
 
 	XStr encrypted_message = encryption_fnc(message);
 
-	if(encrypted_message.get_single_block(1, AES::BLOCKSIZE) == encrypted_message.get_single_block(2, AES::BLOCKSIZE)){
+	if(encrypted_message.get_single_block(1) == encrypted_message.get_single_block(2)){
 //		cout << "ECB" << endl;
 		return EncryptType::ECB_ENCRYPT;
 	}
@@ -631,7 +631,7 @@ XStr byte_at_a_time_ECB_decrypt_simple(){
 				XStr encrypted_guess = blackbox(known_string_guess);
 
 				// if the actual and guessed blocks match, then we've found the next byte of unkown_string
-				if(encrypted_actual.get_single_block(blk, AES::BLOCKSIZE) == encrypted_guess.get_single_block(blk, AES::BLOCKSIZE)){
+				if(encrypted_actual.get_single_block(blk) == encrypted_guess.get_single_block(blk)){
 					unknown_str_new_block += c;
 					break;
 				}
@@ -716,7 +716,7 @@ XStr byte_at_a_time_ECB_decrypt_hard(){
 				XStr encrypted_guess = blackbox(known_string_guess);
 
 				// if the actual and guessed blocks match, then we've found the next byte of unkown_string
-				if(encrypted_actual.get_single_block(blk, AES::BLOCKSIZE) == encrypted_guess.get_single_block(blk, AES::BLOCKSIZE)){
+				if(encrypted_actual.get_single_block(blk) == encrypted_guess.get_single_block(blk)){
 					unknown_str_new_block += c;
 					break;
 				}

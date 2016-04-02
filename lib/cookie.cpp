@@ -154,7 +154,7 @@ XStr ecb_cut_and_paste()
     //cout << dummy_cookie << endl;
 
     // get first block that contains dummy * characters
-    XStr block_to_replace = dummy_cookie.get_single_block(1, 16);
+    XStr block_to_replace = dummy_cookie.get_single_block(1);
 
     //cout << "btr: " << block_to_replace.as_ascii() << endl;
     //cout << dummy_cookie.get_single_block(2, 16) << endl;
@@ -165,7 +165,7 @@ XStr ecb_cut_and_paste()
 
     // embed altered cipherblock into the encrypted cookie
 //    cout << dummy_info.encoded_message.size() << endl;
-    XStr cut_and_pasted = dummy_info.encoded_message.embed_single_block(encrypted_block_to_replace, block_idx, 16);
+    XStr cut_and_pasted = dummy_info.encoded_message.embed_single_block(encrypted_block_to_replace, block_idx);
 
     // decrypt the cut and pasted cookie
     XStr hacked_cookie = BlockCipher::decrypt(EncryptType::ECB_ENCRYPT, cut_and_pasted, info.key);

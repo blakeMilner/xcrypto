@@ -22,7 +22,7 @@ const char* decoding_table = BUILD_DECODING_TABLE();
 
 
 
-// put this somewhere else
+// TODO: put this somewhere else
 int sign(int x) {
     return (x > 0) - (x < 0);
 }
@@ -532,30 +532,30 @@ XStr XStr::little_endian(){
 	return litend;
 }
 
-int XStr::get_num_blocks(int block_size){
-	if(block_size < 1){
+int XStr::get_num_blocks(){
+	if(blksz < 1){
 		cout << "get_num_blocks(): block size is < 0." << endl;
 
 		return 0;
 	}
 
-	return ceil((double) this->size() / (double) block_size);
+	return ceil((double) this->size() / (double) blksz);
 }
 
 // block_num starts from 0
-XStr XStr::get_single_block(int block_num, int block_size){
+XStr XStr::get_single_block(int block_num){
 	if(block_num < 0){
 		cout << "get_single_block(): block number is < 0." << endl;
 
 		return XStr();
 	}
 
-	return this->substr(block_num * block_size, block_size);
+	return this->substr(block_num * blksz, blksz);
 }
 
 // block_num starts from 0
-XStr XStr::embed_single_block(XStr str, int block_idx, int block_size){
-	int start_pos = block_idx * block_size;
+XStr XStr::embed_single_block(XStr str, int block_idx){
+	int start_pos = block_idx * blksz;
 	
 	if(block_idx < 0){
 		cout << "embed_single_block(): block number is < 0." << endl;
@@ -563,20 +563,20 @@ XStr XStr::embed_single_block(XStr str, int block_idx, int block_size){
 		return XStr();
 	}
 	
-	if(this->size() < (start_pos + block_size)){
+	if(this->size() < (start_pos + blksz)){
 		cout << "embed_single_block(): WARNING: embedded string will overrun bounds, "
 				"increasing string length by necessary size." << endl;
 	}
 	
 	// TODO: figure our if string::replace will make size of string longer if we overrun bounds
 	string old_str = this->as_ascii();
-	old_str.replace(start_pos, block_size, str.as_ascii());
+	old_str.replace(start_pos, blksz, str.as_ascii());
 
 	return old_str;
 }
 
 // block_num starts from 0
-XStr XStr::get_multiple_block(int start_block_num, int end_block_num, int block_size){
+XStr XStr::get_multiple_block(int start_block_num, int end_block_num){
 	if(start_block_num < 0){
 		cout << "get_multiple_block(): starting block number is < 0." << endl;
 
@@ -593,17 +593,17 @@ XStr XStr::get_multiple_block(int start_block_num, int end_block_num, int block_
 		return XStr();
 	}
 
-	int range_size = (end_block_num - start_block_num + 1) * block_size;
+	int range_size = (end_block_num - start_block_num + 1) * blksz;
 
-	return this->substr(start_block_num * block_size, range_size);
+	return this->substr(start_block_num * blksz, range_size);
 }
 
 //
 // TODO: untested as of yet
 //
-XStr XStr::embed_multiple_block(XStr str, int block_idx, int num_blocks, int block_size){
-	int start_pos = block_idx * block_size;
-	int block_length = (block_size * num_blocks);
+XStr XStr::embed_multiple_block(XStr str, int block_idx, int num_blocks){
+	int start_pos = block_idx * blksz;
+	int block_length = (blksz * num_blocks);
 
 	if(block_idx < 0){
 		cout << "embed_multiple_block(): block number is < 0." << endl;
@@ -651,12 +651,12 @@ XStr XStr::add_padding(PaddingType type, int desired_block_size){
 	// if we have a string that is greater than 1 block, strip out incomplete block and work on that
 	// we will put this padded incomplete block at the end of the original sequence after padding
 	if(this->size() > desired_block_size){
-		int last_block_num = this->get_num_blocks(desired_block_size) - 1;
+		int last_block_num = this->get_num_blocks() - 1;
 
-		padded_string = get_single_block(last_block_num, desired_block_size);
+		padded_string = get_single_block(last_block_num);
 
 
-		prior_blocks = get_multiple_block(0, last_block_num - 1, desired_block_size);
+		prior_blocks = get_multiple_block(0, last_block_num - 1);
 	}
 	else{
 		padded_string = *this;
@@ -856,7 +856,7 @@ string XStr::pretty(EncodeType encoding /* = BASE64_ENCODED */){
 	}
 
 	// 16 block size
-	for(int blk = 0; blk < this->get_num_blocks(16); blk++){
+	for(int blk = 0; blk < this->get_num_blocks(); blk++){
 		for(int byte = 0; byte < 16; byte++){
 			pretty += holder[(16*blk) + byte];
 		}
