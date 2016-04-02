@@ -97,7 +97,7 @@ CR_str CBC_AES_encrypt(CR_str message, CR_str key, CR_str IV);
 CR_str CBC_AES_decrypt(CR_str message, CR_str key, CR_str IV);
 
 CR_str encrypt_using_CBC_or_ECB(CR_str message);
-CR_str::EncryptionType detect_ECB_or_CBC_encryption(CR_str (*encryption_fnc)(CR_str message));
+CR_str::EncryptType detect_ECB_or_CBC_encryption(CR_str (*encryption_fnc)(CR_str message));
 
 // Challenge 12
 CR_str append_unknown_string_and_encrypt_ECB(CR_str message);

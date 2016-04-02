@@ -1,7 +1,7 @@
 #include "codec.hpp"
 
 
-
+/* tables for encoding */
 const char common_chars_UC[NUMBER_COMMON_CHARS] =
 		{'E','T','A','O','I','N'};
 
@@ -48,7 +48,7 @@ CR_str::CR_str(const char* s){
 }
 
 // user specifies type
-CR_str::CR_str(string input, EncodingType encoding){
+CR_str::CR_str(string input, EncodeType encoding){
 	switch(encoding){
 		case CR_str::ASCII_ENCODED:
 			this->ascii_str = input;
@@ -105,14 +105,14 @@ char CR_str::int_to_hex_char(uint32_t int_c){
 }
 
 string CR_str::hex_to_ascii(string data){
-    int output_length = data.size() / 2;
-    if (data[data.size() - 1] == '=') output_length--;
+    int out_length = data.size() / 2;
+    if (data[data.size() - 1] == '=') out_length--;
 
     string decoded_data = string();
-    decoded_data.resize(output_length, 0);
+    decoded_data.resize(out_length, 0);
 
     for (int i = 0, j = 0; i < (int) data.size(); i += 2) {
-        if (j > output_length - 1) break;
+        if (j > out_length - 1) break;
 
         data[i] = hex_char_to_int(data[i]);
         data[i+1] = hex_char_to_int(data[i+1]);
@@ -124,13 +124,13 @@ string CR_str::hex_to_ascii(string data){
 }
 
 string CR_str::ascii_to_hex(string data){
-    int output_length = data.size() * 2;
+    int out_length = data.size() * 2;
 
     string decoded_data = string();
-    decoded_data.resize(output_length, 0);
+    decoded_data.resize(out_length, 0);
 
     for (int hex = 0, asc = 0; asc < (int) data.size(); hex += 2, asc += 1) {
-        if (hex > output_length - 2) break;
+        if (hex > out_length - 2) break;
 
     	// extract left and right nibbles from input ascii, make two hex chars
     	decoded_data[hex]   = (data[asc] & 0xF0) >> 4;
@@ -212,6 +212,7 @@ string CR_str::int_to_ascii(uint64_t input){
 }
 
 // TODO: implement changes in this section (accounting for remainder) into other functions)
+// TODO: document why we use % 3 or % 4
 
 string CR_str::ascii_to_base64(string input){
     int output_length = ceil((float) (input.size() * 4) / (float) 3);
@@ -299,6 +300,11 @@ string CR_str::base64_to_ascii(string input){
     return decoded_data;
 }
 
+
+
+
+
+
 string CR_str::as_ascii(){
 	return ascii_str;
 }
@@ -311,7 +317,7 @@ string CR_str::as_base64(){
 	return ascii_to_base64(ascii_str);
 }
 
-string CR_str::as_encoded(EncodingType format){
+string CR_str::as_encoded(EncodeType format){
 	switch(format){
 		case CR_str::ASCII_ENCODED:
 			return as_ascii();	
@@ -563,6 +569,31 @@ CR_str CR_str::get_multiple_block(int start_block_num, int end_block_num, int bl
 	return this->substr(start_block_num * block_size, range_size);
 }
 
+//
+// TODO: untested as of yet
+//
+CR_str CR_str::embed_multiple_block(CR_str str, int block_idx, int num_blocks, int block_size){
+	int start_pos = block_idx * block_size;
+	int block_length = (block_size * num_blocks);
+
+	if(block_idx < 0){
+		cout << "embed_multiple_block(): block number is < 0." << endl;
+
+		return CR_str();
+	}
+
+	if(this->size() < (start_pos + block_length)){
+		cout << "embed_multiple_block(): WARNING: embedded string will overrun bounds, "
+				"increasing string length by necessary size." << endl;
+	}
+
+	// TODO: figure our if string::replace will make size of string longer if we overrun bounds
+	string old_str = this->as_ascii();
+	old_str.replace(start_pos, block_length, str.as_ascii());
+
+	return old_str;
+}
+
 // add_padding will add padding characters until the string is divisible by block_size
 // if the original string has size less than block_size, then we pad up to 1 block_size
 CR_str CR_str::add_padding(PaddingType type, int desired_block_size){
@@ -763,6 +794,55 @@ CR_str::PaddingType CR_str::find_padding_type(){
 		return CR_str::UNKNOWN_PADDING;
 	}
 
+}
+
+
+/*
+ * Returns a string that separates different blocks
+ */
+
+// TODO: when encoding conversions are complete, can just get exact
+// chunks from the - Jesus christ, I hope you understand this etizolam-induced comment
+
+string CR_str::pretty(EncodeType encoding /* = BASE64_ENCODED */){
+	string pretty = string();
+	string holder = string();
+
+	// get string based on input encoding type
+	switch(encoding){
+		case ASCII_ENCODED:
+			holder = this->as_ascii();
+
+			break;
+		case BASE64_ENCODED:
+			holder = this->as_base64();
+
+			break;
+		case HEX_ENCODED:
+			holder = this->as_hex();
+
+			break;
+		default:
+			cout << "CR_str::pretty(): input encoding wasn't recognized" << endl;
+			return string();
+			break;
+	}
+
+	// 16 block size
+	for(int blk = 0; blk < this->get_num_blocks(16); blk++){
+		for(int byte = 0; byte < 16; byte++){
+			pretty += holder[(16*blk) + byte];
+		}
+
+		// after 3 blocks we want to go to a new line
+		if((blk % 3) == 2)
+			pretty += '\n';
+		else // else just put a spacer
+			pretty += ' ';
+
+	}
+
+	return pretty;
 }
 
 

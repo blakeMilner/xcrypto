@@ -723,18 +723,10 @@ CR_str encrypt_using_CBC_or_ECB(CR_str message){
 ////////// when detect ECB_CBC is used, it sets this attribute
 
 
-
-
-
-
-
-
-
-
 // accepts a function pointer that implements an arbitrary encryption fucntion
 // inputs - message to be encrypted
 // outputs - encrypted message
-CR_str::EncryptionType detect_ECB_or_CBC_encryption(CR_str (*encryption_fnc)(CR_str message)){
+CR_str::EncryptType detect_ECB_or_CBC_encryption(CR_str (*encryption_fnc)(CR_str message)){
 	// no matter what gets prepended/appended, 2nd and 3rd block will be all 0's
 	// because of size = 48
 	CR_str message = CR_str();
@@ -909,7 +901,7 @@ CR_str byte_at_a_time_ECB_decrypt_hard(){
 	}
 	
 	// TODO: Have these functions check if padding is present and then remove
-//	previous_blocks = previous_blocks.remove_padding(CR_str::UNKNOWN_PADDING);
+	//	previous_blocks = previous_blocks.remove_padding(CR_str::UNKNOWN_PADDING);
 
 	return previous_blocks;
 }
@@ -981,7 +973,7 @@ CR_str CTR_AES_decrypt(CR_str message, CR_str key, CR_str nonce){
 
 	// if message isn't completely divisible into 16 byte chunks,
 	// last chunk is not padded since this is CTR mode
-	// The last, uneven size chunkis merely XOR'd against the
+	// The last, uneven size chunk is merely XOR'd against the
 	// corresponding subsection of the keystream
 	int num_ciphers = ceil((float) message.size() / (float) AES::BLOCKSIZE);
 
@@ -995,6 +987,8 @@ CR_str CTR_AES_decrypt(CR_str message, CR_str key, CR_str nonce){
 		CR_str ciphertext = message.substr(cipher * AES::BLOCKSIZE, AES::BLOCKSIZE);
 
 		cipher_input = nonce.little_endian() + counter.little_endian();
+
+		// TODO: IDEA: instead of copying blocks over, just use container as accumulator that gets XOR'd
 
 		CR_str encrypted_nonce = AES_cipher_encrypt(cipher_input, key);
 

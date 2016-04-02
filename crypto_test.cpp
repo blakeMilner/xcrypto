@@ -24,6 +24,7 @@ using namespace std;
 std::clock_t start;
 
 void tick(){
+	// TODO: design for and test on windows
 	// WORKS FOR LINUX ONLY
 	start = std::clock();
 }
@@ -48,19 +49,55 @@ void crypto_exercise_test(int num, bool test){
 }
 
 
+//  TODO: fault_check(key.size() != AES::BLOCKSIZE, message or error enum)
 
+// IDEA: after making error reporting class, if multiple identical errors
+// keep coming through, then just print 1 so it doesn't clog the terminal output
+
+// IDEA: make red and yellow alarms for debug messages.
+// YELLOW = "padding up to ..." and RED = critical failure (index overrun)
 
 int main(int argc, char* argv[])
 {
 	/* Set 1 */
 	// notation conversion testing
-//	{
-//		CR_str unknown_string = CR_str("L77na/nrFsKvynd6HzOoG7GHTLXsTVu9qvY/2syLXzhPweyyMTJULu/6/kXX0KSvoOLSFQ==",
-//										CR_str::BASE64_ENCODED);
-//
-//		CR_str test = CR_str(unknown_string.as_ascii(), CR_str::ASCII_ENCODED);
-//		cout << test.as_base64() << endl;
-//	}
+	cout << ">> " << "Now performing codec test " << endl;
+	{
+		string orig_test = "L77na/nrFsKvynd6HzOoG7GHTLXsTVu9qvY/2syLXzhPweyyMTJULu/6/kXX0KSvoOLSFQ";
+		string test = orig_test;
+		CR_str ascii;
+
+		bool failed = false;
+
+		for(int s = 0; s < 4; s++){
+			orig_test += "X";
+			test = orig_test;
+
+			for(int i = 0; i < 3; i++){
+				ascii = CR_str(test, CR_str::BASE64_ENCODED);
+
+//				cout << ascii.as_base64() << endl;
+				if(orig_test != ascii.as_base64()){
+					failed = true;
+				}
+
+				test += "=";
+			}
+		}
+
+		cout << "\t\t\t";
+		if(failed)
+			cout << "[FAILED]" << endl;
+		else
+			cout << "[PASSED]" << endl;
+
+		/********************/
+
+
+
+//		cout << unknown_string.pretty(CR_str::ASCII_ENCODED) << endl;
+
+	}
 
 
 	/* Set 2 */
@@ -125,7 +162,7 @@ int main(int argc, char* argv[])
 
 	tick();
 	{
-		CR_str::EncryptionType encryption_type = detect_ECB_or_CBC_encryption(encrypt_using_CBC_or_ECB);
+		CR_str::EncryptType encryption_type = detect_ECB_or_CBC_encryption(encrypt_using_CBC_or_ECB);
 
 		if(encryption_type == CR_str::CBC_ENCRYPTION){
 			cout << "Detected CBC encryption" << endl;
@@ -172,20 +209,20 @@ int main(int argc, char* argv[])
 	tock();
 
 	/* Exercise 14 */
-//	tick();
-//	{
-//		static CR_str output =
-//				"Rollin' in my 5.0\n"
-//				"With my rag-top down so my hair can blow\n"
-//				"The girlies on standby waving just to say hi\n"
-//				"Did you stop? No, I just drove by\n";
-//
-//		crypto_exercise_test(14,
-//					output == byte_at_a_time_ECB_decrypt_hard().remove_padding(CR_str::UNKNOWN_PADDING)
-//				);
-//
-//	};
-//	tock();
+	tick();
+	{
+		static CR_str output =
+				"Rollin' in my 5.0\n"
+				"With my rag-top down so my hair can blow\n"
+				"The girlies on standby waving just to say hi\n"
+				"Did you stop? No, I just drove by\n";
+
+		crypto_exercise_test(14,
+					output == byte_at_a_time_ECB_decrypt_hard().remove_padding(CR_str::UNKNOWN_PADDING)
+				);
+
+	};
+	tock();
 
 	/* Exercise 15 */
 	tick();
@@ -235,32 +272,31 @@ int main(int argc, char* argv[])
 		crypto_exercise_test(16,
 					decrypted.as_ascii().find(output_token) != std::string::npos
 				);
+
+		cout << unknown_string.as_base64() << endl;
 	}
 	tock();
 
 
-
-
 	/* Set 3 */
-//	cout << ">> Now testing: Set 3" << endl;
-//
-//	tick();
-//	{
-//		CR_str encrypted = CR_str("L77na/nrFsKvynd6HzOoG7GHTLXsTVu9qv"
-//								"Y/2syLXzhPweyyMTJULu/6/kXX0KSvoOLSFQ==",
-//								CR_str::BASE64_ENCODED);
-//		CR_str key = "YELLOW SUBMARINE";
-//
-//		cout << encrypted.as_base64() << endl;
-//
-//		CR_str nonce;
-//		nonce.resize(AES::CTR_NONCE_SIZE, 0); // size 8 - nonce is all zeroes!
-//
-//		CR_str decrypted = CTR_AES_decrypt(encrypted, key, nonce);
-//
-//		cout << decrypted.as_ascii() << endl;
-//	}
-//	tock();
+	cout << ">> Now testing: Set 3" << endl;
+
+	tick();
+	{
+		CR_str encrypted = CR_str("L77na/nrFsKvynd6HzOoG7GHTLXsTVu9qvY/2syLXzhPweyyMTJULu/6/kXX0KSvoOLSFQ",
+								CR_str::BASE64_ENCODED);
+		CR_str key = "YELLOW SUBMARINE";
+
+//		cout << encrypted.as_hex() << endl;
+
+		CR_str nonce;
+		nonce.resize(AES::CTR_NONCE_SIZE, 0); // size 8 - nonce is all zeroes!
+
+		CR_str decrypted = CTR_AES_decrypt(encrypted, key, nonce);
+
+		cout << decrypted.as_ascii() << endl;
+	}
+	tock();
 
 	return 0;
 }
