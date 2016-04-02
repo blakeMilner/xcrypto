@@ -152,6 +152,7 @@ public:
     CR_str operator+=(const CR_str& x);
     CR_str operator+=(const string& x);
     CR_str operator+=(const char& x);
+
     // ostream << operator
     friend ostream& operator<<(ostream& os, const CR_str& str);
     
@@ -163,6 +164,12 @@ public:
     friend bool operator> (const CR_str& lhs, const CR_str& rhs);
     friend bool operator<=(const CR_str& lhs, const CR_str& rhs);
     friend bool operator>=(const CR_str& lhs, const CR_str& rhs);
+
+    /* increment/decrement operators */
+    CR_str& operator++( );      // Prefix increment
+    CR_str operator++( int ); // Postfix increment
+    CR_str& operator--( );      // Prefix decrement
+    CR_str operator--( int ); // Postfix decrement
 
 
 private:
@@ -258,6 +265,36 @@ inline CR_str CR_str::operator+=(const char& x)
 
  	return *this;
 	}
+
+// Define prefix increment operator.
+inline CR_str& CR_str::operator++(  )
+{
+	this->increment();
+	return *this;
+}
+
+// Define postfix increment operator.
+inline CR_str CR_str::operator++( int )
+{
+   CR_str temp = *this;
+   this->increment();
+   return temp;
+}
+
+// Define prefix decrement operator.
+inline CR_str& CR_str::operator--(  )
+{
+   this->decrement();
+   return *this;
+}
+
+// Define postfix decrement operator.
+inline CR_str CR_str::operator--( int )
+{
+   CR_str temp = *this;
+   this->decrement();
+   return temp;
+}
 
 
  // WATCH OUT FOR THIS, COUDL NEED
