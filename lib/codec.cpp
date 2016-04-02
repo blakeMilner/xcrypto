@@ -21,6 +21,17 @@ const char* decoding_table = BUILD_DECODING_TABLE();
 
 
 
+
+// put this somewhere else
+int sign(int x) {
+    return (x > 0) - (x < 0);
+}
+
+
+
+
+
+
 // if no arguments passed, make empty string
 CR_str::CR_str():
 	ascii_str("")
@@ -440,13 +451,24 @@ void CR_str::increment(int step /* = 1 */){
 	// If these bytes wrap around as well, then we keep propagating
 	// We can purposefully overflow the bytes to set them back to 0.
 
+	// might not work for decrements....
+
 	do{
 		current_byte = ascii_str[current_idx];
 		ascii_str[current_idx] += step;
 
+//		// for next carry rounds, make step = 1
+//		if(current_idx == ascii_str.size() - 1)
+//			step = sign(step);
+
 		current_idx--;
 	}
 	while( (current_idx >= 0) and ((current_byte + step) > carry_byte) );
+
+//	// detect overflow
+//	if((current_idx == -1) && ()){
+//
+//	}
 
 }
 
@@ -454,6 +476,8 @@ void CR_str::decrement(int step /* = -1 */){
 	increment(step);
 }
 
+// TODO: make sure this won't mess up other code:
+// e.g. if we expect to get a string that is sizeof(longer)
 CR_str CR_str::XOR(CR_str xor_str){
 	CR_str longer, shorter;
 

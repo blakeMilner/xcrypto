@@ -1,5 +1,10 @@
 #include "block_cipher.hpp"
 
+
+// TODO: make class called BlockCipher, holds ECB, CBC, etc.
+
+
+
 int generate_rand_num_between(int lbound, int ubound){
 	return (rand() % (ubound - lbound)) + lbound;
 }
@@ -757,27 +762,30 @@ CR_str append_unknown_string_and_encrypt_ECB(CR_str message){
 }
 
 CR_str byte_at_a_time_ECB_decrypt_simple(){
+	CR_str (*blackbox)(CR_str);
+	blackbox = append_unknown_string_and_encrypt_ECB;
+
 	/* First, find the block size of the cipher by feeding in successive test characters */
 	CR_str known_string = CR_str("A");
-	CR_str new_cipher = append_unknown_string_and_encrypt_ECB(known_string);
+	CR_str new_cipher = blackbox(known_string);
 	int block_size = 0;
 	int last_size = 0;
 	CR_str unknown_str_new_block = CR_str();
 
 	/* find unknown string size by feeding in empty string */
-	int unknown_string_size = append_unknown_string_and_encrypt_ECB( CR_str() ).size();
+	int unknown_string_size = blackbox( CR_str() ).size();
 	int unknown_string_blocks = ceil(unknown_string_size / AES::BLOCKSIZE);
 
 	do{
 		last_size = new_cipher.size();
 		known_string += CR_str("A");
-		new_cipher = append_unknown_string_and_encrypt_ECB(known_string);
+		new_cipher = blackbox(known_string);
 		block_size++;
 	}
 	while(new_cipher.size() == last_size);
 
 	/* Verify that the function is using ECB */
-	if(CR_str::ECB_ENCRYPTION != detect_ECB_or_CBC_encryption(append_unknown_string_and_encrypt_ECB)){
+	if(CR_str::ECB_ENCRYPTION != detect_ECB_or_CBC_encryption(blackbox)){
 		cout << "byte_at_a_time_ECB_decrypt_simple(): function is not using ECB encryption." << endl;
 
 		return CR_str();
@@ -793,7 +801,7 @@ CR_str byte_at_a_time_ECB_decrypt_simple(){
 			known_string = string(byte, 'A');
 
 			// encrypt once using partial string
-			CR_str encrypted_actual = append_unknown_string_and_encrypt_ECB(known_string);
+			CR_str encrypted_actual = blackbox(known_string);
 
 			// add known bytes to end of test string - do this after we compute encrypted message we compare test cases to
 			known_string += previous_blocks;
@@ -806,7 +814,7 @@ CR_str byte_at_a_time_ECB_decrypt_simple(){
 				known_string_guess = prefix + string(1, c); // add new guess character to end of string
 
 				// encrypt our new guess
-				CR_str encrypted_guess = append_unknown_string_and_encrypt_ECB(known_string_guess);
+				CR_str encrypted_guess = blackbox(known_string_guess);
 
 				// if the actual and guessed blocks match, then we've found the next byte of unkown_string
 				if(encrypted_actual.get_single_block(blk, AES::BLOCKSIZE) == encrypted_guess.get_single_block(blk, AES::BLOCKSIZE)){
@@ -822,6 +830,7 @@ CR_str byte_at_a_time_ECB_decrypt_simple(){
 	return previous_blocks;
 }
 
+// TODO: there is no prefix being added here!
 CR_str append_unknown_string_random_prefix_and_encrypt_ECB(CR_str message){
 	// generate unknown key only once
 	static CR_str random_key = generate_random_AES_key(AES::BLOCKSIZE);
@@ -835,28 +844,31 @@ CR_str append_unknown_string_random_prefix_and_encrypt_ECB(CR_str message){
 }
 
 CR_str byte_at_a_time_ECB_decrypt_hard(){
+	CR_str (*blackbox)(CR_str);
+	blackbox = append_unknown_string_random_prefix_and_encrypt_ECB;
+
 	/* First, find the block size of the cipher by feeding in successive test characters */
 	CR_str known_string = CR_str("A");
-	CR_str new_cipher = append_unknown_string_and_encrypt_ECB(known_string);
+	CR_str new_cipher = blackbox(known_string);
 	int block_size = 0;
 	int last_size = 0;
 	CR_str unknown_str_new_block = CR_str();
 
 	/* find unknown string size by feeding in empty string */
-	int unknown_string_size = append_unknown_string_and_encrypt_ECB( CR_str() ).size();
+	int unknown_string_size = blackbox( CR_str() ).size();
 	int unknown_string_blocks = unknown_string_size / AES::BLOCKSIZE;
 
 	// find block size
 	do{
 		last_size = new_cipher.size();
 		known_string += CR_str("A");
-		new_cipher = append_unknown_string_and_encrypt_ECB(known_string);
+		new_cipher = blackbox(known_string);
 		block_size++;
 	}
 	while(new_cipher.size() == last_size);
 
 	/* Verify that the function is using ECB */
-	if(CR_str::ECB_ENCRYPTION != detect_ECB_or_CBC_encryption(append_unknown_string_and_encrypt_ECB)){
+	if(CR_str::ECB_ENCRYPTION != detect_ECB_or_CBC_encryption(blackbox)){
 		cout << "byte_at_a_time_ECB_decrypt_simple(): function is not using ECB encryption." << endl;
 
 		return CR_str();
@@ -872,7 +884,7 @@ CR_str byte_at_a_time_ECB_decrypt_hard(){
 			known_string = string(byte, 'A');
 
 			// encrypt once using partial string
-			CR_str encrypted_actual = append_unknown_string_and_encrypt_ECB(known_string);
+			CR_str encrypted_actual = blackbox(known_string);
 
 			// add known bytes to end of test string - do this after we compute encrypted message we compare test cases to
 			known_string += previous_blocks;
@@ -887,7 +899,7 @@ CR_str byte_at_a_time_ECB_decrypt_hard(){
 				known_string_guess = prefix + c; // add new guess character to end of string
 
 				// encrypt our new guess
-				CR_str encrypted_guess = append_unknown_string_and_encrypt_ECB(known_string_guess);
+				CR_str encrypted_guess = blackbox(known_string_guess);
 
 				// if the actual and guessed blocks match, then we've found the next byte of unkown_string
 				if(encrypted_actual.get_single_block(blk, AES::BLOCKSIZE) == encrypted_guess.get_single_block(blk, AES::BLOCKSIZE)){
@@ -915,41 +927,41 @@ CR_str CTR_AES_encrypt(CR_str message, CR_str key, CR_str nonce){
 
 		return string();
 	}
-	else if(nonce.size() > AES::BLOCKSIZE){
+	else if(nonce.size() > AES::CTR_NONCE_SIZE){
 		cout << "CTR_AES_encrypt(): input nonce size is greater than 16 bytes." << endl;
 
 		return string();
 	}
 	// if nonce isn't quite 16 bytes, then pad with zeros up to 16
-	else if(nonce.size() < AES::BLOCKSIZE){
-		nonce = nonce.add_padding( CR_str::ZERO_PADDING, AES::BLOCKSIZE );
+	else if(nonce.size() < AES::CTR_NONCE_SIZE){
+		nonce = nonce.add_padding( CR_str::ZERO_PADDING, AES::CTR_COUNTER_SIZE );
 	}
 
 	// if message isn't completely divisible into 16 byte chunks,
 	// last chunk is not padded since this is CTR mode
-	// The last, uneven size chunkis merely XOR'd against the
+	// The last, uneven size chunk is merely XOR'd against the
 	// corresponding subsection of the keystream
-	int num_ciphers = message.size() / AES::BLOCKSIZE;
+	int num_ciphers = ceil((float) message.size() / (float) AES::BLOCKSIZE);
 
-	if((message.size() % AES::BLOCKSIZE) != 0){
-		num_ciphers++;
-	}
 
-	// make cipher holder same size as message, fill with 0's
-	CR_str ciphertext;
-	ciphertext.resize(num_ciphers * AES::BLOCKSIZE, 0);
+	CR_str ciphertext = CR_str();
+	CR_str cipher_input;
+	CR_str counter;
+	counter.fill(AES::CTR_COUNTER_SIZE, 0);
 
 	for(int cipher = 0; cipher < num_ciphers; cipher++){
 		CR_str plaintext = message.substr(cipher * AES::BLOCKSIZE, AES::BLOCKSIZE);
-		CR_str encrypted_nonce = AES_cipher_encrypt(nonce, key);
 
-		CR_str new_cipher = encrypted_nonce ^ plaintext;
+		cipher_input = nonce.little_endian() + counter.little_endian();
+		CR_str encrypted_nonce = AES_cipher_encrypt(cipher_input, key);
 
-		// add new ciphertext to its place in the message
-		ciphertext = ciphertext.embed_string(new_cipher, cipher * AES::BLOCKSIZE, AES::BLOCKSIZE);
+		// TODO: IDEA: instead of copying blocks over, just use container as accumulator that gets XOR'd
+
+		// add new ciphertext by XORing with encrypted nonce
+		ciphertext += encrypted_nonce ^ plaintext;
 
 		// add 1 to the integer represented by the string
-		nonce.increment();
+		counter.increment();
 	}
 
 	return ciphertext;
@@ -992,10 +1004,8 @@ CR_str CTR_AES_decrypt(CR_str message, CR_str key, CR_str nonce){
 
 		CR_str encrypted_nonce = AES_cipher_encrypt(cipher_input, key);
 
-		CR_str new_plaintext = encrypted_nonce ^ ciphertext;
-
-		// add new ciphertext to its place in the message
-		plaintext += new_plaintext;
+		// add new plaintext by XORing with encrypted nonce
+		plaintext += encrypted_nonce ^ ciphertext;
 
 		// add 1 to the integer represented by the string
 		counter.increment();

@@ -273,7 +273,6 @@ int main(int argc, char* argv[])
 					decrypted.as_ascii().find(output_token) != std::string::npos
 				);
 
-		cout << unknown_string.as_base64() << endl;
 	}
 	tock();
 
@@ -281,20 +280,23 @@ int main(int argc, char* argv[])
 	/* Set 3 */
 	cout << ">> Now testing: Set 3" << endl;
 
+	/* Exercise 17 */
 	tick();
 	{
 		CR_str encrypted = CR_str("L77na/nrFsKvynd6HzOoG7GHTLXsTVu9qvY/2syLXzhPweyyMTJULu/6/kXX0KSvoOLSFQ",
 								CR_str::BASE64_ENCODED);
-		CR_str key = "YELLOW SUBMARINE";
 
-//		cout << encrypted.as_hex() << endl;
+		CR_str key = "YELLOW SUBMARINE";
 
 		CR_str nonce;
 		nonce.resize(AES::CTR_NONCE_SIZE, 0); // size 8 - nonce is all zeroes!
 
 		CR_str decrypted = CTR_AES_decrypt(encrypted, key, nonce);
 
-		cout << decrypted.as_ascii() << endl;
+		CR_str encrypted2 = CTR_AES_encrypt(decrypted, key, nonce);
+		CR_str decrypted2 = CTR_AES_decrypt(encrypted2, key, nonce);
+
+		crypto_exercise_test(17, decrypted == decrypted2);
 	}
 	tock();
 
