@@ -1,10 +1,6 @@
 #include "block_cipher.hpp"
 
 
-// TODO: make class called BlockCipher, holds ECB, CBC, etc.
-
-
-
 int generate_rand_num_between(int lbound, int ubound){
 	return (rand() % (ubound - lbound)) + lbound;
 }
@@ -32,7 +28,13 @@ CR_str generate_random_AES_key(int len){
 	return generate_random_ascii_string(len);
 }
 
-uint8_t rjindael_sbox_lookup(uint8_t input){
+/* AES ENCRYPTION STUFF */
+
+// definitions for constexpr members
+constexpr uint8_t AES::rijndael_sbox[16][16];
+constexpr uint8_t AES::inv_rijndael_sbox[16][16];
+
+uint8_t AES::rjindael_sbox_lookup(uint8_t input){
 	uint8_t digit1 = (input & 0xF0) >> 4;
 	uint8_t digit2 = (input & 0x0F)     ;
 
@@ -41,7 +43,7 @@ uint8_t rjindael_sbox_lookup(uint8_t input){
 	return input;
 }
 
-uint8_t inv_rjindael_sbox_lookup(uint8_t input){
+uint8_t AES::inv_rjindael_sbox_lookup(uint8_t input){
 	uint8_t digit1 = (input & 0xF0) >> 4;
 	uint8_t digit2 = (input & 0x0F)     ;
 
@@ -50,7 +52,7 @@ uint8_t inv_rjindael_sbox_lookup(uint8_t input){
 	return input;
 }
 
-unsigned char gmul(unsigned char a, unsigned char b) {
+unsigned char AES::gmul(unsigned char a, unsigned char b) {
 	unsigned char p = 0;
 	unsigned char hi_bit_set;
 
@@ -71,7 +73,7 @@ unsigned char gmul(unsigned char a, unsigned char b) {
 }
 
 // http://www.samiam.org/mix-column.html
-CR_str rjindael_mix_columns(CR_str r) {
+CR_str AES::rjindael_mix_column(CR_str r) {
  	// make sure input CR_str is 16 bytes
 	if(r.size() != 4){
 		cout << "rjindael_mix_columns: input column size is not 4 bytes." << endl;
@@ -101,7 +103,7 @@ CR_str rjindael_mix_columns(CR_str r) {
 }
 
 // http://www.samiam.org/mix-column.html
-CR_str rjindael_unmix_columns(CR_str r) {
+CR_str AES::rjindael_unmix_column(CR_str r) {
 	 	// make sure input CR_str is 16 bytes
 		if(r.size() != 4){
 			cout << "rjindael_mix_columns: input column size is not 4 bytes." << endl;
@@ -131,7 +133,7 @@ CR_str rjindael_unmix_columns(CR_str r) {
         return r;
 }
 
-CR_str substitute_bytes(CR_str input){
+CR_str AES::substitute_bytes(CR_str input){
 	// apply nonlinear byte substitution
 	// extract first and second digit and use it in LUT
 	for(int i = 0; i < AES::BLOCKSIZE; i++){
@@ -141,7 +143,7 @@ CR_str substitute_bytes(CR_str input){
 	return input;
 }
 
-CR_str unsubstitute_bytes(CR_str input){
+CR_str AES::unsubstitute_bytes(CR_str input){
 	// apply nonlinear byte substitution
 	// extract first and second digit and use it in LUT
 	for(int i = 0; i < AES::BLOCKSIZE; i++){
@@ -151,7 +153,7 @@ CR_str unsubstitute_bytes(CR_str input){
 	return input;
 }
 
-CR_str mix_columns(CR_str input){
+CR_str AES::mix_columns(CR_str input){
 	CR_str input_column = CR_str();
     input_column.resize(4, 0);
 
@@ -164,7 +166,7 @@ CR_str mix_columns(CR_str input){
     	}
 
     	// mix column according to rjindael algorithm
-    	CR_str mixed_column = rjindael_mix_columns(input_column);
+    	CR_str mixed_column = rjindael_mix_column(input_column);
 
     	// copy mixed column back to original location
     	for(int row = 0; row < 4; row++){
@@ -175,7 +177,7 @@ CR_str mix_columns(CR_str input){
     return input;
 }
 
-CR_str unmix_columns(CR_str input){
+CR_str AES::unmix_columns(CR_str input){
 	CR_str mixed_column = CR_str();
     mixed_column.resize(4, 0);
 
@@ -188,7 +190,7 @@ CR_str unmix_columns(CR_str input){
     	}
 
     	// mix column according to rjindael algorithm
-    	CR_str input_column = rjindael_unmix_columns(mixed_column);
+    	CR_str input_column = rjindael_unmix_column(mixed_column);
 
     	// copy column to contiguous
     	for(int row = 3; row >= 0; row--){
@@ -199,7 +201,7 @@ CR_str unmix_columns(CR_str input){
     return input;
 }
 
-CR_str shift_rows(CR_str input){
+CR_str AES::shift_rows(CR_str input){
 	CR_str output = CR_str();
     output.resize(AES::BLOCKSIZE, 0);
 
@@ -228,7 +230,7 @@ CR_str shift_rows(CR_str input){
 	return output;
 }
 
-CR_str unshift_rows(CR_str input){
+CR_str AES::unshift_rows(CR_str input){
 	CR_str output = CR_str();
     output.resize(AES::BLOCKSIZE, 0);
 
@@ -258,7 +260,7 @@ CR_str unshift_rows(CR_str input){
 }
 
 // takes a four-byte character array, and performs a 1-byte left, circular rotate
-void rotate(unsigned char *in) {
+void AES::rotate(unsigned char *in) {
 	unsigned char a;
 	a = in[0];
 
@@ -272,7 +274,7 @@ void rotate(unsigned char *in) {
 }
 
 /* Calculate the rcon used in key expansion */
-unsigned char rcon(unsigned char in) {
+unsigned char AES::rcon(unsigned char in) {
 	unsigned char c = 1;
 
 	if(in == 0){
@@ -296,7 +298,7 @@ unsigned char rcon(unsigned char in) {
 
 /* This is the core key expansion, which, given a 4-byte value,
  * does some scrambling */
-void schedule_core(unsigned char *in, unsigned char i) {
+void AES::schedule_core(unsigned char *in, unsigned char i) {
 	char a;
 
 	/* Rotate the input 8 bits to the left */
@@ -312,7 +314,7 @@ void schedule_core(unsigned char *in, unsigned char i) {
 }
 
 // expand 128-bit key into 10 other round keys
-vector<string> expand_key(unsigned char *input) {
+vector<string> AES::expand_key(unsigned char *input) {
 	unsigned char t[4];
 
 	/* c is 16 because the first sub-key is the user-supplied key */
@@ -371,7 +373,7 @@ vector<string> expand_key(unsigned char *input) {
 
 // we only need one version of this for both encrypting/decrypting
 // we always xor the input with the key
-CR_str rjindael_appl_round_key(CR_str plaintext, const vector<string>& key, int round){
+CR_str AES::rjindael_apply_round_key(CR_str plaintext, const vector<string>& key, int round){
 	if(plaintext.size() != AES::BLOCKSIZE){
 		cout << "rjindael_appl_round_key(): message size is not 16 bytes!" << endl;
 
@@ -385,7 +387,7 @@ CR_str rjindael_appl_round_key(CR_str plaintext, const vector<string>& key, int 
 }
 
 // based on the Rjindael algorithm
-CR_str AES_cipher_encrypt(CR_str plaintext, CR_str key){
+CR_str AES::encrypt(CR_str plaintext, CR_str key){
 	if(plaintext.size() < AES::BLOCKSIZE){
 		plaintext = plaintext.add_padding(CR_str::PKCS7_PADDING, AES::BLOCKSIZE);
 	}
@@ -410,7 +412,7 @@ CR_str AES_cipher_encrypt(CR_str plaintext, CR_str key){
 	// working string for cipher
 	CR_str ciphertext = plaintext.as_ascii();
     // initially XOR the input text with the key
-    ciphertext = rjindael_appl_round_key( ciphertext, round_keys, 0 );
+    ciphertext = rjindael_apply_round_key( ciphertext, round_keys, 0 );
 
 	for(int round = 1; round <= 10; round++){
 		ciphertext = substitute_bytes(ciphertext);
@@ -421,14 +423,14 @@ CR_str AES_cipher_encrypt(CR_str plaintext, CR_str key){
 			ciphertext = mix_columns(ciphertext);
 		}
 
-		ciphertext = rjindael_appl_round_key( ciphertext, round_keys, round );
+		ciphertext = rjindael_apply_round_key( ciphertext, round_keys, round );
 	}
 
 	return ciphertext;
 }
 
 // based on the Rjindael algorithm
-CR_str AES_cipher_decrypt(CR_str ciphertext, CR_str key){
+CR_str AES::decrypt(CR_str ciphertext, CR_str key){
 	if(ciphertext.size() < AES::BLOCKSIZE){
 		ciphertext = ciphertext.add_padding(CR_str::PKCS7_PADDING, AES::BLOCKSIZE);
 	}
@@ -457,7 +459,7 @@ CR_str AES_cipher_decrypt(CR_str ciphertext, CR_str key){
     //  go backwards through rounds and keys this time
 	// this is merely a reversal of the methods found in the encrypt function
 	for(int round = 10; round >= 1; round--){
-		plaintext = rjindael_appl_round_key( plaintext, round_keys, round );
+		plaintext = rjindael_apply_round_key( plaintext, round_keys, round );
 
 		// don't unmix columns on last round encrypting/first round of decrypting!
 		if(round < 10){
@@ -469,7 +471,7 @@ CR_str AES_cipher_decrypt(CR_str ciphertext, CR_str key){
 	}
 
     // account for the initial XOR between input message and the master key
-    plaintext = rjindael_appl_round_key( plaintext, round_keys, 0 );
+    plaintext = rjindael_apply_round_key( plaintext, round_keys, 0 );
 
 	return plaintext;
 }
@@ -514,7 +516,7 @@ CR_str BlockCipher::ECB_encrypt(CR_str message, CR_str key){
 			plaintext = message.substr(cipher * AES::BLOCKSIZE, AES::BLOCKSIZE);
 		}
 
-		CR_str encrypted = AES_cipher_encrypt(plaintext, key);
+		CR_str encrypted = AES::encrypt(plaintext, key);
 
 		// copy newly encrypted ciphertext into it's home
 		ciphertext = ciphertext.embed_string(encrypted, cipher * AES::BLOCKSIZE, AES::BLOCKSIZE);
@@ -544,7 +546,7 @@ CR_str BlockCipher::ECB_decrypt(CR_str message, CR_str key){
 	for(int cipher = num_ciphers - 1; cipher >= 0; cipher--){
 		CR_str ciphertext = message.substr(cipher * AES::BLOCKSIZE, AES::BLOCKSIZE);
 
-		CR_str decrypted = AES_cipher_decrypt(ciphertext, key);
+		CR_str decrypted = AES::decrypt(ciphertext, key);
 
 		// copy newly encrypted plaintext into it's home
 		plaintext = plaintext.embed_string(decrypted, cipher * AES::BLOCKSIZE, AES::BLOCKSIZE);
@@ -629,7 +631,7 @@ CR_str BlockCipher::CBC_encrypt(CR_str message, CR_str key, CR_str IV){
 		}
 
 		CR_str holder = plaintext.XOR( last_ciphertext );
-		holder = AES_cipher_encrypt(holder, key);
+		holder = AES::encrypt(holder, key);
 
 		last_ciphertext = holder;
 
@@ -683,7 +685,7 @@ CR_str BlockCipher::CBC_decrypt(CR_str message, CR_str key, CR_str IV){
 			next_ciphertext = message.substr((cipher - 1) * AES::BLOCKSIZE, AES::BLOCKSIZE);
 		}
 
-		CR_str holder = AES_cipher_decrypt(ciphertext, key);
+		CR_str holder = AES::decrypt(ciphertext, key);
 		holder = holder ^ next_ciphertext ;
 
 		// copy newly decrypted ciphertext into it's home
@@ -951,7 +953,7 @@ CR_str BlockCipher::CTR_encrypt(CR_str message, CR_str key, CR_str nonce){
 		CR_str plaintext = message.substr(cipher * AES::BLOCKSIZE, AES::BLOCKSIZE);
 
 		cipher_input = nonce.little_endian() + counter.little_endian();
-		CR_str encrypted_nonce = AES_cipher_encrypt(cipher_input, key);
+		CR_str encrypted_nonce = AES::encrypt(cipher_input, key);
 
 		// TODO: IDEA: instead of copying blocks over, just use container as accumulator that gets XOR'd
 
@@ -1000,7 +1002,7 @@ CR_str BlockCipher::CTR_decrypt(CR_str message, CR_str key, CR_str nonce){
 
 		// TODO: IDEA: instead of copying blocks over, just use container as accumulator that gets XOR'd
 
-		CR_str encrypted_nonce = AES_cipher_encrypt(cipher_input, key);
+		CR_str encrypted_nonce = AES::encrypt(cipher_input, key);
 
 		// add new plaintext by XORing with encrypted nonce
 		plaintext += encrypted_nonce ^ ciphertext;

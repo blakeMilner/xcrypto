@@ -373,8 +373,9 @@ const char* CR_str::c_str(){
 	return ascii_str.c_str();
 }
 
+// TODO: just make constructor with these params and fill by initializing
 void CR_str::fill(const size_t s, const char& val){
-	ascii_str = string(s, val);
+	ascii_str = string(s, val); // create new string of length s
 }
 
 bool CR_str::empty(){
