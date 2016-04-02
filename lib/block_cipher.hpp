@@ -15,12 +15,13 @@
 using namespace std;
 
 
-enum AES{
-	BLOCKSIZE = 16,
-	CTR_NONCE_SIZE = 8,
-	CTR_COUNTER_SIZE = 8
-};
-
+namespace AES{
+	enum {
+		BLOCKSIZE = 16,
+		CTR_NONCE_SIZE = 8,
+		CTR_COUNTER_SIZE = 8
+	};
+}
 
 static unsigned char rijndael_sbox[16][16] =
 {
@@ -90,14 +91,23 @@ CR_str unadd_round_key(const string& plaintext, const vector<string>& key, const
 CR_str AES_cipher_encrypt(CR_str plaintext, CR_str key);
 CR_str AES_cipher_decrypt(CR_str ciphertext, CR_str key);
 
-CR_str ECB_AES_encrypt(CR_str message, CR_str key);
-CR_str ECB_AES_decrypt(CR_str message, CR_str key);
+//  TODO: make function pointers for AES/DES encryption
+class BlockCipher {
+public:
+	static CR_str encrypt(EncryptType e, CR_str message, CR_str key, CR_str IV_nonce = CR_str());
+	static CR_str decrypt(EncryptType e, CR_str message, CR_str key, CR_str IV_nonce = CR_str());
 
-CR_str CBC_AES_encrypt(CR_str message, CR_str key, CR_str IV);
-CR_str CBC_AES_decrypt(CR_str message, CR_str key, CR_str IV);
+private:
+	static CR_str ECB_encrypt(CR_str message, CR_str key);
+	static CR_str ECB_decrypt(CR_str message, CR_str key);
+	static CR_str CBC_encrypt(CR_str message, CR_str key, CR_str IV);
+	static CR_str CBC_decrypt(CR_str message, CR_str key, CR_str IV);
+	static CR_str CTR_encrypt(CR_str message, CR_str key, CR_str nonce);
+	static CR_str CTR_decrypt(CR_str message, CR_str key, CR_str nonce);
+};
 
 CR_str encrypt_using_CBC_or_ECB(CR_str message);
-CR_str::EncryptType detect_ECB_or_CBC_encryption(CR_str (*encryption_fnc)(CR_str message));
+EncryptType detect_ECB_or_CBC_encryption(CR_str (*encryption_fnc)(CR_str message));
 
 // Challenge 12
 CR_str append_unknown_string_and_encrypt_ECB(CR_str message);
@@ -107,9 +117,6 @@ CR_str byte_at_a_time_ECB_decrypt_simple();
 CR_str append_unknown_string_random_prefix_and_encrypt_ECB(CR_str message);
 CR_str byte_at_a_time_ECB_decrypt_hard();
 
-// Challenge 17
-CR_str CTR_AES_encrypt(CR_str message, CR_str key, CR_str nonce);
-CR_str CTR_AES_decrypt(CR_str message, CR_str key, CR_str nonce);
 
 bool detect_ECB_AES_encryption(CR_str message);
 

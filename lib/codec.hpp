@@ -54,8 +54,17 @@ extern const char* decoding_table;
 
 // TODO: reimplement using char[] - will this even be faster?
 
-// TODO: possible add encryption attribute? if we don't know encryption then it could be specified as unknown or none...
-// we could possible make encrypted_string class that inherits from this class
+enum EncryptType {
+	ECB_ENCRYPT,
+	CBC_ENCRYPT,
+	CTR_ENCRYPT,
+	UKNOWN_ENCRYPTION
+};
+enum BlockSize {
+	_4BYTE = 4, 	_8BYTE = 8, 	_16BYTE = 16,
+	_32BYTE = 32, 	_64BYTE = 64,	_128BYTE = 128,
+	_256BYTE = 256
+};
 
 
 class CR_str {
@@ -68,14 +77,7 @@ public:
 			NO_PADDING = 'N'
 			};
 
-	enum EncryptType { ECB_ENCRYPTION, CBC_ENCRYPTION, UKNOWN_ENCRYPTION };
-
 	enum EncodeType { ASCII_ENCODED, BASE64_ENCODED, HEX_ENCODED };
-
-	enum BlockSize {_4BYTE = 4, 	_8BYTE = 8, 	_16BYTE = 16,
-					_32BYTE = 32, 	_64BYTE = 64,	_128BYTE = 128,
-					_256BYTE = 256};
-
 
 	/* Constructors / Destructor */
 	CR_str();
@@ -92,6 +94,8 @@ public:
 	CR_str substr(unsigned int position, size_t size);
 	const char* c_str();
 	void fill(const size_t s, const char& val);
+
+	bool empty();
 
 	/* members that return a raw std::string in a specific encoding */
 	string as_ascii();
@@ -126,9 +130,9 @@ public:
 	// TODO: since blocksize is now set internally, remove all these block size parameters
 
 	int get_num_blocks(int block_size);
-	CR_str get_single_block(int block_num, int block_size); 
-	CR_str embed_single_block(CR_str str, int block_num, int block_size); 
-	CR_str get_multiple_block(int start_block_num, int end_block_num, int block_size); 
+	CR_str get_single_block(int block_num, int block_size);
+	CR_str embed_single_block(CR_str str, int block_num, int block_size);
+	CR_str get_multiple_block(int start_block_num, int end_block_num, int block_size);
 	CR_str embed_multiple_block(CR_str str, int block_idx, int num_blocks, int block_size);
 
 	/* functions related to padding */
@@ -247,24 +251,24 @@ inline CR_str CR_str::operator^(const CR_str& x)
 
 inline CR_str CR_str::operator+=(const CR_str& x)
 {
-*this = *this + x;
+	*this = *this + x;
 
-return *this;
+	return *this;
 }
 
 inline CR_str CR_str::operator+=(const string& x)
-	{
- 	this->ascii_str = this->ascii_str + x;
+{
+	this->ascii_str = this->ascii_str + x;
 
- 	return *this;
-	}
+	return *this;
+}
 
 inline CR_str CR_str::operator+=(const char& x)
-	{
- 	this->ascii_str += string(1, x);
+{
+	this->ascii_str += string(1, x);
 
- 	return *this;
-	}
+	return *this;
+}
 
 // Define prefix increment operator.
 inline CR_str& CR_str::operator++(  )

@@ -91,13 +91,13 @@ info_for_attacker encrypt_cookie(CR_str cookie){
 	info_for_attacker info;
 
 	info.key = generate_random_AES_key(AES::BLOCKSIZE);
-	info.encoded_message = ECB_AES_encrypt(cookie, info.key);
+	info.encoded_message = BlockCipher::encrypt(EncryptType::ECB_ENCRYPT, cookie, info.key);
 
 	return info;
 }
 
 map<CR_str, CR_str> decrypt_cookie_and_parse(info_for_attacker info){
-	CR_str decrypted_cookie = ECB_AES_decrypt(info.encoded_message, info.key);
+	CR_str decrypted_cookie = BlockCipher::decrypt(EncryptType::ECB_ENCRYPT, info.encoded_message, info.key);
 
 	return parse_cookie(decrypted_cookie);
 }
@@ -160,7 +160,7 @@ CR_str ecb_cut_and_paste()
     //cout << dummy_cookie.get_single_block(2, 16) << endl;
 
     // replace dummy *'s  with forbidden & and =
-    CR_str encrypted_block_to_replace = ECB_AES_encrypt(block_to_replace, info.key);
+    CR_str encrypted_block_to_replace = BlockCipher::encrypt(EncryptType::ECB_ENCRYPT, block_to_replace, info.key);
     //cout << encrypted_block_to_replace.size() << endl;
 
     // embed altered cipherblock into the encrypted cookie
@@ -168,7 +168,7 @@ CR_str ecb_cut_and_paste()
     CR_str cut_and_pasted = dummy_info.encoded_message.embed_single_block(encrypted_block_to_replace, block_idx, 16);
 
     // decrypt the cut and pasted cookie
-    CR_str hacked_cookie = ECB_AES_decrypt(cut_and_pasted, info.key);
+    CR_str hacked_cookie = BlockCipher::decrypt(EncryptType::ECB_ENCRYPT, cut_and_pasted, info.key);
 //    cout << hacked_cookie.as_ascii() << endl;
 
     return hacked_cookie;

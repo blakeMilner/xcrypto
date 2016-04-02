@@ -24,12 +24,10 @@ CR_str generate_random_ascii_string(int num_bytes){
 	return rand_s;
 }
 
-// 16 byte IV
 CR_str generate_random_AES_IV(int len){
 	return generate_random_ascii_string(len);
 }
 
-// 16 byte key
 CR_str generate_random_AES_key(int len){
 	return generate_random_ascii_string(len);
 }
@@ -476,7 +474,7 @@ CR_str AES_cipher_decrypt(CR_str ciphertext, CR_str key){
 	return plaintext;
 }
 
-CR_str ECB_AES_encrypt(CR_str message, CR_str key){
+CR_str BlockCipher::ECB_encrypt(CR_str message, CR_str key){
 	if(key.size() != AES::BLOCKSIZE){
 		cout << "ECB_AES_encrypt(): input key is not 16 bytes long." << endl;
 
@@ -525,7 +523,7 @@ CR_str ECB_AES_encrypt(CR_str message, CR_str key){
 	return ciphertext;
 }
 
-CR_str ECB_AES_decrypt(CR_str message, CR_str key){
+CR_str BlockCipher::ECB_decrypt(CR_str message, CR_str key){
 	if((message.size() % AES::BLOCKSIZE) != 0){
 		cout << "ECB_AES_decrypt(): input encrypted message is not divisible by 16." << endl;
 
@@ -582,7 +580,7 @@ bool detect_ECB_AES_encryption(CR_str message){
     }
 }
 
-CR_str CBC_AES_encrypt(CR_str message, CR_str key, CR_str IV){
+CR_str BlockCipher::CBC_encrypt(CR_str message, CR_str key, CR_str IV){
 	if(key.size() != AES::BLOCKSIZE){
 		cout << "CBC_AES_encrypt(): input key is not 16 bytes long." << endl;
 
@@ -642,7 +640,7 @@ CR_str CBC_AES_encrypt(CR_str message, CR_str key, CR_str IV){
 	return ciphertext;
 }
 
-CR_str CBC_AES_decrypt(CR_str message, CR_str key, CR_str IV){
+CR_str BlockCipher::CBC_decrypt(CR_str message, CR_str key, CR_str IV){
 	if((message.size() % AES::BLOCKSIZE) != 0){
 		cout << "CBC_AES_decrypt(): input encrypted message or key is not divisible by 16." << endl;
 
@@ -710,12 +708,12 @@ CR_str encrypt_using_CBC_or_ECB(CR_str message){
 	bool encrypt_using_ECB = rand() % 2;
 
 	if(encrypt_using_ECB){
-		return ECB_AES_encrypt(appended_message, rand_key);
+		return BlockCipher::encrypt(ECB_ENCRYPT, appended_message, rand_key);
 	}
 	else{
 		CR_str rand_IV = generate_random_AES_IV(AES::BLOCKSIZE);
 
-		return CBC_AES_encrypt(appended_message, rand_key, rand_IV);
+		return BlockCipher::encrypt(CBC_ENCRYPT, appended_message, rand_key, rand_IV);
 	}
 }
 
@@ -731,7 +729,7 @@ CR_str encrypt_using_CBC_or_ECB(CR_str message){
 // accepts a function pointer that implements an arbitrary encryption fucntion
 // inputs - message to be encrypted
 // outputs - encrypted message
-CR_str::EncryptType detect_ECB_or_CBC_encryption(CR_str (*encryption_fnc)(CR_str message)){
+EncryptType detect_ECB_or_CBC_encryption(CR_str (*encryption_fnc)(CR_str message)){
 	// no matter what gets prepended/appended, 2nd and 3rd block will be all 0's
 	// because of size = 48
 	CR_str message = CR_str();
@@ -741,11 +739,11 @@ CR_str::EncryptType detect_ECB_or_CBC_encryption(CR_str (*encryption_fnc)(CR_str
 
 	if(encrypted_message.get_single_block(1, AES::BLOCKSIZE) == encrypted_message.get_single_block(2, AES::BLOCKSIZE)){
 //		cout << "ECB" << endl;
-		return CR_str::ECB_ENCRYPTION;
+		return EncryptType::ECB_ENCRYPT;
 	}
 	else{
 //		cout << "CBC" << endl;
-		return CR_str::CBC_ENCRYPTION;
+		return EncryptType::CBC_ENCRYPT;
 	}
 }
 
@@ -758,7 +756,7 @@ CR_str append_unknown_string_and_encrypt_ECB(CR_str message){
 												"dXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUg"
 												"YnkK", CR_str::BASE64_ENCODED);
 
-	return ECB_AES_encrypt(message + unknown_string, random_key);
+	return BlockCipher::encrypt(ECB_ENCRYPT, message + unknown_string, random_key);
 }
 
 CR_str byte_at_a_time_ECB_decrypt_simple(){
@@ -785,7 +783,7 @@ CR_str byte_at_a_time_ECB_decrypt_simple(){
 	while(new_cipher.size() == last_size);
 
 	/* Verify that the function is using ECB */
-	if(CR_str::ECB_ENCRYPTION != detect_ECB_or_CBC_encryption(blackbox)){
+	if(EncryptType::ECB_ENCRYPT != detect_ECB_or_CBC_encryption(blackbox)){
 		cout << "byte_at_a_time_ECB_decrypt_simple(): function is not using ECB encryption." << endl;
 
 		return CR_str();
@@ -840,7 +838,7 @@ CR_str append_unknown_string_random_prefix_and_encrypt_ECB(CR_str message){
 												"dXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUg"
 												"YnkK", CR_str::BASE64_ENCODED);
 
-	return ECB_AES_encrypt(message + unknown_string, random_key);
+	return BlockCipher::encrypt(ECB_ENCRYPT, message + unknown_string, random_key);
 }
 
 CR_str byte_at_a_time_ECB_decrypt_hard(){
@@ -868,7 +866,7 @@ CR_str byte_at_a_time_ECB_decrypt_hard(){
 	while(new_cipher.size() == last_size);
 
 	/* Verify that the function is using ECB */
-	if(CR_str::ECB_ENCRYPTION != detect_ECB_or_CBC_encryption(blackbox)){
+	if(EncryptType::ECB_ENCRYPT != detect_ECB_or_CBC_encryption(blackbox)){
 		cout << "byte_at_a_time_ECB_decrypt_simple(): function is not using ECB encryption." << endl;
 
 		return CR_str();
@@ -921,7 +919,7 @@ CR_str byte_at_a_time_ECB_decrypt_hard(){
 
 // this implementation accepts nonces up to 16 bytes. Nonces under 16 bytes are zero
 // padded to 16 bytes. The nonce value is then incremented by 1 each round.
-CR_str CTR_AES_encrypt(CR_str message, CR_str key, CR_str nonce){
+CR_str BlockCipher::CTR_encrypt(CR_str message, CR_str key, CR_str nonce){
 	if(key.size() != AES::BLOCKSIZE){
 		cout << "CTR_AES_encrypt(): input key is not 16 bytes long." << endl;
 
@@ -967,7 +965,7 @@ CR_str CTR_AES_encrypt(CR_str message, CR_str key, CR_str nonce){
 	return ciphertext;
 }
 
-CR_str CTR_AES_decrypt(CR_str message, CR_str key, CR_str nonce){
+CR_str BlockCipher::CTR_decrypt(CR_str message, CR_str key, CR_str nonce){
 	if(key.size() != AES::BLOCKSIZE){
 		cout << "CTR_AES_decrypt(): input key is not 16 bytes long." << endl;
 
@@ -1014,4 +1012,63 @@ CR_str CTR_AES_decrypt(CR_str message, CR_str key, CR_str nonce){
 	return plaintext;
 }
 
+CR_str BlockCipher::encrypt(EncryptType e, CR_str message, CR_str key, CR_str IV_nonce /* = CR_str() */ ){
+	switch(e){
+		case ECB_ENCRYPT:
+			if( !IV_nonce.empty() ){
+				cout << "BlockEncrypt::encrypt(): IV provided for ECB encryption, ignoring." << endl;
+			}
+
+			return ECB_encrypt(message, key);
+			break;
+
+		case CBC_ENCRYPT:
+			if( IV_nonce.empty() ){
+				cout << "BlockEncrypt::encrypt(): no IV provided for CBC encryption, "
+						"setting equal to 0." << endl;
+			}
+
+			return CBC_encrypt(message, key, IV_nonce);
+			break;
+
+		case CTR_ENCRYPT:
+			if( IV_nonce.empty() ){
+				cout << "BlockEncrypt::encrypt(): no nonce provided for CTR encryption, "
+						"setting equal to 0." << endl;
+			}
+
+			return CTR_encrypt(message, key, IV_nonce);
+			break;
+		}
+}
+
+CR_str BlockCipher::decrypt(EncryptType e, CR_str message, CR_str key, CR_str IV_nonce){
+	switch(e){
+		case ECB_ENCRYPT:
+			if( !IV_nonce.empty() ){
+				cout << "BlockEncrypt::decrypt(): IV provided for ECB decryption, ignoring." << endl;
+			}
+
+			return ECB_decrypt(message, key);
+			break;
+
+		case CBC_ENCRYPT:
+			if( IV_nonce.empty() ){
+				cout << "BlockEncrypt::decrypt(): no IV provided for CBC encryption, "
+						"setting equal to 0." << endl;
+			}
+
+			return CBC_decrypt(message, key, IV_nonce);
+			break;
+
+		case CTR_ENCRYPT:
+			if( IV_nonce.empty() ){
+				cout << "BlockEncrypt::decrypt(): no nonce provided for CTR encryption, "
+						"setting equal to 0." << endl;
+			}
+
+			return CTR_decrypt(message, key, IV_nonce);
+			break;
+		}
+}
 

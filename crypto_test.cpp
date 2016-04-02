@@ -148,7 +148,7 @@ int main(int argc, char* argv[])
 		}
 
 		CR_str ascii_encoded = CR_str( base64_encoded, CR_str::BASE64_ENCODED );
-		CR_str message = CBC_AES_decrypt(ascii_encoded, key, IV);
+		CR_str message = BlockCipher::decrypt(EncryptType::CBC_ENCRYPT, ascii_encoded, key, IV);
 
 		crypto_exercise_test(10,
 					output == message.remove_padding(CR_str::UNKNOWN_PADDING)
@@ -162,11 +162,11 @@ int main(int argc, char* argv[])
 
 	tick();
 	{
-		CR_str::EncryptType encryption_type = detect_ECB_or_CBC_encryption(encrypt_using_CBC_or_ECB);
+		EncryptType encryption_type = detect_ECB_or_CBC_encryption(encrypt_using_CBC_or_ECB);
 
-		if(encryption_type == CR_str::CBC_ENCRYPTION){
+		if(encryption_type == EncryptType::CBC_ENCRYPT){
 			cout << "Detected CBC encryption" << endl;
-		}else if(encryption_type == CR_str::ECB_ENCRYPTION){
+		}else if(encryption_type == EncryptType::ECB_ENCRYPT){
 			cout << "Detected ECB encryption" << endl;
 		}
 		else{
@@ -260,13 +260,13 @@ int main(int argc, char* argv[])
 		static string output_token = ";admin=true;";
 
 		CR_str message = "XXXXXXXXXXXXXXXX:admin<true:XXXX";
-		CR_str encrypted = CBC_AES_encrypt(prefix + message + suffix, random_key, rand_IV);
+		CR_str encrypted = BlockCipher::encrypt(EncryptType::CBC_ENCRYPT, prefix + message + suffix, random_key, rand_IV);
 
 		encrypted[32] ^= 1;
 		encrypted[38] ^= 1;
 		encrypted[43] ^= 1;
 
-		CR_str decrypted = CBC_AES_decrypt(encrypted, random_key, rand_IV);
+		CR_str decrypted = BlockCipher::decrypt(EncryptType::CBC_ENCRYPT, encrypted, random_key, rand_IV);
 		decrypted = decrypted.remove_padding(CR_str::UNKNOWN_PADDING);
 
 		crypto_exercise_test(16,
@@ -291,10 +291,10 @@ int main(int argc, char* argv[])
 		CR_str nonce;
 		nonce.resize(AES::CTR_NONCE_SIZE, 0); // size 8 - nonce is all zeroes!
 
-		CR_str decrypted = CTR_AES_decrypt(encrypted, key, nonce);
+		CR_str decrypted = BlockCipher::decrypt(EncryptType::CTR_ENCRYPT, encrypted, key, nonce);
 
-		CR_str encrypted2 = CTR_AES_encrypt(decrypted, key, nonce);
-		CR_str decrypted2 = CTR_AES_decrypt(encrypted2, key, nonce);
+		CR_str encrypted2 = BlockCipher::encrypt(EncryptType::CTR_ENCRYPT, decrypted, key, nonce);
+		CR_str decrypted2 = BlockCipher::decrypt(EncryptType::CTR_ENCRYPT, encrypted2, key, nonce);
 
 		crypto_exercise_test(17, decrypted == decrypted2);
 	}

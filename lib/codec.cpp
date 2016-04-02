@@ -377,6 +377,10 @@ void CR_str::fill(const size_t s, const char& val){
 	ascii_str = string(s, val);
 }
 
+bool CR_str::empty(){
+	return (this->size() == 0);
+}
+
 int CR_str::hamming_distance(CR_str string2){
 	if(this->size() != string2.size()){
 		cout << "hamming_distance(): strings are not equal lengths." << endl;
@@ -624,8 +628,6 @@ CR_str CR_str::add_padding(PaddingType type, int desired_block_size){
 	CR_str padded_string = CR_str();
 	CR_str prior_blocks = CR_str();
 
-	// TODO: put something like check_string(IS_DIVISIBLE_BY_BLOCK_SIZE)
-
 	// initial checks
 	if(this->size() < 1){
 		cout << "add_padding(): input padded_string size is less than 1. " <<
@@ -640,7 +642,7 @@ CR_str CR_str::add_padding(PaddingType type, int desired_block_size){
 	}
 
 	if( (this->size() % desired_block_size) == 0 ){
-		cout << "add_padding(): input padded_string is already padded" << endl;
+		cout << "add_padding(): input padded_string is already even block size" << endl;
 
 		return *this;
 	}
@@ -679,7 +681,7 @@ CR_str CR_str::add_padding(PaddingType type, int desired_block_size){
 			break;
 
 		default:
-			cout << "add_padding(): input padding type not recognized. PKCS7 padding." << endl;
+			cout << "add_padding(): input padding type not recognized. Assuming PKCS7 padding." << endl;
 			pad_value = desired_block_size - padded_string.size();
 
 			break;
