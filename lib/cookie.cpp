@@ -21,9 +21,9 @@ string replace_str(string str, string oldStr, string newStr){
 	return str;
 }
 
-map<CR_Str, CR_Str> parse_cookie(CR_Str s){
+map<XStr, XStr> parse_cookie(XStr s){
         vector<char*> tokens = vector<char*>();
-        map<CR_Str, CR_Str> dict = map<CR_Str, CR_Str>();
+        map<XStr, XStr> dict = map<XStr, XStr>();
 
         // token string
         char *p = strtok((char*) s.c_str(), "&");
@@ -43,13 +43,13 @@ map<CR_Str, CR_Str> parse_cookie(CR_Str s){
         return dict;
 }
 
-CR_Str compose_cookie(map<CR_Str, CR_Str> c){
-	CR_Str cookie = CR_Str();
+XStr compose_cookie(map<XStr, XStr> c){
+	XStr cookie = XStr();
 
-	map<CR_Str, CR_Str>::iterator it = c.begin();
+	map<XStr, XStr>::iterator it = c.begin();
 	while( true ){
-		CR_Str k = it->first;
-		CR_Str v = it->second;
+		XStr k = it->first;
+		XStr v = it->second;
 		cookie += k + string("=") + v;
 
 		// increment now so we can check if we're at the end before adding another &
@@ -65,8 +65,8 @@ CR_Str compose_cookie(map<CR_Str, CR_Str> c){
 	return cookie;
 }
 
-CR_Str profile_for(CR_Str email){
-	map<CR_Str, CR_Str> dict;
+XStr profile_for(XStr email){
+	map<XStr, XStr> dict;
 
 	// remove illegal characters & and =
 	// e.g. to prevent "foo@bar.com&role=admin".
@@ -87,7 +87,7 @@ CR_Str profile_for(CR_Str email){
 	return compose_cookie(dict);
 }
 
-info_for_attacker encrypt_cookie(CR_Str cookie){
+info_for_attacker encrypt_cookie(XStr cookie){
 	info_for_attacker info;
 
 	info.key = generate_random_AES_key(AES::BLOCKSIZE);
@@ -96,16 +96,16 @@ info_for_attacker encrypt_cookie(CR_Str cookie){
 	return info;
 }
 
-map<CR_Str, CR_Str> decrypt_cookie_and_parse(info_for_attacker info){
-	CR_Str decrypted_cookie = BlockCipher::decrypt(EncryptType::ECB_ENCRYPT, info.encoded_message, info.key);
+map<XStr, XStr> decrypt_cookie_and_parse(info_for_attacker info){
+	XStr decrypted_cookie = BlockCipher::decrypt(EncryptType::ECB_ENCRYPT, info.encoded_message, info.key);
 
 	return parse_cookie(decrypted_cookie);
 }
 
-void print_cookie(map<CR_Str, CR_Str> cookie_dict){
+void print_cookie(map<XStr, XStr> cookie_dict){
     cout << "Cookie contents: " << endl;
 
-    for(map<CR_Str, CR_Str>::const_iterator it = cookie_dict.begin();
+    for(map<XStr, XStr>::const_iterator it = cookie_dict.begin();
     		it != cookie_dict.end();
     		++it)
     {
@@ -115,17 +115,17 @@ void print_cookie(map<CR_Str, CR_Str> cookie_dict){
     cout << endl;
 }
 
-CR_Str ecb_cut_and_paste()
+XStr ecb_cut_and_paste()
 {
-    CR_Str email = "foo@bar.com&role=admin";
+    XStr email = "foo@bar.com&role=admin";
 
 	// testing cookie composition and profile creation
-    CR_Str cookie = profile_for(email);
+    XStr cookie = profile_for(email);
 
     //cout << "Cookie: " << cookie << endl;
 
     // testing cookie parsing
-    map<CR_Str, CR_Str> cookie_dict = parse_cookie(cookie);
+    map<XStr, XStr> cookie_dict = parse_cookie(cookie);
     //print_cookie(cookie_dict);
 
     // testing 2 encryption functions
@@ -135,12 +135,12 @@ CR_Str ecb_cut_and_paste()
     //cout << "Key provided to attacker: " << info.key.as_base64() << endl;
     //cout << "Encrypted message provided to attacker: " << info.encoded_message.as_base64() << endl;
 
-    map<CR_Str, CR_Str> decrypted_cookie = decrypt_cookie_and_parse(info);
+    map<XStr, XStr> decrypted_cookie = decrypt_cookie_and_parse(info);
     //cout << "Decrypted cookie: " << endl;
     //print_cookie(decrypted_cookie);
 
     // attacker routines to tamper with cookie, allowing &role=admin
-    CR_Str dummy_email = "blake@google.com*role*admin"; // * characters will be replaced with & and =
+    XStr dummy_email = "blake@google.com*role*admin"; // * characters will be replaced with & and =
 
     // NOTE: these both occur in block 1 - subtract block size to make relative to block 1
     int block_idx = 1;
@@ -148,27 +148,27 @@ CR_Str ecb_cut_and_paste()
     int idx_for_equals = 27 - (block_idx * 16);
 
     // create dummy cookie and then encrypt
-    CR_Str dummy_cookie = profile_for(dummy_email);
+    XStr dummy_cookie = profile_for(dummy_email);
     info_for_attacker dummy_info = encrypt_cookie(dummy_cookie);
 
     //cout << dummy_cookie << endl;
 
     // get first block that contains dummy * characters
-    CR_Str block_to_replace = dummy_cookie.get_single_block(1, 16);
+    XStr block_to_replace = dummy_cookie.get_single_block(1, 16);
 
     //cout << "btr: " << block_to_replace.as_ascii() << endl;
     //cout << dummy_cookie.get_single_block(2, 16) << endl;
 
     // replace dummy *'s  with forbidden & and =
-    CR_Str encrypted_block_to_replace = BlockCipher::encrypt(EncryptType::ECB_ENCRYPT, block_to_replace, info.key);
+    XStr encrypted_block_to_replace = BlockCipher::encrypt(EncryptType::ECB_ENCRYPT, block_to_replace, info.key);
     //cout << encrypted_block_to_replace.size() << endl;
 
     // embed altered cipherblock into the encrypted cookie
 //    cout << dummy_info.encoded_message.size() << endl;
-    CR_Str cut_and_pasted = dummy_info.encoded_message.embed_single_block(encrypted_block_to_replace, block_idx, 16);
+    XStr cut_and_pasted = dummy_info.encoded_message.embed_single_block(encrypted_block_to_replace, block_idx, 16);
 
     // decrypt the cut and pasted cookie
-    CR_Str hacked_cookie = BlockCipher::decrypt(EncryptType::ECB_ENCRYPT, cut_and_pasted, info.key);
+    XStr hacked_cookie = BlockCipher::decrypt(EncryptType::ECB_ENCRYPT, cut_and_pasted, info.key);
 //    cout << hacked_cookie.as_ascii() << endl;
 
     return hacked_cookie;

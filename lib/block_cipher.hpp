@@ -16,9 +16,9 @@ using namespace std;
 
 
 int generate_rand_num_between(int lbound, int ubound);
-CR_Str generate_random_ascii_string(int num_bytes);
-CR_Str generate_random_AES_IV(int len);
-CR_Str generate_random_AES_key(int len);
+XStr generate_random_ascii_string(int num_bytes);
+XStr generate_random_AES_IV(int len);
+XStr generate_random_AES_key(int len);
 
 
 
@@ -39,8 +39,8 @@ public:
 		CTR_COUNTER_SIZE = 8
 	};
 
-	static CR_Str encrypt(CR_Str plaintext, CR_Str key);
-	static CR_Str decrypt(CR_Str ciphertext, CR_Str key);
+	static XStr encrypt(XStr plaintext, XStr key);
+	static XStr decrypt(XStr ciphertext, XStr key);
 
 private:
 
@@ -57,8 +57,8 @@ public:
 		CTR_COUNTER_SIZE = 8
 	};
 
-	static CR_Str encrypt(CR_Str plaintext, CR_Str key);
-	static CR_Str decrypt(CR_Str ciphertext, CR_Str key);
+	static XStr encrypt(XStr plaintext, XStr key);
+	static XStr decrypt(XStr ciphertext, XStr key);
 
 private:
 	static constexpr uint8_t rijndael_sbox[16][16] =
@@ -110,17 +110,17 @@ private:
 	static void schedule_core(unsigned char *in, unsigned char i);
 	static vector<string> expand_key(unsigned char *input);
 
-	static CR_Str rjindael_mix_column(CR_Str r);
-	static CR_Str substitute_bytes(CR_Str input);
-	static CR_Str mix_columns(CR_Str input);
-	static CR_Str shift_rows(CR_Str input);
-	static CR_Str add_round_key(CR_Str plaintext, const vector<string>& key, int round);
+	static XStr rjindael_mix_column(XStr r);
+	static XStr substitute_bytes(XStr input);
+	static XStr mix_columns(XStr input);
+	static XStr shift_rows(XStr input);
+	static XStr add_round_key(XStr plaintext, const vector<string>& key, int round);
 
-	static CR_Str rjindael_unmix_column(CR_Str r);
-	static CR_Str unsubstitute_bytes(CR_Str input);
-	static CR_Str unmix_columns(CR_Str input);
-	static CR_Str unshift_rows(CR_Str input);
-	static CR_Str unadd_round_key(const string& plaintext, const vector<string>& key, const int& round);
+	static XStr rjindael_unmix_column(XStr r);
+	static XStr unsubstitute_bytes(XStr input);
+	static XStr unmix_columns(XStr input);
+	static XStr unshift_rows(XStr input);
+	static XStr unadd_round_key(const string& plaintext, const vector<string>& key, const int& round);
 };
 
 
@@ -131,37 +131,37 @@ private:
 //  TODO: make function pointers for AES/DES encryption
 class BlockCipher {
 public:
-	static CR_Str encrypt(EncryptType e, CR_Str message, CR_Str key, CR_Str IV_nonce = CR_Str());
-	static CR_Str decrypt(EncryptType e, CR_Str message, CR_Str key, CR_Str IV_nonce = CR_Str());
+	static XStr encrypt(EncryptType e, XStr message, XStr key, XStr IV_nonce = XStr());
+	static XStr decrypt(EncryptType e, XStr message, XStr key, XStr IV_nonce = XStr());
 
 	static void set_AES_mode();
 	static void set_DES_mode();
 
 private:
-	static CR_Str ECB_encrypt(CR_Str message, CR_Str key);
-	static CR_Str ECB_decrypt(CR_Str message, CR_Str key);
-	static CR_Str CBC_encrypt(CR_Str message, CR_Str key, CR_Str IV);
-	static CR_Str CBC_decrypt(CR_Str message, CR_Str key, CR_Str IV);
-	static CR_Str CTR_encrypt(CR_Str message, CR_Str key, CR_Str nonce);
-	static CR_Str CTR_decrypt(CR_Str message, CR_Str key, CR_Str nonce);
+	static XStr ECB_encrypt(XStr message, XStr key);
+	static XStr ECB_decrypt(XStr message, XStr key);
+	static XStr CBC_encrypt(XStr message, XStr key, XStr IV);
+	static XStr CBC_decrypt(XStr message, XStr key, XStr IV);
+	static XStr CTR_encrypt(XStr message, XStr key, XStr nonce);
+	static XStr CTR_decrypt(XStr message, XStr key, XStr nonce);
 
 	static CipherType cipher_mode;
-	static CR_Str (*cipher_encode)(CR_Str, CR_Str);
-	static CR_Str (*cipher_decode)(CR_Str, CR_Str);
+	static XStr (*cipher_encode)(XStr, XStr);
+	static XStr (*cipher_decode)(XStr, XStr);
 };
 
-CR_Str encrypt_using_CBC_or_ECB(CR_Str message);
-EncryptType detect_ECB_or_CBC_encryption(CR_Str (*encryption_fnc)(CR_Str message));
+XStr encrypt_using_CBC_or_ECB(XStr message);
+EncryptType detect_ECB_or_CBC_encryption(XStr (*encryption_fnc)(XStr message));
 
 // Challenge 12
-CR_Str append_unknown_string_and_encrypt_ECB(CR_Str message);
-CR_Str byte_at_a_time_ECB_decrypt_simple();
+XStr append_unknown_string_and_encrypt_ECB(XStr message);
+XStr byte_at_a_time_ECB_decrypt_simple();
 
 // Challenge 14
-CR_Str append_unknown_string_random_prefix_and_encrypt_ECB(CR_Str message);
-CR_Str byte_at_a_time_ECB_decrypt_hard();
+XStr append_unknown_string_random_prefix_and_encrypt_ECB(XStr message);
+XStr byte_at_a_time_ECB_decrypt_hard();
 
 
-bool detect_ECB_AES_encryption(CR_Str message);
+bool detect_ECB_AES_encryption(XStr message);
 
 #endif

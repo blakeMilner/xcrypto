@@ -16,8 +16,8 @@
 using namespace std;
 
 typedef struct{
-	CR_Str key;
-	CR_Str encoded_message;
+	XStr key;
+	XStr encoded_message;
 } info_for_attacker;
 
 
@@ -25,17 +25,17 @@ typedef struct{
 string replace_str(string str, string oldStr, string newStr);
 
 // Code for unique cookie functionality
-map<CR_Str, CR_Str> parse_cookie(CR_Str s);
-CR_Str compose_cookie(map<CR_Str, CR_Str> c);
+map<XStr, XStr> parse_cookie(XStr s);
+XStr compose_cookie(map<XStr, XStr> c);
 
-CR_Str profile_for(CR_Str email);
+XStr profile_for(XStr email);
 
-info_for_attacker encrypt_cookie(CR_Str cookie);
-map<CR_Str, CR_Str> decrypt_cookie_and_parse(info_for_attacker info);
+info_for_attacker encrypt_cookie(XStr cookie);
+map<XStr, XStr> decrypt_cookie_and_parse(info_for_attacker info);
 
-void print_cookie(map<CR_Str, CR_Str> cookie_dict);
+void print_cookie(map<XStr, XStr> cookie_dict);
 
-CR_Str ecb_cut_and_paste();
+XStr ecb_cut_and_paste();
 
 
 #endif

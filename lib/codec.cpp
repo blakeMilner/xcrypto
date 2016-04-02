@@ -33,43 +33,43 @@ int sign(int x) {
 
 
 // if no arguments passed, make empty string
-CR_Str::CR_Str():
+XStr::XStr():
 	ascii_str("")
 {
 }
 
 // copy constructor for CR_string
-CR_Str::CR_Str(const CR_Str& s){
+XStr::XStr(const XStr& s){
 	this->ascii_str = s.ascii_str;
 }
 
 // for when a string is to be extracted from string binary
-CR_Str::CR_Str(uint64_t number){
+XStr::XStr(uint64_t number){
 	this->ascii_str = int_to_ascii(number);
 }
 
 // assume lone string is in ascii
-CR_Str::CR_Str(string ascii_assumed){
+XStr::XStr(string ascii_assumed){
 	this->ascii_str = ascii_assumed;
 }
 
 // copy constructor for C-style char*
-CR_Str::CR_Str(const char* s){
-        *this = CR_Str(string(s));
+XStr::XStr(const char* s){
+        *this = XStr(string(s));
 }
 
 // user specifies type
-CR_Str::CR_Str(string input, EncodeType encoding){
+XStr::XStr(string input, EncodeType encoding){
 	switch(encoding){
-		case CR_Str::ASCII_ENCODED:
+		case XStr::ASCII_ENCODED:
 			this->ascii_str = input;
 			break;
 
-		case CR_Str::BASE64_ENCODED:
+		case XStr::BASE64_ENCODED:
 			this->ascii_str = base64_to_ascii(input);
 			break;
 
-		case CR_Str::HEX_ENCODED:
+		case XStr::HEX_ENCODED:
 			this->ascii_str = hex_to_ascii(input);
 			break;
 
@@ -83,10 +83,10 @@ CR_Str::CR_Str(string input, EncodeType encoding){
 	}
 }
 
-CR_Str::~CR_Str(){
+XStr::~XStr(){
 }
 
-uint32_t CR_Str::hex_char_to_int(char hex){
+uint32_t XStr::hex_char_to_int(char hex){
 	if(hex >= 'A' and hex <= 'F'){
 		return (hex - 55);
 	}
@@ -102,7 +102,7 @@ uint32_t CR_Str::hex_char_to_int(char hex){
 	}
 }
 
-char CR_Str::int_to_hex_char(uint32_t int_c){
+char XStr::int_to_hex_char(uint32_t int_c){
 	if(int_c >= 0 and int_c <= 9){
 		return int_c + '0';
 	}
@@ -115,7 +115,7 @@ char CR_Str::int_to_hex_char(uint32_t int_c){
 	}
 }
 
-string CR_Str::hex_to_ascii(string data){
+string XStr::hex_to_ascii(string data){
     int out_length = data.size() / 2;
     if (data[data.size() - 1] == '=') out_length--;
 
@@ -134,7 +134,7 @@ string CR_Str::hex_to_ascii(string data){
     return decoded_data;
 }
 
-string CR_Str::ascii_to_hex(string data){
+string XStr::ascii_to_hex(string data){
     int out_length = data.size() * 2;
 
     string decoded_data = string();
@@ -161,7 +161,7 @@ string CR_Str::ascii_to_hex(string data){
 // integers) at your discretion.
 // Strings over 17 bytes will, however. In this case the 16 most significant bits will
 // be returned.
-uint64_t CR_Str::ascii_to_int(string input){
+uint64_t XStr::ascii_to_int(string input){
 	int num_bytes_to_extract = input.size();
 
 	if(input.size() > this->blksz){
@@ -196,7 +196,7 @@ uint64_t CR_Str::ascii_to_int(string input){
 }
 
 // Likewise, this function can convert to ascii of up to 16 bytes
-string CR_Str::int_to_ascii(uint64_t input){
+string XStr::int_to_ascii(uint64_t input){
 	// this is the number of output string characters we'll need
 	// We're calculating log_256_(input)
 	// rounding up gives us the number of bytes that will be used up
@@ -225,7 +225,7 @@ string CR_Str::int_to_ascii(uint64_t input){
 // TODO: implement changes in this section (accounting for remainder) into other functions)
 // TODO: document why we use % 3 or % 4
 
-string CR_Str::ascii_to_base64(string input){
+string XStr::ascii_to_base64(string input){
     int output_length = ceil((float) (input.size() * 4) / (float) 3);
 
     string encoded_data = string();
@@ -281,7 +281,7 @@ string CR_Str::ascii_to_base64(string input){
     return encoded_data;
 }
 
-string CR_Str::base64_to_ascii(string input){
+string XStr::base64_to_ascii(string input){
 	int input_length = input.size();
 
     if (input[input.size() - 1] == '=') input_length--;
@@ -316,29 +316,29 @@ string CR_Str::base64_to_ascii(string input){
 
 
 
-string CR_Str::as_ascii(){
+string XStr::as_ascii(){
 	return ascii_str;
 }
 
-string CR_Str::as_hex(){
+string XStr::as_hex(){
 	return ascii_to_hex(ascii_str);
 }
 
-string CR_Str::as_base64(){
+string XStr::as_base64(){
 	return ascii_to_base64(ascii_str);
 }
 
-string CR_Str::as_encoded(EncodeType format){
+string XStr::as_encoded(EncodeType format){
 	switch(format){
-		case CR_Str::ASCII_ENCODED:
+		case XStr::ASCII_ENCODED:
 			return as_ascii();	
 			break;
 	
-		case CR_Str::BASE64_ENCODED:
+		case XStr::BASE64_ENCODED:
 			return as_base64();
 			break;
 	
-		case CR_Str::HEX_ENCODED:
+		case XStr::HEX_ENCODED:
 			return as_hex();
 			break;
 	
@@ -350,39 +350,39 @@ string CR_Str::as_encoded(EncodeType format){
 	}
 }
 
-uint64_t CR_Str::as_int(){
+uint64_t XStr::as_int(){
 	return ascii_to_int(ascii_str);
 }
 
 // size of string in ascii representation
-size_t CR_Str::size(){
+size_t XStr::size(){
 	return ascii_str.size();
 }
 
 // if the size decreases, all old data is left in there
 // if size increases, new space is initialized with user supplied value
-void CR_Str::resize(size_t new_size, char value){
+void XStr::resize(size_t new_size, char value){
 	ascii_str.resize(new_size, value);
 }
 
-CR_Str CR_Str::substr(unsigned int position, size_t size){
+XStr XStr::substr(unsigned int position, size_t size){
 	return ascii_str.substr(position, size);
 }
 
-const char* CR_Str::c_str(){
+const char* XStr::c_str(){
 	return ascii_str.c_str();
 }
 
 // TODO: just make constructor with these params and fill by initializing
-void CR_Str::fill(const size_t s, const char& val){
+void XStr::fill(const size_t s, const char& val){
 	ascii_str = string(s, val); // create new string of length s
 }
 
-bool CR_Str::empty(){
+bool XStr::empty(){
 	return (this->size() == 0);
 }
 
-int CR_Str::hamming_distance(CR_Str string2){
+int XStr::hamming_distance(XStr string2){
 	if(this->size() != string2.size()){
 		cout << "hamming_distance(): strings are not equal lengths." << endl;
 
@@ -411,7 +411,7 @@ int CR_Str::hamming_distance(CR_Str string2){
 	return distance;
 }
 
-int CR_Str::rank_message_using_common_chars(){
+int XStr::rank_message_using_common_chars(){
 	int total = 0;
 
 	for(int i = 0; i < ascii_str.size(); i++){
@@ -433,7 +433,7 @@ int CR_Str::rank_message_using_common_chars(){
 	return total;
 }
 
-void CR_Str::increment(int step /* = 1 */){
+void XStr::increment(int step /* = 1 */){
 	uint8_t current_byte = 0;
 	uint8_t carry_byte = 0;
 	unsigned int current_idx = ascii_str.size() - 1;
@@ -477,14 +477,14 @@ void CR_Str::increment(int step /* = 1 */){
 
 }
 
-void CR_Str::decrement(int step /* = -1 */){
+void XStr::decrement(int step /* = -1 */){
 	increment(step);
 }
 
 // TODO: make sure this won't mess up other code:
 // e.g. if we expect to get a string that is sizeof(longer)
-CR_Str CR_Str::XOR(CR_Str xor_str){
-	CR_Str longer, shorter;
+XStr XStr::XOR(XStr xor_str){
+	XStr longer, shorter;
 
 	if(this->size() > xor_str.size()){
 		longer = *this;
@@ -504,8 +504,8 @@ CR_Str CR_Str::XOR(CR_Str xor_str){
 	return shorter;
 }
 
-CR_Str CR_Str::embed_string(CR_Str substring, int position, int bytes){
-	CR_Str new_string = this->ascii_str;
+XStr XStr::embed_string(XStr substring, int position, int bytes){
+	XStr new_string = this->ascii_str;
 
 	int i = position;
 	int j = 0;
@@ -522,8 +522,8 @@ CR_Str CR_Str::embed_string(CR_Str substring, int position, int bytes){
 
 // return string in little endian order
 // in other words: bit-flip the string!
-CR_Str CR_Str::little_endian(){
-	CR_Str litend;
+XStr XStr::little_endian(){
+	XStr litend;
 
 	for(int i = this->size() - 1; i >= 0; i--){
 		litend += this->ascii_str[i];
@@ -532,7 +532,7 @@ CR_Str CR_Str::little_endian(){
 	return litend;
 }
 
-int CR_Str::get_num_blocks(int block_size){
+int XStr::get_num_blocks(int block_size){
 	if(block_size < 1){
 		cout << "get_num_blocks(): block size is < 0." << endl;
 
@@ -543,24 +543,24 @@ int CR_Str::get_num_blocks(int block_size){
 }
 
 // block_num starts from 0
-CR_Str CR_Str::get_single_block(int block_num, int block_size){
+XStr XStr::get_single_block(int block_num, int block_size){
 	if(block_num < 0){
 		cout << "get_single_block(): block number is < 0." << endl;
 
-		return CR_Str();
+		return XStr();
 	}
 
 	return this->substr(block_num * block_size, block_size);
 }
 
 // block_num starts from 0
-CR_Str CR_Str::embed_single_block(CR_Str str, int block_idx, int block_size){
+XStr XStr::embed_single_block(XStr str, int block_idx, int block_size){
 	int start_pos = block_idx * block_size;
 	
 	if(block_idx < 0){
 		cout << "embed_single_block(): block number is < 0." << endl;
 
-		return CR_Str();
+		return XStr();
 	}
 	
 	if(this->size() < (start_pos + block_size)){
@@ -576,21 +576,21 @@ CR_Str CR_Str::embed_single_block(CR_Str str, int block_idx, int block_size){
 }
 
 // block_num starts from 0
-CR_Str CR_Str::get_multiple_block(int start_block_num, int end_block_num, int block_size){
+XStr XStr::get_multiple_block(int start_block_num, int end_block_num, int block_size){
 	if(start_block_num < 0){
 		cout << "get_multiple_block(): starting block number is < 0." << endl;
 
-		return CR_Str();
+		return XStr();
 	}
 	else if(end_block_num < 0){
 		cout << "get_multiple_block(): ending block number is < 0." << endl;
 
-		return CR_Str();
+		return XStr();
 	}
 	else if(end_block_num < start_block_num){
 		cout << "get_multiple_block(): ending block is before starting block." << endl;
 
-		return CR_Str();
+		return XStr();
 	}
 
 	int range_size = (end_block_num - start_block_num + 1) * block_size;
@@ -601,14 +601,14 @@ CR_Str CR_Str::get_multiple_block(int start_block_num, int end_block_num, int bl
 //
 // TODO: untested as of yet
 //
-CR_Str CR_Str::embed_multiple_block(CR_Str str, int block_idx, int num_blocks, int block_size){
+XStr XStr::embed_multiple_block(XStr str, int block_idx, int num_blocks, int block_size){
 	int start_pos = block_idx * block_size;
 	int block_length = (block_size * num_blocks);
 
 	if(block_idx < 0){
 		cout << "embed_multiple_block(): block number is < 0." << endl;
 
-		return CR_Str();
+		return XStr();
 	}
 
 	if(this->size() < (start_pos + block_length)){
@@ -625,9 +625,9 @@ CR_Str CR_Str::embed_multiple_block(CR_Str str, int block_idx, int num_blocks, i
 
 // add_padding will add padding characters until the string is divisible by block_size
 // if the original string has size less than block_size, then we pad up to 1 block_size
-CR_Str CR_Str::add_padding(PaddingType type, int desired_block_size){
-	CR_Str padded_string = CR_Str();
-	CR_Str prior_blocks = CR_Str();
+XStr XStr::add_padding(PaddingType type, int desired_block_size){
+	XStr padded_string = XStr();
+	XStr prior_blocks = XStr();
 
 	// initial checks
 	if(this->size() < 1){
@@ -660,24 +660,24 @@ CR_Str CR_Str::add_padding(PaddingType type, int desired_block_size){
 	}
 	else{
 		padded_string = *this;
-		prior_blocks = CR_Str("");
+		prior_blocks = XStr("");
 	}
 
 	// given user-specified padding type, find value of pad bytes
 	int pad_value = 0;
 
 	switch(type){
-		case CR_Str::PKCS7_PADDING:
+		case XStr::PKCS7_PADDING:
 			pad_value = desired_block_size - padded_string.size();
 
 			break;
 
-		case CR_Str::ZERO_PADDING:
+		case XStr::ZERO_PADDING:
 			pad_value = 0;
 
 			break;
 
-		case CR_Str::UNKNOWN_PADDING:
+		case XStr::UNKNOWN_PADDING:
 			pad_value = desired_block_size - padded_string.size(); // assume PKCS7 padding for unknown
 			break;
 
@@ -699,8 +699,8 @@ CR_Str CR_Str::add_padding(PaddingType type, int desired_block_size){
 	return ( prior_blocks + padded_string );
 }
 
-CR_Str CR_Str::remove_padding(PaddingType type){
-	CR_Str padded_string = this->ascii_str;
+XStr XStr::remove_padding(PaddingType type){
+	XStr padded_string = this->ascii_str;
 
 	if(padded_string.size() < 2){
 		cout << "remove_padding(): input padded_string size is less than 2. " <<
@@ -713,28 +713,28 @@ CR_Str CR_Str::remove_padding(PaddingType type){
 	int pad_value = 0;
 
 	// check if the padding type is unknown
-	if(type == CR_Str::UNKNOWN_PADDING){
-		if(padded_string.find_padding_type() == CR_Str::PKCS7_PADDING){
-			type = CR_Str::PKCS7_PADDING;
+	if(type == XStr::UNKNOWN_PADDING){
+		if(padded_string.find_padding_type() == XStr::PKCS7_PADDING){
+			type = XStr::PKCS7_PADDING;
 		}
-		else if(padded_string.find_padding_type() == CR_Str::ZERO_PADDING){
-			type = CR_Str::ZERO_PADDING;
+		else if(padded_string.find_padding_type() == XStr::ZERO_PADDING){
+			type = XStr::ZERO_PADDING;
 		}
 		else{
-			type = CR_Str::UNKNOWN_PADDING;
+			type = XStr::UNKNOWN_PADDING;
 		}
 	}
 
 	// given user-specified padding type, find value of pad bytes
 	switch(type){
-		case CR_Str::PKCS7_PADDING:
+		case XStr::PKCS7_PADDING:
 			// if there is padding, the last character must represent
 			// the value of the padding characters used
 			pad_value = padded_string[padded_string.size() - 1];
 
 			break;
 
-		case CR_Str::ZERO_PADDING:
+		case XStr::ZERO_PADDING:
 			pad_value = 0;
 
 			break;
@@ -766,29 +766,29 @@ CR_Str CR_Str::remove_padding(PaddingType type){
 	// next_char) to have values specified by pad_value (depends on padding type)
 
 	if(next_char == pad_value){
-		CR_Str stripped_padded_string = padded_string.substr(0, padded_string.size() - padding_size);
+		XStr stripped_padded_string = padded_string.substr(0, padded_string.size() - padding_size);
 
 		return stripped_padded_string;
 	}
 	// else there is no padding
 	else{
-		return CR_Str( padded_string );
+		return XStr( padded_string );
 	}
 }
 
-CR_Str::PaddingType CR_Str::find_padding_type(){
+XStr::PaddingType XStr::find_padding_type(){
 	string padded_string = this->ascii_str;
 
 	if(padded_string.size() < 2){
 		cout << "find_Attr::Padding_Type(): input padded_string size is less than 2. " <<
 				"Must have at least 2 characters in order for there to be padding" << endl;
 
-		return CR_Str::NO_PADDING;
+		return XStr::NO_PADDING;
 	}
 
 	// if the last digit is 0, then that implies there must be 0 padding
 	if(padded_string[padded_string.size() - 1] == 0){
-		return CR_Str::ZERO_PADDING;
+		return XStr::ZERO_PADDING;
 	}
 
 	// set pkcs7 pad value to the last character in the string,
@@ -814,11 +814,11 @@ CR_Str::PaddingType CR_Str::find_padding_type(){
 	// next_char) to have values specified by pad_value (depends on padding type)
 
 	if(padding_size == pkcs7_pad_value){
-		return CR_Str::PKCS7_PADDING;
+		return XStr::PKCS7_PADDING;
 	}
 	// else the padding is unknown
 	else{
-		return CR_Str::UNKNOWN_PADDING;
+		return XStr::UNKNOWN_PADDING;
 	}
 
 }
@@ -831,7 +831,7 @@ CR_Str::PaddingType CR_Str::find_padding_type(){
 // TODO: when encoding conversions are complete, can just get exact
 // chunks from the - Jesus christ, I hope you understand this etizolam-induced comment
 
-string CR_Str::pretty(EncodeType encoding /* = BASE64_ENCODED */){
+string XStr::pretty(EncodeType encoding /* = BASE64_ENCODED */){
 	string pretty = string();
 	string holder = string();
 
@@ -874,7 +874,7 @@ string CR_Str::pretty(EncodeType encoding /* = BASE64_ENCODED */){
 
 
 
-decoded_message solve_single_byte_xor(CR_Str encoded){
+decoded_message solve_single_byte_xor(XStr encoded){
 	// TODO: replace this with init function
 	decoded_message message;
 	//decoded_message message = {
@@ -884,7 +884,7 @@ decoded_message solve_single_byte_xor(CR_Str encoded){
 	//		.score = 0
 	//};
 
-	CR_Str possible_message = string();
+	XStr possible_message = string();
 	possible_message.resize(encoded.size(), 0);
 
 	int max_score = 0;
@@ -894,7 +894,7 @@ decoded_message solve_single_byte_xor(CR_Str encoded){
 		string key_string = string();
 		key_string.resize(encoded.size(), key);
 
-		possible_message = CR_Str( encoded ^ key_string );
+		possible_message = XStr( encoded ^ key_string );
 
 		int score = possible_message.rank_message_using_common_chars();
 
@@ -921,7 +921,7 @@ struct myClass {
 	bool operator() (std::pair<int, int> i, std::pair<int, int> j) { return (i.second < j.second); }
 } hamming_distance_sort_struct;
 
-decoded_message solve_repeating_key_xor(CR_Str encoded){
+decoded_message solve_repeating_key_xor(XStr encoded){
 	decoded_message message;
 
 	vector< std::pair<int, int> > key_distances;
@@ -933,8 +933,8 @@ decoded_message solve_repeating_key_xor(CR_Str encoded){
 
 		// sum together distances for all successive pairs
 		for(int keypair = 0; keypair < (encoded.size() / keysize) - 1; keypair++){
-			CR_Str first_keysize =  encoded.substr((keypair * keysize)           , keysize);
-			CR_Str second_keysize = encoded.substr((keypair * keysize) + keysize , keysize);
+			XStr first_keysize =  encoded.substr((keypair * keysize)           , keysize);
+			XStr second_keysize = encoded.substr((keypair * keysize) + keysize , keysize);
 
 			dist += first_keysize.hamming_distance( second_keysize );
 		}
@@ -975,7 +975,7 @@ decoded_message solve_repeating_key_xor(CR_Str encoded){
 	    }
 
 	    // decode message according to key and score it based on english characters
-	    CR_Str decoded_message = encoded ^ multi_byte_key;
+	    XStr decoded_message = encoded ^ multi_byte_key;
 	    int key_score = decoded_message.rank_message_using_common_chars( );
 
 	    // check if we've found maximum
