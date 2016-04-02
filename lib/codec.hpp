@@ -67,7 +67,7 @@ enum BlockSize {
 };
 
 
-class CR_str {
+class CR_Str {
 
 public:
 	enum PaddingType	{
@@ -80,18 +80,18 @@ public:
 	enum EncodeType { ASCII_ENCODED, BASE64_ENCODED, HEX_ENCODED };
 
 	/* Constructors / Destructor */
-	CR_str();
-    CR_str(const CR_str&); // copy constructor for CR_string
-    CR_str(const char*); // copy constructor for C-style char*
-	CR_str(uint64_t); // for when a string is to be extracted from string binary
-	CR_str(string); // assume lone string is in ascii
-	CR_str(string, EncodeType); // user specifies type
-	virtual ~CR_str();
+	CR_Str();
+    CR_Str(const CR_Str&); // copy constructor for CR_string
+    CR_Str(const char*); // copy constructor for C-style char*
+	CR_Str(uint64_t); // for when a string is to be extracted from string binary
+	CR_Str(string); // assume lone string is in ascii
+	CR_Str(string, EncodeType); // user specifies type
+	virtual ~CR_Str();
 
 	// std::string functions that must be implemented
 	size_t size();
 	void resize(size_t new_size, char value);
-	CR_str substr(unsigned int position, size_t size);
+	CR_Str substr(unsigned int position, size_t size);
 	const char* c_str();
 	void fill(const size_t s, const char& val);
 
@@ -116,13 +116,13 @@ public:
 	string int_to_ascii(uint64_t input);
 
 	/* mathematical operations for string */
-	int hamming_distance(CR_str string2);
+	int hamming_distance(CR_Str string2);
 	int rank_message_using_common_chars();
 	void increment(int step = 1);
 	void decrement(int step = -1);
-	CR_str XOR(CR_str xor_str);
-	CR_str embed_string(CR_str substring, int position, int bytes);
-	CR_str little_endian();
+	CR_Str XOR(CR_Str xor_str);
+	CR_Str embed_string(CR_Str substring, int position, int bytes);
+	CR_Str little_endian();
 
 	/* block-wise operations */
 		// block_num starts at 0
@@ -130,14 +130,14 @@ public:
 	// TODO: since blocksize is now set internally, remove all these block size parameters
 
 	int get_num_blocks(int block_size);
-	CR_str get_single_block(int block_num, int block_size);
-	CR_str embed_single_block(CR_str str, int block_num, int block_size);
-	CR_str get_multiple_block(int start_block_num, int end_block_num, int block_size);
-	CR_str embed_multiple_block(CR_str str, int block_idx, int num_blocks, int block_size);
+	CR_Str get_single_block(int block_num, int block_size);
+	CR_Str embed_single_block(CR_Str str, int block_num, int block_size);
+	CR_Str get_multiple_block(int start_block_num, int end_block_num, int block_size);
+	CR_Str embed_multiple_block(CR_Str str, int block_idx, int num_blocks, int block_size);
 
 	/* functions related to padding */
-	CR_str add_padding(PaddingType type, int num_bytes);
-	CR_str remove_padding(PaddingType type);
+	CR_Str add_padding(PaddingType type, int num_bytes);
+	CR_Str remove_padding(PaddingType type);
 	PaddingType find_padding_type();
 
 	string pretty(EncodeType encoding = BASE64_ENCODED);
@@ -146,34 +146,34 @@ public:
 
     char& operator[](int i);
     // Addition operator (+) for CR_string
-    CR_str operator+(const CR_str& x);
+    CR_Str operator+(const CR_Str& x);
     // Addition operator (+) for string
-    CR_str operator+(const string& x);
+    CR_Str operator+(const string& x);
     // Addition operator (+) for char or int
-    CR_str operator+(const char& x);
+    CR_Str operator+(const char& x);
     // XOR operator - forward to ::XOR function
-    CR_str operator^(const CR_str& x);
-    CR_str operator+=(const CR_str& x);
-    CR_str operator+=(const string& x);
-    CR_str operator+=(const char& x);
+    CR_Str operator^(const CR_Str& x);
+    CR_Str operator+=(const CR_Str& x);
+    CR_Str operator+=(const string& x);
+    CR_Str operator+=(const char& x);
 
     // ostream << operator
-    friend ostream& operator<<(ostream& os, const CR_str& str);
+    friend ostream& operator<<(ostream& os, const CR_Str& str);
     
     /* Binary comparison operators - should be friends since they need access
      * to ascii_string */
-    friend bool operator==(const CR_str& lhs, const CR_str& rhs);
-    friend bool operator!=(const CR_str& lhs, const CR_str& rhs);
-    friend bool operator< (const CR_str& lhs, const CR_str& rhs);
-    friend bool operator> (const CR_str& lhs, const CR_str& rhs);
-    friend bool operator<=(const CR_str& lhs, const CR_str& rhs);
-    friend bool operator>=(const CR_str& lhs, const CR_str& rhs);
+    friend bool operator==(const CR_Str& lhs, const CR_Str& rhs);
+    friend bool operator!=(const CR_Str& lhs, const CR_Str& rhs);
+    friend bool operator< (const CR_Str& lhs, const CR_Str& rhs);
+    friend bool operator> (const CR_Str& lhs, const CR_Str& rhs);
+    friend bool operator<=(const CR_Str& lhs, const CR_Str& rhs);
+    friend bool operator>=(const CR_Str& lhs, const CR_Str& rhs);
 
     /* increment/decrement operators */
-    CR_str& operator++( );      // Prefix increment
-    CR_str operator++( int ); // Postfix increment
-    CR_str& operator--( );      // Prefix decrement
-    CR_str operator--( int ); // Postfix decrement
+    CR_Str& operator++( );      // Prefix increment
+    CR_Str operator++( int ); // Postfix increment
+    CR_Str& operator--( );      // Prefix decrement
+    CR_Str operator--( int ); // Postfix decrement
 
 
 private:
@@ -188,26 +188,26 @@ private:
 };
 
 /* Binary comparison operators - should be implemented as non-member functions */
-inline bool operator==(const CR_str& lhs, const CR_str& rhs){
+inline bool operator==(const CR_Str& lhs, const CR_Str& rhs){
 	return (lhs.ascii_str == rhs.ascii_str);
 }
-inline bool operator!=(const CR_str& lhs, const CR_str& rhs){
+inline bool operator!=(const CR_Str& lhs, const CR_Str& rhs){
 	return (lhs.ascii_str != rhs.ascii_str);
 }
-inline bool operator< (const CR_str& lhs, const CR_str& rhs){
+inline bool operator< (const CR_Str& lhs, const CR_Str& rhs){
 	return (lhs.ascii_str <  rhs.ascii_str);
 }
-inline bool operator> (const CR_str& lhs, const CR_str& rhs){
+inline bool operator> (const CR_Str& lhs, const CR_Str& rhs){
 	return (lhs.ascii_str >  rhs.ascii_str);
 }
-inline bool operator<=(const CR_str& lhs, const CR_str& rhs){
+inline bool operator<=(const CR_Str& lhs, const CR_Str& rhs){
 	return (lhs.ascii_str <= rhs.ascii_str);
 }
-inline bool operator>=(const CR_str& lhs, const CR_str& rhs){
+inline bool operator>=(const CR_Str& lhs, const CR_Str& rhs){
 	return (lhs.ascii_str >= rhs.ascii_str);
 }
 
-inline char& CR_str::operator[](int i)
+inline char& CR_Str::operator[](int i)
  {
      if( i >= ascii_str.size() )
      {
@@ -226,44 +226,44 @@ inline char& CR_str::operator[](int i)
  }
 
  // Addition operator (+) for CR_string
-inline  CR_str CR_str::operator+(const CR_str& x)
+inline  CR_Str CR_Str::operator+(const CR_Str& x)
  {
- 	return CR_str(this->ascii_str + x.ascii_str);
+ 	return CR_Str(this->ascii_str + x.ascii_str);
  }
 
  // Addition operator (+) for string
-inline CR_str CR_str::operator+(const string& x)
+inline CR_Str CR_Str::operator+(const string& x)
  {
- 	return CR_str(this->ascii_str + x);
+ 	return CR_Str(this->ascii_str + x);
  }
 
  // Addition operator (+) for char or int
-inline CR_str CR_str::operator+(const char& x)
+inline CR_Str CR_Str::operator+(const char& x)
  {
- 	return CR_str(this->ascii_str + x);
+ 	return CR_Str(this->ascii_str + x);
  }
 
  // XOR operator - forward to ::XOR function
-inline CR_str CR_str::operator^(const CR_str& x)
+inline CR_Str CR_Str::operator^(const CR_Str& x)
  {
  	return this->XOR(x);
  }
 
-inline CR_str CR_str::operator+=(const CR_str& x)
+inline CR_Str CR_Str::operator+=(const CR_Str& x)
 {
 	*this = *this + x;
 
 	return *this;
 }
 
-inline CR_str CR_str::operator+=(const string& x)
+inline CR_Str CR_Str::operator+=(const string& x)
 {
 	this->ascii_str = this->ascii_str + x;
 
 	return *this;
 }
 
-inline CR_str CR_str::operator+=(const char& x)
+inline CR_Str CR_Str::operator+=(const char& x)
 {
 	this->ascii_str += string(1, x);
 
@@ -271,31 +271,31 @@ inline CR_str CR_str::operator+=(const char& x)
 }
 
 // Define prefix increment operator.
-inline CR_str& CR_str::operator++(  )
+inline CR_Str& CR_Str::operator++(  )
 {
 	this->increment();
 	return *this;
 }
 
 // Define postfix increment operator.
-inline CR_str CR_str::operator++( int )
+inline CR_Str CR_Str::operator++( int )
 {
-   CR_str temp = *this;
+   CR_Str temp = *this;
    this->increment();
    return temp;
 }
 
 // Define prefix decrement operator.
-inline CR_str& CR_str::operator--(  )
+inline CR_Str& CR_Str::operator--(  )
 {
    this->decrement();
    return *this;
 }
 
 // Define postfix decrement operator.
-inline CR_str CR_str::operator--( int )
+inline CR_Str CR_Str::operator--( int )
 {
-   CR_str temp = *this;
+   CR_Str temp = *this;
    this->decrement();
    return temp;
 }
@@ -303,7 +303,7 @@ inline CR_str CR_str::operator--( int )
 
  // WATCH OUT FOR THIS, COUDL NEED
  // ostream << operator
-inline ostream& operator<<(ostream& os, const CR_str& str)
+inline ostream& operator<<(ostream& os, const CR_Str& str)
 	{
 		os << str.ascii_str;
 
@@ -315,14 +315,14 @@ inline ostream& operator<<(ostream& os, const CR_str& str)
 /* OTHER FUNCTIONS AND STRUCTURES */
 
 typedef struct {
-	CR_str decoded;
-	CR_str key;
+	CR_Str decoded;
+	CR_Str key;
 	bool key_found;
 	int score;
 } decoded_message;
 
-decoded_message solve_single_byte_xor(CR_str encoded);
-decoded_message solve_repeating_key_xor(CR_str encoded);
+decoded_message solve_single_byte_xor(CR_Str encoded);
+decoded_message solve_repeating_key_xor(CR_Str encoded);
 
 
 #endif

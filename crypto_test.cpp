@@ -65,7 +65,7 @@ int main(int argc, char* argv[])
 	{
 		string orig_test = "L77na/nrFsKvynd6HzOoG7GHTLXsTVu9qvY/2syLXzhPweyyMTJULu/6/kXX0KSvoOLSFQ";
 		string test = orig_test;
-		CR_str ascii;
+		CR_Str ascii;
 
 		bool failed = false;
 
@@ -74,7 +74,7 @@ int main(int argc, char* argv[])
 			test = orig_test;
 
 			for(int i = 0; i < 3; i++){
-				ascii = CR_str(test, CR_str::BASE64_ENCODED);
+				ascii = CR_Str(test, CR_Str::BASE64_ENCODED);
 
 //				cout << ascii.as_base64() << endl;
 				if(orig_test != ascii.as_base64()){
@@ -106,12 +106,12 @@ int main(int argc, char* argv[])
 	/* Exercise 9 */
 	tick();
 	{
-		static CR_str output = "YELLOW SUBMARINE\x04\x04\x04\x04";
+		static CR_Str output = "YELLOW SUBMARINE\x04\x04\x04\x04";
 
-		CR_str message = CR_str("YELLOW SUBMARINE");
+		CR_Str message = CR_Str("YELLOW SUBMARINE");
 
 		crypto_exercise_test(9,
-					output == message.add_padding(CR_str::PKCS7_PADDING, 20)
+					output == message.add_padding(CR_Str::PKCS7_PADDING, 20)
 				);
 
 	};
@@ -120,7 +120,7 @@ int main(int argc, char* argv[])
 	/* Exercise 10 */
 	tick();
 	{
-		static CR_str output =
+		static CR_Str output =
 			"I'm back and I'm ringin' the bell \nA rockin' on the mike while the fly girls yell \nIn ecstasy in the back of me \nWell that's my DJ Deshay cuttin' all them Z's \nHittin' hard and the girlies goin' crazy \nVanilla's on the mike, man I'm not lazy. \n\nI'm lettin' my drug kick in \nIt controls my mouth and I begin \nTo just let it flow, let my concepts go \nMy posse's to the side yellin', Go Vanilla Go! \n\nSmooth 'cause that's the way I will be \nAnd if you don't give a damn, then \nWhy you starin' at me \nSo get off 'cause I control the stage \nThere's no dissin' allowed \nI'm in my own phase \nThe girlies sa y they love me and that is ok \n"
 			"And I can dance better than any kid n' play \n\nStage 2 -- Yea the one ya' wanna listen to \nIt's off my head so let the beat play through \nSo I can funk it up and make it sound good \n1-2-3 Yo -- Knock on some wood \nFor good luck, I like my rhymes atrocious \nSupercalafragilisticexpialidocious \nI'm an effect and that you can bet \nI can take a fly girl and make her wet. \n\nI'm like Samson -- Samson to Delilah \nThere's no denyin', You can try to hang \nBut you'll keep tryin' to get my style \nOver and over, practice makes perfect \nBut not if you're a loafer. \n\nYou'll get nowhere, no place, no time, no girls \nSoon -- Oh my God, homebody, you probably eat \n"
 			"Spaghetti with a spoon! Come on and say it! \n\nVIP. Vanilla Ice yep, yep, I'm comin' hard like a rhino \nIntoxicating so you stagger like a wino \nSo punks stop trying and girl stop cryin' \nVanilla Ice is sellin' and you people are buyin' \n'Cause why the freaks are jockin' like Crazy Glue \nMovin' and groovin' trying to sing along \nAll through the ghetto groovin' this here song \nNow you're amazed by the VIP posse. \n\nSteppin' so hard like a German Nazi \nStartled by the bases hittin' ground \nThere's no trippin' on mine, I'm just gettin' down \nSparkamatic, I'm hangin' tight like a fanatic \nYou trapped me once and I thought that \nYou might have it \nSo step down and lend me your ear \n"
@@ -147,11 +147,11 @@ int main(int argc, char* argv[])
 			cout << "Unable to open file" << endl;
 		}
 
-		CR_str ascii_encoded = CR_str( base64_encoded, CR_str::BASE64_ENCODED );
-		CR_str message = BlockCipher::decrypt(EncryptType::CBC_ENCRYPT, ascii_encoded, key, IV);
+		CR_Str ascii_encoded = CR_Str( base64_encoded, CR_Str::BASE64_ENCODED );
+		CR_Str message = BlockCipher::decrypt(EncryptType::CBC_ENCRYPT, ascii_encoded, key, IV);
 
 		crypto_exercise_test(10,
-					output == message.remove_padding(CR_str::UNKNOWN_PADDING)
+					output == message.remove_padding(CR_Str::UNKNOWN_PADDING)
 				);
 
 	};
@@ -180,7 +180,7 @@ int main(int argc, char* argv[])
 	tick();
 	{
 
-		static CR_str output =
+		static CR_Str output =
 				"Rollin' in my 5.0\n"
 				"With my rag-top down so my hair can blow\n"
 				"The girlies on standby waving just to say hi\n"
@@ -188,7 +188,7 @@ int main(int argc, char* argv[])
 
 
 		crypto_exercise_test(12,
-					output == byte_at_a_time_ECB_decrypt_simple().remove_padding(CR_str::UNKNOWN_PADDING)
+					output == byte_at_a_time_ECB_decrypt_simple().remove_padding(CR_Str::UNKNOWN_PADDING)
 				);
 
 	};
@@ -198,8 +198,8 @@ int main(int argc, char* argv[])
 	// TODO: finish this exercise
 	tick();
 	{
-		static CR_str output = "email=blake@google.com*role*admin&role=user&uid=10";
-		CR_str hacked_cookie = ecb_cut_and_paste();
+		static CR_Str output = "email=blake@google.com*role*admin&role=user&uid=10";
+		CR_Str hacked_cookie = ecb_cut_and_paste();
 
 		crypto_exercise_test(13,
 					output == hacked_cookie.as_ascii()
@@ -211,14 +211,14 @@ int main(int argc, char* argv[])
 	/* Exercise 14 */
 	tick();
 	{
-		static CR_str output =
+		static CR_Str output =
 				"Rollin' in my 5.0\n"
 				"With my rag-top down so my hair can blow\n"
 				"The girlies on standby waving just to say hi\n"
 				"Did you stop? No, I just drove by\n";
 
 		crypto_exercise_test(14,
-					output == byte_at_a_time_ECB_decrypt_hard().remove_padding(CR_str::UNKNOWN_PADDING)
+					output == byte_at_a_time_ECB_decrypt_hard().remove_padding(CR_Str::UNKNOWN_PADDING)
 				);
 
 	};
@@ -227,14 +227,14 @@ int main(int argc, char* argv[])
 	/* Exercise 15 */
 	tick();
 	{
-		CR_str teststr1("ICE ICE BABY\x04\x04\x04\x04");
-		CR_str teststr2("ICE ICE BABY\x05\x05\x05\x05");
-		CR_str teststr3("ICE ICE BABY\x01\x02\x03\x04");
+		CR_Str teststr1("ICE ICE BABY\x04\x04\x04\x04");
+		CR_Str teststr2("ICE ICE BABY\x05\x05\x05\x05");
+		CR_Str teststr3("ICE ICE BABY\x01\x02\x03\x04");
 
 		crypto_exercise_test(15,
-					teststr1.find_padding_type() == CR_str::PKCS7_PADDING and
-					teststr2.find_padding_type() == CR_str::UNKNOWN_PADDING and
-					teststr3.find_padding_type() == CR_str::UNKNOWN_PADDING
+					teststr1.find_padding_type() == CR_Str::PKCS7_PADDING and
+					teststr2.find_padding_type() == CR_Str::UNKNOWN_PADDING and
+					teststr3.find_padding_type() == CR_Str::UNKNOWN_PADDING
 				);
 
 	};
@@ -246,28 +246,28 @@ int main(int argc, char* argv[])
 	tick();
 	{
 		// generate unknown key only once
-		static CR_str random_key = generate_random_AES_key(AES::BLOCKSIZE);
+		static CR_Str random_key = generate_random_AES_key(AES::BLOCKSIZE);
 		// generate unknown IV only once
-		static CR_str rand_IV = generate_random_AES_IV(AES::BLOCKSIZE);
+		static CR_Str rand_IV = generate_random_AES_IV(AES::BLOCKSIZE);
 		// create unknown string once
-		static CR_str unknown_string = CR_str("Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkg"
+		static CR_Str unknown_string = CR_Str("Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkg"
 													"aGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBq"
 													"dXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUg"
-													"YnkK", CR_str::BASE64_ENCODED);
+													"YnkK", CR_Str::BASE64_ENCODED);
 
-		static CR_str prefix = "comment1=cooking%20MCs;userdata=";
-		static CR_str suffix = ";comment2=%20like%20a%20pound%20of%20bacon";
+		static CR_Str prefix = "comment1=cooking%20MCs;userdata=";
+		static CR_Str suffix = ";comment2=%20like%20a%20pound%20of%20bacon";
 		static string output_token = ";admin=true;";
 
-		CR_str message = "XXXXXXXXXXXXXXXX:admin<true:XXXX";
-		CR_str encrypted = BlockCipher::encrypt(EncryptType::CBC_ENCRYPT, prefix + message + suffix, random_key, rand_IV);
+		CR_Str message = "XXXXXXXXXXXXXXXX:admin<true:XXXX";
+		CR_Str encrypted = BlockCipher::encrypt(EncryptType::CBC_ENCRYPT, prefix + message + suffix, random_key, rand_IV);
 
 		encrypted[32] ^= 1;
 		encrypted[38] ^= 1;
 		encrypted[43] ^= 1;
 
-		CR_str decrypted = BlockCipher::decrypt(EncryptType::CBC_ENCRYPT, encrypted, random_key, rand_IV);
-		decrypted = decrypted.remove_padding(CR_str::UNKNOWN_PADDING);
+		CR_Str decrypted = BlockCipher::decrypt(EncryptType::CBC_ENCRYPT, encrypted, random_key, rand_IV);
+		decrypted = decrypted.remove_padding(CR_Str::UNKNOWN_PADDING);
 
 		crypto_exercise_test(16,
 					decrypted.as_ascii().find(output_token) != std::string::npos
@@ -283,18 +283,18 @@ int main(int argc, char* argv[])
 	/* Exercise 17 */
 	tick();
 	{
-		CR_str encrypted = CR_str("L77na/nrFsKvynd6HzOoG7GHTLXsTVu9qvY/2syLXzhPweyyMTJULu/6/kXX0KSvoOLSFQ",
-								CR_str::BASE64_ENCODED);
+		CR_Str encrypted = CR_Str("L77na/nrFsKvynd6HzOoG7GHTLXsTVu9qvY/2syLXzhPweyyMTJULu/6/kXX0KSvoOLSFQ",
+								CR_Str::BASE64_ENCODED);
 
-		CR_str key = "YELLOW SUBMARINE";
+		CR_Str key = "YELLOW SUBMARINE";
 
-		CR_str nonce;
+		CR_Str nonce;
 		nonce.resize(AES::CTR_NONCE_SIZE, 0); // size 8 - nonce is all zeroes!
 
-		CR_str decrypted = BlockCipher::decrypt(EncryptType::CTR_ENCRYPT, encrypted, key, nonce);
+		CR_Str decrypted = BlockCipher::decrypt(EncryptType::CTR_ENCRYPT, encrypted, key, nonce);
 
-		CR_str encrypted2 = BlockCipher::encrypt(EncryptType::CTR_ENCRYPT, decrypted, key, nonce);
-		CR_str decrypted2 = BlockCipher::decrypt(EncryptType::CTR_ENCRYPT, encrypted2, key, nonce);
+		CR_Str encrypted2 = BlockCipher::encrypt(EncryptType::CTR_ENCRYPT, decrypted, key, nonce);
+		CR_Str decrypted2 = BlockCipher::decrypt(EncryptType::CTR_ENCRYPT, encrypted2, key, nonce);
 
 		crypto_exercise_test(17, decrypted == decrypted2);
 	}
