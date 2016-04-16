@@ -52,17 +52,24 @@ void crypto_exercise_test(int num, bool test){
 
 //  TODO: fault_check(key.size() != AES::BLOCKSIZE, message or error enum)
 
+//  TODO:
 // IDEA: after making error reporting class, if multiple identical errors
 // keep coming through, then just print 1 so it doesn't clog the terminal output
 
+//  TODO:
 // IDEA: make red and yellow alarms for debug messages.
 // YELLOW = "padding up to ..." and RED = critical failure (index overrun)
+
+//  TODO:
+// IDEA: make command line arguments for specific exercise tests.
+// e.g. ./crypto_test 3 8 12 18
 
 int main(int argc, char* argv[])
 {
 	/* Set 1 */
 	// notation conversion testing
 	cout << ">> " << "Now performing codec test " << endl;
+	tick();
 	{
 		string orig_test = "L77na/nrFsKvynd6HzOoG7GHTLXsTVu9qvY/2syLXzhPweyyMTJULu/6/kXX0KSvoOLSFQ";
 		string test = orig_test;
@@ -100,7 +107,7 @@ int main(int argc, char* argv[])
 //		cout << unknown_string.pretty(CR_str::ASCII_ENCODED) << endl;
 
 	}
-
+	tock();
 
 	/* Set 2 */
 	cout << ">> Now testing: Set 2" << endl;

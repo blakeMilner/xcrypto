@@ -56,6 +56,7 @@ $(LIB): $(LIB_OBJS)
 
 
 # Other Targets
+.PHONY: 
 clean:
 	-$(RM) $(OBJS) $(LIB_OBJS) $(PROJECT) $(LIB)
 	-@echo ' '
