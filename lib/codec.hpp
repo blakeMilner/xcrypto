@@ -2,9 +2,10 @@
 #define CODEC_HPP
 
 #include <iostream>
+#include <sstream>
+#include <string>
 #include <cmath>
 #include <algorithm>
-#include <string>
 #include <locale>
 #include <limits>
 #include <vector>
@@ -67,7 +68,9 @@ enum BlockSize {
 };
 
 
-class XStr {
+// TODO: make end() and begin() methods
+
+class Xstr {
 
 public:
 	enum PaddingType	{
@@ -80,18 +83,18 @@ public:
 	enum EncodeType { ASCII_ENCODED, BASE64_ENCODED, HEX_ENCODED };
 
 	/* Constructors / Destructor */
-	XStr();
-    XStr(const XStr&); // copy constructor for CR_string
-    XStr(const char*); // copy constructor for C-style char*
-	XStr(uint64_t); // for when a string is to be extracted from string binary
-	XStr(string); // assume lone string is in ascii
-	XStr(string, EncodeType); // user specifies type
-	virtual ~XStr();
+	Xstr();
+    Xstr(const Xstr&); // copy constructor for CR_string
+    Xstr(const char*); // copy constructor for C-style char*
+	Xstr(uint64_t); // for when a string is to be extracted from string binary
+	Xstr(string); // assume lone string is in ascii
+	Xstr(string, EncodeType); // user specifies type
+	virtual ~Xstr();
 
 	// std::string functions that must be implemented
 	size_t size();
 	void resize(size_t new_size, char value);
-	XStr substr(unsigned int position, size_t size);
+	Xstr substr(unsigned int position, size_t size);
 	const char* c_str();
 	void fill(const size_t s, const char& val);
 
@@ -103,6 +106,7 @@ public:
 	string as_base64();
 	string as_encoded(EncodeType format); // general case where the user inputs desired encoding format
 	uint64_t as_int();
+	string as_int_string();
 
 	/* static helper functions that convert between different encoding types */
 	uint32_t hex_char_to_int(char hex);
@@ -116,13 +120,13 @@ public:
 	string int_to_ascii(uint64_t input);
 
 	/* mathematical operations for string */
-	int hamming_distance(XStr string2);
+	int hamming_distance(Xstr string2);
 	int rank_message_using_common_chars();
 	void increment(int step = 1);
 	void decrement(int step = -1);
-	XStr XOR(XStr xor_str);
-	XStr embed_string(XStr substring, int position, int bytes);
-	XStr little_endian();
+	Xstr XOR(Xstr xor_str);
+	Xstr embed_string(Xstr substring, int position, int bytes);
+	Xstr little_endian();
 
 	/* block-wise operations */
 		// block_num starts at 0
@@ -130,14 +134,14 @@ public:
 	// TODO: since blocksize is now set internally, remove all these block size parameters
 
 	int get_num_blocks();
-	XStr get_single_block(int block_num);
-	XStr embed_single_block(XStr str, int block_num);
-	XStr get_multiple_block(int start_block_num, int end_block_num);
-	XStr embed_multiple_block(XStr str, int block_idx, int num_blocks);
+	Xstr get_single_block(int block_num);
+	Xstr embed_single_block(Xstr str, int block_num);
+	Xstr get_multiple_block(int start_block_num, int end_block_num);
+	Xstr embed_multiple_block(Xstr str, int block_idx, int num_blocks);
 
 	/* functions related to padding */
-	XStr add_padding(PaddingType type, int num_bytes);
-	XStr remove_padding(PaddingType type);
+	Xstr add_padding(PaddingType type, int num_bytes = -1);
+	Xstr remove_padding(PaddingType type);
 	PaddingType find_padding_type();
 
 	string pretty(EncodeType encoding = BASE64_ENCODED);
@@ -146,34 +150,34 @@ public:
 
     char& operator[](int i);
     // Addition operator (+) for CR_string
-    XStr operator+(const XStr& x);
+    Xstr operator+(const Xstr& x);
     // Addition operator (+) for string
-    XStr operator+(const string& x);
+    Xstr operator+(const string& x);
     // Addition operator (+) for char or int
-    XStr operator+(const char& x);
+    Xstr operator+(const char& x);
     // XOR operator - forward to ::XOR function
-    XStr operator^(const XStr& x);
-    XStr operator+=(const XStr& x);
-    XStr operator+=(const string& x);
-    XStr operator+=(const char& x);
+    Xstr operator^(const Xstr& x);
+    Xstr operator+=(const Xstr& x);
+    Xstr operator+=(const string& x);
+    Xstr operator+=(const char& x);
 
     // ostream << operator
-    friend ostream& operator<<(ostream& os, const XStr& str);
+    friend ostream& operator<<(ostream& os, const Xstr& str);
     
     /* Binary comparison operators - should be friends since they need access
      * to ascii_string */
-    friend bool operator==(const XStr& lhs, const XStr& rhs);
-    friend bool operator!=(const XStr& lhs, const XStr& rhs);
-    friend bool operator< (const XStr& lhs, const XStr& rhs);
-    friend bool operator> (const XStr& lhs, const XStr& rhs);
-    friend bool operator<=(const XStr& lhs, const XStr& rhs);
-    friend bool operator>=(const XStr& lhs, const XStr& rhs);
+    friend bool operator==(const Xstr& lhs, const Xstr& rhs);
+    friend bool operator!=(const Xstr& lhs, const Xstr& rhs);
+    friend bool operator< (const Xstr& lhs, const Xstr& rhs);
+    friend bool operator> (const Xstr& lhs, const Xstr& rhs);
+    friend bool operator<=(const Xstr& lhs, const Xstr& rhs);
+    friend bool operator>=(const Xstr& lhs, const Xstr& rhs);
 
     /* increment/decrement operators */
-    XStr& operator++( );      // Prefix increment
-    XStr operator++( int ); // Postfix increment
-    XStr& operator--( );      // Prefix decrement
-    XStr operator--( int ); // Postfix decrement
+    Xstr& operator++( );      // Prefix increment
+    Xstr operator++( int ); // Postfix increment
+    Xstr& operator--( );      // Prefix decrement
+    Xstr operator--( int ); // Postfix decrement
 
 
 private:
@@ -188,26 +192,26 @@ private:
 };
 
 /* Binary comparison operators - should be implemented as non-member functions */
-inline bool operator==(const XStr& lhs, const XStr& rhs){
+inline bool operator==(const Xstr& lhs, const Xstr& rhs){
 	return (lhs.ascii_str == rhs.ascii_str);
 }
-inline bool operator!=(const XStr& lhs, const XStr& rhs){
+inline bool operator!=(const Xstr& lhs, const Xstr& rhs){
 	return (lhs.ascii_str != rhs.ascii_str);
 }
-inline bool operator< (const XStr& lhs, const XStr& rhs){
+inline bool operator< (const Xstr& lhs, const Xstr& rhs){
 	return (lhs.ascii_str <  rhs.ascii_str);
 }
-inline bool operator> (const XStr& lhs, const XStr& rhs){
+inline bool operator> (const Xstr& lhs, const Xstr& rhs){
 	return (lhs.ascii_str >  rhs.ascii_str);
 }
-inline bool operator<=(const XStr& lhs, const XStr& rhs){
+inline bool operator<=(const Xstr& lhs, const Xstr& rhs){
 	return (lhs.ascii_str <= rhs.ascii_str);
 }
-inline bool operator>=(const XStr& lhs, const XStr& rhs){
+inline bool operator>=(const Xstr& lhs, const Xstr& rhs){
 	return (lhs.ascii_str >= rhs.ascii_str);
 }
 
-inline char& XStr::operator[](int i)
+inline char& Xstr::operator[](int i)
  {
      if( i >= ascii_str.size() )
      {
@@ -226,44 +230,44 @@ inline char& XStr::operator[](int i)
  }
 
  // Addition operator (+) for CR_string
-inline  XStr XStr::operator+(const XStr& x)
+inline  Xstr Xstr::operator+(const Xstr& x)
  {
- 	return XStr(this->ascii_str + x.ascii_str);
+ 	return Xstr(this->ascii_str + x.ascii_str);
  }
 
  // Addition operator (+) for string
-inline XStr XStr::operator+(const string& x)
+inline Xstr Xstr::operator+(const string& x)
  {
- 	return XStr(this->ascii_str + x);
+ 	return Xstr(this->ascii_str + x);
  }
 
  // Addition operator (+) for char or int
-inline XStr XStr::operator+(const char& x)
+inline Xstr Xstr::operator+(const char& x)
  {
- 	return XStr(this->ascii_str + x);
+ 	return Xstr(this->ascii_str + x);
  }
 
  // XOR operator - forward to ::XOR function
-inline XStr XStr::operator^(const XStr& x)
+inline Xstr Xstr::operator^(const Xstr& x)
  {
  	return this->XOR(x);
  }
 
-inline XStr XStr::operator+=(const XStr& x)
+inline Xstr Xstr::operator+=(const Xstr& x)
 {
 	*this = *this + x;
 
 	return *this;
 }
 
-inline XStr XStr::operator+=(const string& x)
+inline Xstr Xstr::operator+=(const string& x)
 {
 	this->ascii_str = this->ascii_str + x;
 
 	return *this;
 }
 
-inline XStr XStr::operator+=(const char& x)
+inline Xstr Xstr::operator+=(const char& x)
 {
 	this->ascii_str += string(1, x);
 
@@ -271,31 +275,31 @@ inline XStr XStr::operator+=(const char& x)
 }
 
 // Define prefix increment operator.
-inline XStr& XStr::operator++(  )
+inline Xstr& Xstr::operator++(  )
 {
 	this->increment();
 	return *this;
 }
 
 // Define postfix increment operator.
-inline XStr XStr::operator++( int )
+inline Xstr Xstr::operator++( int )
 {
-   XStr temp = *this;
+   Xstr temp = *this;
    this->increment();
    return temp;
 }
 
 // Define prefix decrement operator.
-inline XStr& XStr::operator--(  )
+inline Xstr& Xstr::operator--(  )
 {
    this->decrement();
    return *this;
 }
 
 // Define postfix decrement operator.
-inline XStr XStr::operator--( int )
+inline Xstr Xstr::operator--( int )
 {
-   XStr temp = *this;
+   Xstr temp = *this;
    this->decrement();
    return temp;
 }
@@ -303,7 +307,7 @@ inline XStr XStr::operator--( int )
 
  // WATCH OUT FOR THIS, COUDL NEED
  // ostream << operator
-inline ostream& operator<<(ostream& os, const XStr& str)
+inline ostream& operator<<(ostream& os, const Xstr& str)
 	{
 		os << str.ascii_str;
 
@@ -315,14 +319,14 @@ inline ostream& operator<<(ostream& os, const XStr& str)
 /* OTHER FUNCTIONS AND STRUCTURES */
 
 typedef struct {
-	XStr decoded;
-	XStr key;
+	Xstr decoded;
+	Xstr key;
 	bool key_found;
 	int score;
 } decoded_message;
 
-decoded_message solve_single_byte_xor(XStr encoded);
-decoded_message solve_repeating_key_xor(XStr encoded);
+decoded_message solve_single_byte_xor(Xstr encoded);
+decoded_message solve_repeating_key_xor(Xstr encoded);
 
 
 #endif

@@ -16,9 +16,9 @@ using namespace std;
 
 
 int generate_rand_num_between(int lbound, int ubound);
-XStr generate_random_ascii_string(int num_bytes);
-XStr generate_random_AES_IV(int len);
-XStr generate_random_AES_key(int len);
+Xstr generate_random_ascii_string(int num_bytes);
+Xstr generate_random_AES_IV();
+Xstr generate_random_AES_key();
 
 
 
@@ -31,6 +31,7 @@ enum CipherType {
 
 
 
+
 class DES {
 public:
 	enum {
@@ -39,8 +40,8 @@ public:
 		CTR_COUNTER_SIZE = 8
 	};
 
-	static XStr encrypt(XStr plaintext, XStr key);
-	static XStr decrypt(XStr ciphertext, XStr key);
+	static Xstr encrypt(Xstr plaintext, Xstr key);
+	static Xstr decrypt(Xstr ciphertext, Xstr key);
 
 private:
 
@@ -57,8 +58,8 @@ public:
 		CTR_COUNTER_SIZE = 8
 	};
 
-	static XStr encrypt(XStr plaintext, XStr key);
-	static XStr decrypt(XStr ciphertext, XStr key);
+	static Xstr encrypt(Xstr plaintext, Xstr key);
+	static Xstr decrypt(Xstr ciphertext, Xstr key);
 
 private:
 	static constexpr uint8_t rijndael_sbox[16][16] =
@@ -110,58 +111,68 @@ private:
 	static void schedule_core(unsigned char *in, unsigned char i);
 	static vector<string> expand_key(unsigned char *input);
 
-	static XStr rjindael_mix_column(XStr r);
-	static XStr substitute_bytes(XStr input);
-	static XStr mix_columns(XStr input);
-	static XStr shift_rows(XStr input);
-	static XStr add_round_key(XStr plaintext, const vector<string>& key, int round);
+	static Xstr rjindael_mix_column(Xstr r);
+	static Xstr substitute_bytes(Xstr input);
+	static Xstr mix_columns(Xstr input);
+	static Xstr shift_rows(Xstr input);
+	static Xstr add_round_key(Xstr plaintext, const vector<string>& key, int round);
 
-	static XStr rjindael_unmix_column(XStr r);
-	static XStr unsubstitute_bytes(XStr input);
-	static XStr unmix_columns(XStr input);
-	static XStr unshift_rows(XStr input);
-	static XStr unadd_round_key(const string& plaintext, const vector<string>& key, const int& round);
+	static Xstr rjindael_unmix_column(Xstr r);
+	static Xstr unsubstitute_bytes(Xstr input);
+	static Xstr unmix_columns(Xstr input);
+	static Xstr unshift_rows(Xstr input);
+	static Xstr unadd_round_key(const string& plaintext, const vector<string>& key, const int& round);
 };
-
-
-
 
 
 
 //  TODO: make function pointers for AES/DES encryption
 class BlockCipher {
 public:
-	static XStr encrypt(EncryptType e, XStr message, XStr key, XStr IV_nonce = XStr());
-	static XStr decrypt(EncryptType e, XStr message, XStr key, XStr IV_nonce = XStr());
+	struct CipherData {
+		Xstr message;
+		Xstr key;
+		Xstr IV_nonce;
+	};
+
+	static Xstr encrypt(EncryptType e, Xstr message, Xstr key, Xstr IV_nonce = Xstr());
+	static Xstr decrypt(EncryptType e, Xstr message, Xstr key, Xstr IV_nonce = Xstr());
+	static Xstr encrypt(EncryptType e, CipherData info);
+	static Xstr decrypt(EncryptType e, CipherData info);
 
 	static void set_AES_mode();
 	static void set_DES_mode();
 
 private:
-	static XStr ECB_encrypt(XStr message, XStr key);
-	static XStr ECB_decrypt(XStr message, XStr key);
-	static XStr CBC_encrypt(XStr message, XStr key, XStr IV);
-	static XStr CBC_decrypt(XStr message, XStr key, XStr IV);
-	static XStr CTR_encrypt(XStr message, XStr key, XStr nonce);
-	static XStr CTR_decrypt(XStr message, XStr key, XStr nonce);
+	static Xstr ECB_encrypt(Xstr message, Xstr key);
+	static Xstr ECB_decrypt(Xstr message, Xstr key);
+	static Xstr CBC_encrypt(Xstr message, Xstr key, Xstr IV);
+	static Xstr CBC_decrypt(Xstr message, Xstr key, Xstr IV);
+	static Xstr CTR_encrypt(Xstr message, Xstr key, Xstr nonce);
+	static Xstr CTR_decrypt(Xstr message, Xstr key, Xstr nonce);
 
 	static CipherType cipher_mode;
-	static XStr (*cipher_encode)(XStr, XStr);
-	static XStr (*cipher_decode)(XStr, XStr);
+	static Xstr (*cipher_encode)(Xstr, Xstr);
+	static Xstr (*cipher_decode)(Xstr, Xstr);
 };
 
-XStr encrypt_using_CBC_or_ECB(XStr message);
-EncryptType detect_ECB_or_CBC_encryption(XStr (*encryption_fnc)(XStr message));
+Xstr encrypt_using_CBC_or_ECB(Xstr message);
+EncryptType detect_ECB_or_CBC_encryption(Xstr (*encryption_fnc)(Xstr message));
+
+bool detect_ECB_AES_encryption(Xstr message);
 
 // Challenge 12
-XStr append_unknown_string_and_encrypt_ECB(XStr message);
-XStr byte_at_a_time_ECB_decrypt_simple();
+Xstr append_unknown_string_and_encrypt_ECB(Xstr message);
+Xstr byte_at_a_time_ECB_decrypt_simple();
 
 // Challenge 14
-XStr append_unknown_string_random_prefix_and_encrypt_ECB(XStr message);
-XStr byte_at_a_time_ECB_decrypt_hard();
+Xstr append_unknown_string_random_prefix_and_encrypt_ECB(Xstr message);
+Xstr byte_at_a_time_ECB_decrypt_hard();
 
+// Challenge 16
+BlockCipher::CipherData pad_random_string_and_encrypt_CBC();
+Xstr break_AES_CBC_via_server_leak(BlockCipher::CipherData cipher_infor);
+bool server_decrypt_CBC_leak_padding(BlockCipher::CipherData info);
 
-bool detect_ECB_AES_encryption(XStr message);
 
 #endif

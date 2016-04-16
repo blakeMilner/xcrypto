@@ -5,11 +5,11 @@ int generate_rand_num_between(int lbound, int ubound){
 	return (rand() % (ubound - lbound)) + lbound;
 }
 
-XStr generate_random_ascii_string(int num_bytes){
+Xstr generate_random_ascii_string(int num_bytes){
 	// seed the rand() function with the current time.
 	srand(time(NULL));
 
-	XStr rand_s;
+	Xstr rand_s;
 	rand_s.resize(num_bytes, 0);
 
 	// fill each byte of the key up with random numbers
@@ -20,12 +20,12 @@ XStr generate_random_ascii_string(int num_bytes){
 	return rand_s;
 }
 
-XStr generate_random_AES_IV(int len){
-	return generate_random_ascii_string(len);
+Xstr generate_random_AES_IV(){
+	return generate_random_ascii_string(AES::BLOCKSIZE);
 }
 
-XStr generate_random_AES_key(int len){
-	return generate_random_ascii_string(len);
+Xstr generate_random_AES_key(){
+	return generate_random_ascii_string(AES::BLOCKSIZE);
 }
 
 /* AES ENCRYPTION STUFF */
@@ -73,12 +73,12 @@ unsigned char AES::gmul(unsigned char a, unsigned char b) {
 }
 
 // http://www.samiam.org/mix-column.html
-XStr AES::rjindael_mix_column(XStr r) {
+Xstr AES::rjindael_mix_column(Xstr r) {
  	// make sure input CR_str is 16 bytes
 	if(r.size() != 4){
 		cout << "rjindael_mix_columns: input column size is not 4 bytes." << endl;
 
-		return XStr();
+		return Xstr();
 	}
 
     /* The array 'a' is simply a copy of the input array 'r'
@@ -103,16 +103,16 @@ XStr AES::rjindael_mix_column(XStr r) {
 }
 
 // http://www.samiam.org/mix-column.html
-XStr AES::rjindael_unmix_column(XStr r) {
+Xstr AES::rjindael_unmix_column(Xstr r) {
 	 	// make sure input CR_str is 16 bytes
 		if(r.size() != 4){
 			cout << "rjindael_mix_columns: input column size is not 4 bytes." << endl;
 
-			return XStr();
+			return Xstr();
 		}
 
         // make output CR_str
-        XStr o = XStr();
+        Xstr o = Xstr();
         o.resize(4, 0);
 
         /* The array 'a' is simply a copy of the input array 'r'
@@ -133,7 +133,7 @@ XStr AES::rjindael_unmix_column(XStr r) {
         return r;
 }
 
-XStr AES::substitute_bytes(XStr input){
+Xstr AES::substitute_bytes(Xstr input){
 	// apply nonlinear byte substitution
 	// extract first and second digit and use it in LUT
 	for(int i = 0; i < AES::BLOCKSIZE; i++){
@@ -143,7 +143,7 @@ XStr AES::substitute_bytes(XStr input){
 	return input;
 }
 
-XStr AES::unsubstitute_bytes(XStr input){
+Xstr AES::unsubstitute_bytes(Xstr input){
 	// apply nonlinear byte substitution
 	// extract first and second digit and use it in LUT
 	for(int i = 0; i < AES::BLOCKSIZE; i++){
@@ -153,8 +153,8 @@ XStr AES::unsubstitute_bytes(XStr input){
 	return input;
 }
 
-XStr AES::mix_columns(XStr input){
-	XStr input_column = XStr();
+Xstr AES::mix_columns(Xstr input){
+	Xstr input_column = Xstr();
     input_column.resize(4, 0);
 
 	// combine the 4 bytes in each column into a new 4-byte column using
@@ -166,7 +166,7 @@ XStr AES::mix_columns(XStr input){
     	}
 
     	// mix column according to rjindael algorithm
-    	XStr mixed_column = rjindael_mix_column(input_column);
+    	Xstr mixed_column = rjindael_mix_column(input_column);
 
     	// copy mixed column back to original location
     	for(int row = 0; row < 4; row++){
@@ -177,8 +177,8 @@ XStr AES::mix_columns(XStr input){
     return input;
 }
 
-XStr AES::unmix_columns(XStr input){
-	XStr mixed_column = XStr();
+Xstr AES::unmix_columns(Xstr input){
+	Xstr mixed_column = Xstr();
     mixed_column.resize(4, 0);
 
 	// combine the 4 bytes in each column into a new 4-byte column using
@@ -190,7 +190,7 @@ XStr AES::unmix_columns(XStr input){
     	}
 
     	// mix column according to rjindael algorithm
-    	XStr input_column = rjindael_unmix_column(mixed_column);
+    	Xstr input_column = rjindael_unmix_column(mixed_column);
 
     	// copy column to contiguous
     	for(int row = 3; row >= 0; row--){
@@ -201,8 +201,8 @@ XStr AES::unmix_columns(XStr input){
     return input;
 }
 
-XStr AES::shift_rows(XStr input){
-	XStr output = XStr();
+Xstr AES::shift_rows(Xstr input){
+	Xstr output = Xstr();
     output.resize(AES::BLOCKSIZE, 0);
 
     // shift rows in a circular fashion - shift by row number
@@ -230,8 +230,8 @@ XStr AES::shift_rows(XStr input){
 	return output;
 }
 
-XStr AES::unshift_rows(XStr input){
-	XStr output = XStr();
+Xstr AES::unshift_rows(Xstr input){
+	Xstr output = Xstr();
     output.resize(AES::BLOCKSIZE, 0);
 
     // shift rows in a circular fashion - shift by row number
@@ -373,7 +373,7 @@ vector<string> AES::expand_key(unsigned char *input) {
 
 // we only need one version of this for both encrypting/decrypting
 // we always xor the input with the key
-XStr AES::add_round_key(XStr plaintext, const vector<string>& key, int round){
+Xstr AES::add_round_key(Xstr plaintext, const vector<string>& key, int round){
 	if(plaintext.size() != AES::BLOCKSIZE){
 		cout << "rjindael_appl_round_key(): message size is not 16 bytes!" << endl;
 
@@ -381,15 +381,15 @@ XStr AES::add_round_key(XStr plaintext, const vector<string>& key, int round){
 	}
 
 	// xor the input text with the key for the corresponding round
-	XStr ciphertext = plaintext ^ key[round];
+	Xstr ciphertext = plaintext ^ key[round];
 
 	return ciphertext;
 }
 
 // based on the Rjindael algorithm
-XStr AES::encrypt(XStr plaintext, XStr key){
+Xstr AES::encrypt(Xstr plaintext, Xstr key){
 	if(plaintext.size() < AES::BLOCKSIZE){
-		plaintext = plaintext.add_padding(XStr::PKCS7_PADDING, AES::BLOCKSIZE);
+		plaintext = plaintext.add_padding(Xstr::PKCS7_PADDING, AES::BLOCKSIZE);
 	}
 	else if(plaintext.size() > AES::BLOCKSIZE){
 		cout << "AES_cipher(): input plaintext size is " << plaintext.size()
@@ -410,7 +410,7 @@ XStr AES::encrypt(XStr plaintext, XStr key){
 	vector<string> round_keys = expand_key( (unsigned char*) key.as_ascii().c_str() );
 
 	// working string for cipher
-	XStr ciphertext = plaintext.as_ascii();
+	Xstr ciphertext = plaintext.as_ascii();
     // initially XOR the input text with the key
     ciphertext = add_round_key( ciphertext, round_keys, 0 );
 
@@ -430,9 +430,9 @@ XStr AES::encrypt(XStr plaintext, XStr key){
 }
 
 // based on the Rjindael algorithm
-XStr AES::decrypt(XStr ciphertext, XStr key){
+Xstr AES::decrypt(Xstr ciphertext, Xstr key){
 	if(ciphertext.size() < AES::BLOCKSIZE){
-		ciphertext = ciphertext.add_padding(XStr::PKCS7_PADDING, AES::BLOCKSIZE);
+		ciphertext = ciphertext.add_padding(Xstr::PKCS7_PADDING, AES::BLOCKSIZE);
 	}
 	else if(ciphertext.size() > AES::BLOCKSIZE){
 		cout << "AES_cipher(): input ciphertext size is " << ciphertext.size()
@@ -454,7 +454,7 @@ XStr AES::decrypt(XStr ciphertext, XStr key){
 	vector<string> round_keys = expand_key( (unsigned char*) key.as_ascii().c_str() );
 
 	// working string for cipher
-	XStr plaintext = ciphertext;
+	Xstr plaintext = ciphertext;
 
     //  go backwards through rounds and keys this time
 	// this is merely a reversal of the methods found in the encrypt function
@@ -477,23 +477,23 @@ XStr AES::decrypt(XStr ciphertext, XStr key){
 }
 
 // DES algorithms
-XStr DES::encrypt(XStr plaintext, XStr key){
-	return XStr();
+Xstr DES::encrypt(Xstr plaintext, Xstr key){
+	return Xstr();
 }
 
-XStr DES::decrypt(XStr ciphertext, XStr key){
-	return XStr();
+Xstr DES::decrypt(Xstr ciphertext, Xstr key){
+	return Xstr();
 }
 
-bool detect_ECB_AES_encryption(XStr message){
+bool detect_ECB_AES_encryption(Xstr message){
     int blocks_count = message.size() / AES::BLOCKSIZE;
     int matches = 0;
 
-    set<XStr> all_blocks;
+    set<Xstr> all_blocks;
 
     // add all of the ciphertext blocks within the message into a set
     for (int index = 0; index < blocks_count; index++){
-		XStr block = message.substr(index * AES::BLOCKSIZE, AES::BLOCKSIZE);
+		Xstr block = message.substr(index * AES::BLOCKSIZE, AES::BLOCKSIZE);
 
 		all_blocks.insert(block);
     }
@@ -509,17 +509,17 @@ bool detect_ECB_AES_encryption(XStr message){
     }
 }
 
-XStr encrypt_using_CBC_or_ECB(XStr message){
+Xstr encrypt_using_CBC_or_ECB(Xstr message){
 	int num_rand_prefix_bytes = generate_rand_num_between(5, 10);
 	int num_rand_suffix_bytes = generate_rand_num_between(5, 10);
 
-	XStr prefix_string = generate_random_ascii_string(num_rand_prefix_bytes);
-	XStr suffix_string = generate_random_ascii_string(num_rand_suffix_bytes);
+	Xstr prefix_string = generate_random_ascii_string(num_rand_prefix_bytes);
+	Xstr suffix_string = generate_random_ascii_string(num_rand_suffix_bytes);
 
-	XStr appended_message = prefix_string + message + suffix_string;
-	appended_message = appended_message.add_padding(XStr::PKCS7_PADDING, AES::BLOCKSIZE); // pad appended message up to even block size
+	Xstr appended_message = prefix_string + message + suffix_string;
+	appended_message = appended_message.add_padding(Xstr::PKCS7_PADDING, AES::BLOCKSIZE); // pad appended message up to even block size
 
-	XStr rand_key = generate_random_AES_key(AES::BLOCKSIZE);
+	Xstr rand_key = generate_random_AES_key();
 
 	bool encrypt_using_ECB = rand() % 2;
 
@@ -527,7 +527,7 @@ XStr encrypt_using_CBC_or_ECB(XStr message){
 		return BlockCipher::encrypt(ECB_ENCRYPT, appended_message, rand_key);
 	}
 	else{
-		XStr rand_IV = generate_random_AES_IV(AES::BLOCKSIZE);
+		Xstr rand_IV = generate_random_AES_IV();
 
 		return BlockCipher::encrypt(CBC_ENCRYPT, appended_message, rand_key, rand_IV);
 	}
@@ -545,13 +545,13 @@ XStr encrypt_using_CBC_or_ECB(XStr message){
 // accepts a function pointer that implements an arbitrary encryption fucntion
 // inputs - message to be encrypted
 // outputs - encrypted message
-EncryptType detect_ECB_or_CBC_encryption(XStr (*encryption_fnc)(XStr message)){
+EncryptType detect_ECB_or_CBC_encryption(Xstr (*encryption_fnc)(Xstr message)){
 	// no matter what gets prepended/appended, 2nd and 3rd block will be all 0's
 	// because of size = 48
-	XStr message = XStr();
+	Xstr message = Xstr();
 	message.resize(48, 0);
 
-	XStr encrypted_message = encryption_fnc(message);
+	Xstr encrypted_message = encryption_fnc(message);
 
 	if(encrypted_message.get_single_block(1) == encrypted_message.get_single_block(2)){
 //		cout << "ECB" << endl;
@@ -563,36 +563,36 @@ EncryptType detect_ECB_or_CBC_encryption(XStr (*encryption_fnc)(XStr message)){
 	}
 }
 
-XStr append_unknown_string_and_encrypt_ECB(XStr message){
+Xstr append_unknown_string_and_encrypt_ECB(Xstr message){
 	// generate unknown key only once
-	static XStr random_key = generate_random_AES_key(AES::BLOCKSIZE);
+	static Xstr random_key = generate_random_AES_key();
 	// create unknown string once
-	static XStr unknown_string = XStr("Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkg"
+	static Xstr unknown_string = Xstr("Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkg"
 												"aGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBq"
 												"dXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUg"
-												"YnkK", XStr::BASE64_ENCODED);
+												"YnkK", Xstr::BASE64_ENCODED);
 
 	return BlockCipher::encrypt(ECB_ENCRYPT, message + unknown_string, random_key);
 }
 
-XStr byte_at_a_time_ECB_decrypt_simple(){
-	XStr (*blackbox)(XStr);
+Xstr byte_at_a_time_ECB_decrypt_simple(){
+	Xstr (*blackbox)(Xstr);
 	blackbox = append_unknown_string_and_encrypt_ECB;
 
 	/* First, find the block size of the cipher by feeding in successive test characters */
-	XStr known_string = XStr("A");
-	XStr new_cipher = blackbox(known_string);
+	Xstr known_string = Xstr("A");
+	Xstr new_cipher = blackbox(known_string);
 	int block_size = 0;
 	int last_size = 0;
-	XStr unknown_str_new_block = XStr();
+	Xstr unknown_str_new_block = Xstr();
 
 	/* find unknown string size by feeding in empty string */
-	int unknown_string_size = blackbox( XStr() ).size();
+	int unknown_string_size = blackbox( Xstr() ).size();
 	int unknown_string_blocks = ceil(unknown_string_size / AES::BLOCKSIZE);
 
 	do{
 		last_size = new_cipher.size();
-		known_string += XStr("A");
+		known_string += Xstr("A");
 		new_cipher = blackbox(known_string);
 		block_size++;
 	}
@@ -602,33 +602,33 @@ XStr byte_at_a_time_ECB_decrypt_simple(){
 	if(EncryptType::ECB_ENCRYPT != detect_ECB_or_CBC_encryption(blackbox)){
 		cout << "byte_at_a_time_ECB_decrypt_simple(): function is not using ECB encryption." << endl;
 
-		return XStr();
+		return Xstr();
 	}
 
 	/* Solve each block consecutively, solving one byte at a time */
-	XStr previous_blocks = XStr();
+	Xstr previous_blocks = Xstr();
 	for(int blk = 0; blk < unknown_string_blocks; blk++){
-		unknown_str_new_block = XStr();
+		unknown_str_new_block = Xstr();
 		
 		for(int byte = AES::BLOCKSIZE - 1; byte >= 0; byte--){
 			// make partial string with dummy chars (A's)
 			known_string = string(byte, 'A');
 
 			// encrypt once using partial string
-			XStr encrypted_actual = blackbox(known_string);
+			Xstr encrypted_actual = blackbox(known_string);
 
 			// add known bytes to end of test string - do this after we compute encrypted message we compare test cases to
 			known_string += previous_blocks;
 
 			// add different byte values to end of known_string, see if this matches known_string with no extra byte
-			XStr known_string_guess;
-			XStr prefix = known_string + unknown_str_new_block;
+			Xstr known_string_guess;
+			Xstr prefix = known_string + unknown_str_new_block;
 			
 			for(char c = 0; c < 256; c++){
 				known_string_guess = prefix + string(1, c); // add new guess character to end of string
 
 				// encrypt our new guess
-				XStr encrypted_guess = blackbox(known_string_guess);
+				Xstr encrypted_guess = blackbox(known_string_guess);
 
 				// if the actual and guessed blocks match, then we've found the next byte of unkown_string
 				if(encrypted_actual.get_single_block(blk) == encrypted_guess.get_single_block(blk)){
@@ -645,37 +645,37 @@ XStr byte_at_a_time_ECB_decrypt_simple(){
 }
 
 // TODO: there is no prefix being added here!
-XStr append_unknown_string_random_prefix_and_encrypt_ECB(XStr message){
+Xstr append_unknown_string_random_prefix_and_encrypt_ECB(Xstr message){
 	// generate unknown key only once
-	static XStr random_key = generate_random_AES_key(AES::BLOCKSIZE);
+	static Xstr random_key = generate_random_AES_key();
 	// create unknown string once
-	static XStr unknown_string = XStr("Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkg"
+	static Xstr unknown_string = Xstr("Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkg"
 												"aGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBq"
 												"dXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUg"
-												"YnkK", XStr::BASE64_ENCODED);
+												"YnkK", Xstr::BASE64_ENCODED);
 
 	return BlockCipher::encrypt(ECB_ENCRYPT, message + unknown_string, random_key);
 }
 
-XStr byte_at_a_time_ECB_decrypt_hard(){
-	XStr (*blackbox)(XStr);
+Xstr byte_at_a_time_ECB_decrypt_hard(){
+	Xstr (*blackbox)(Xstr);
 	blackbox = append_unknown_string_random_prefix_and_encrypt_ECB;
 
 	/* First, find the block size of the cipher by feeding in successive test characters */
-	XStr known_string = XStr("A");
-	XStr new_cipher = blackbox(known_string);
+	Xstr known_string = Xstr("A");
+	Xstr new_cipher = blackbox(known_string);
 	int block_size = 0;
 	int last_size = 0;
-	XStr unknown_str_new_block = XStr();
+	Xstr unknown_str_new_block = Xstr();
 
 	/* find unknown string size by feeding in empty string */
-	int unknown_string_size = blackbox( XStr() ).size();
+	int unknown_string_size = blackbox( Xstr() ).size();
 	int unknown_string_blocks = unknown_string_size / AES::BLOCKSIZE;
 
 	// find block size
 	do{
 		last_size = new_cipher.size();
-		known_string += XStr("A");
+		known_string += Xstr("A");
 		new_cipher = blackbox(known_string);
 		block_size++;
 	}
@@ -685,27 +685,27 @@ XStr byte_at_a_time_ECB_decrypt_hard(){
 	if(EncryptType::ECB_ENCRYPT != detect_ECB_or_CBC_encryption(blackbox)){
 		cout << "byte_at_a_time_ECB_decrypt_simple(): function is not using ECB encryption." << endl;
 
-		return XStr();
+		return Xstr();
 	}
 
 	/* Solve each block consecutively, solving one byte at a time */
-	XStr previous_blocks = XStr();
+	Xstr previous_blocks = Xstr();
 	for(int blk = 0; blk < unknown_string_blocks; blk++){
-		unknown_str_new_block = XStr();
+		unknown_str_new_block = Xstr();
 
 		for(int byte = AES::BLOCKSIZE - 1; byte >= 0; byte--){
 			// make partial string with dummy chars (A's)
 			known_string = string(byte, 'A');
 
 			// encrypt once using partial string
-			XStr encrypted_actual = blackbox(known_string);
+			Xstr encrypted_actual = blackbox(known_string);
 
 			// add known bytes to end of test string - do this after we compute encrypted message we compare test cases to
 			known_string += previous_blocks;
 
 			// add different byte values to end of known_string, see if this matches known_string with no extra byte
-			XStr known_string_guess;
-			XStr prefix = known_string + unknown_str_new_block;
+			Xstr known_string_guess;
+			Xstr prefix = known_string + unknown_str_new_block;
 
 			//cout << unknown_str_new_block.as_base64() << " " << endl;
 
@@ -713,7 +713,7 @@ XStr byte_at_a_time_ECB_decrypt_hard(){
 				known_string_guess = prefix + c; // add new guess character to end of string
 
 				// encrypt our new guess
-				XStr encrypted_guess = blackbox(known_string_guess);
+				Xstr encrypted_guess = blackbox(known_string_guess);
 
 				// if the actual and guessed blocks match, then we've found the next byte of unkown_string
 				if(encrypted_actual.get_single_block(blk) == encrypted_guess.get_single_block(blk)){
@@ -732,15 +732,135 @@ XStr byte_at_a_time_ECB_decrypt_hard(){
 	return previous_blocks;
 }
 
+/* Challenge 17 */
+
+BlockCipher::CipherData pad_random_string_and_encrypt_CBC(){
+	static const string unknown_strings[10] =
+		{"MDAwMDAwTm93IHRoYXQgdGhlIHBhcnR5IGlzIGp1bXBpbmc=",
+		"MDAwMDAxV2l0aCB0aGUgYmFzcyBraWNrZWQgaW4gYW5kIHRoZSBWZWdhJ3MgYXJlIHB1bXBpbic=",
+		"MDAwMDAyUXVpY2sgdG8gdGhlIHBvaW50LCB0byB0aGUgcG9pbnQsIG5vIGZha2luZw==",
+		"MDAwMDAzQ29va2luZyBNQydzIGxpa2UgYSBwb3VuZCBvZiBiYWNvbg==",
+		"MDAwMDA0QnVybmluZyAnZW0sIGlmIHlvdSBhaW4ndCBxdWljayBhbmQgbmltYmxl",
+		"MDAwMDA1SSBnbyBjcmF6eSB3aGVuIEkgaGVhciBhIGN5bWJhbA==",
+		"MDAwMDA2QW5kIGEgaGlnaCBoYXQgd2l0aCBhIHNvdXBlZCB1cCB0ZW1wbw==",
+		"MDAwMDA3SSdtIG9uIGEgcm9sbCwgaXQncyB0aW1lIHRvIGdvIHNvbG8=",
+		"MDAwMDA4b2xsaW4nIGluIG15IGZpdmUgcG9pbnQgb2g=",
+		"MDAwMDA5aXRoIG15IHJhZy10b3AgZG93biBzbyBteSBoYWlyIGNhbiBibG93"
+	};
+
+	// generate unknown key only once
+	static Xstr random_key = generate_random_AES_key();
+	// generate unknown key only once
+	static Xstr random_IV = generate_random_AES_IV();
+
+	// create unknown string only once, by picking from list of 10
+	static int i = generate_rand_num_between(0, 9);
+	static string random_string = unknown_strings[i];
+
+	static Xstr unknown_string = Xstr(random_string, Xstr::BASE64_ENCODED);
+
+	unknown_string = unknown_string.add_padding(Xstr::ZERO_PADDING, AES::BLOCKSIZE);
+
+	BlockCipher::CipherData out;
+
+	out.message = BlockCipher::encrypt(CBC_ENCRYPT, unknown_string, random_key, random_IV);
+	out.key = random_key;
+	out.IV_nonce = random_IV;
+
+	return out;
+}
+
+/* Challenge 17 */
+
+Xstr break_AES_CBC_via_server_leak(BlockCipher::CipherData cipher_info){
+	Xstr cipher = cipher_info.message;
+	int num_ciphers = cipher.get_num_blocks();
+
+	Xstr hacked_cipher;
+	Xstr curr_cipher;
+	Xstr orig_hacked_cipher;
+
+	// make holder for 1 block intermediate state
+	Xstr intermediate;
+	intermediate.fill(AES::BLOCKSIZE, 0);
+
+	// make output one less blocksize than input cipher - we can't
+	// figure out the first block with this hack
+	Xstr output;
+	output.fill((num_ciphers - 1) * AES::BLOCKSIZE, 0);
+
+	// padding value, to be incremented
+	uint8_t pad_value = 0x01;
+
+	/*
+	 * Go to (num_ciphers-1) because we can't decode the first ciphertext block.
+	 * Before, we manipulated the intermediate state via corrupting the previous
+	 * ciphertext block. But for the first block, we can't manipulate the IM
+	 * state because it is the IV, which we don't know.
+	 */
+	for(int c = 0; c < num_ciphers - 1; c++){
+		 // padding value gets incremented as we move down block, per PKCS7
+		uint8_t pkcs7_pad_value = 0b01;
+
+		// get cipher we're trying to solve and cipher we will manipulate
+		int offset = (num_ciphers - c - 2) * AES::BLOCKSIZE;
+		curr_cipher 	= cipher.get_single_block(num_ciphers - c - 1);
+		hacked_cipher 	= cipher.get_single_block(num_ciphers - c - 2);
+		orig_hacked_cipher = hacked_cipher;
+
+		// loop through each bit of target cipher, starting with high bit
+		for(int curr_bit = AES::BLOCKSIZE - 1; curr_bit >= 0; curr_bit--){
+			// fill altered cipher block with the XOR'd equivalent of the padding
+			// we need this to make previously found blocks into target padding value
+			for(int i = AES::BLOCKSIZE - 1; i > curr_bit; i--){
+				hacked_cipher[i] = pkcs7_pad_value ^ intermediate[i];
+			}
+
+			// loop through all possible ascii characters that will produce
+			// a valid padding byte
+			for(int x = 0; x < 256; x++){
+				hacked_cipher[curr_bit] = x;
+
+				cipher_info.message = hacked_cipher + curr_cipher;
+
+				// if server emits valid padding signal, then we've found the intermediate bit
+				if( true == server_decrypt_CBC_leak_padding(cipher_info) ){
+					intermediate[curr_bit] = hacked_cipher[curr_bit] ^ pkcs7_pad_value;
+
+					output[offset + curr_bit] = (intermediate[curr_bit] ^ orig_hacked_cipher[curr_bit]);
+				}
+			}
+
+			pkcs7_pad_value++;
+		}
+	}
+
+	return output;
+
+}
+
+/* Challenge 17 */
+
+bool server_decrypt_CBC_leak_padding(BlockCipher::CipherData info){
+	Xstr decrypted = BlockCipher::decrypt(CBC_ENCRYPT, info);
+
+	if(decrypted.find_padding_type() == Xstr::PaddingType::PKCS7_PADDING){
+		return true;
+	}
+	else{
+		return false;
+	}
+}
+
 /* BLOCK CIPHER */
 
 // Set AES as default
 CipherType BlockCipher::cipher_mode = CipherType::AES;
-XStr (* BlockCipher::cipher_encode)(XStr, XStr) = AES::encrypt;
-XStr (* BlockCipher::cipher_decode)(XStr, XStr) = AES::decrypt;
+Xstr (* BlockCipher::cipher_encode)(Xstr, Xstr) = AES::encrypt;
+Xstr (* BlockCipher::cipher_decode)(Xstr, Xstr) = AES::decrypt;
 
 
-XStr BlockCipher::encrypt(EncryptType e, XStr message, XStr key, XStr IV_nonce /* = CR_str() */ ){
+Xstr BlockCipher::encrypt(EncryptType e, Xstr message, Xstr key, Xstr IV_nonce /* = CR_str() */ ){
 	switch(e){
 		case ECB_ENCRYPT:
 			if( !IV_nonce.empty() ){
@@ -767,10 +887,10 @@ XStr BlockCipher::encrypt(EncryptType e, XStr message, XStr key, XStr IV_nonce /
 
 			return CTR_encrypt(message, key, IV_nonce);
 			break;
-		}
+	}
 }
 
-XStr BlockCipher::decrypt(EncryptType e, XStr message, XStr key, XStr IV_nonce){
+Xstr BlockCipher::decrypt(EncryptType e, Xstr message, Xstr key, Xstr IV_nonce){
 	switch(e){
 		case ECB_ENCRYPT:
 			if( !IV_nonce.empty() ){
@@ -800,6 +920,14 @@ XStr BlockCipher::decrypt(EncryptType e, XStr message, XStr key, XStr IV_nonce){
 		}
 }
 
+Xstr BlockCipher::encrypt(EncryptType e, CipherData info){
+	return encrypt(e, info.message, info.key, info.IV_nonce);
+}
+
+Xstr BlockCipher::decrypt(EncryptType e, CipherData info){
+	return decrypt(e, info.message, info.key, info.IV_nonce);
+}
+
 void BlockCipher::set_AES_mode(){
 	BlockCipher::cipher_mode = CipherType::AES;
 	cipher_encode = AES::encrypt;
@@ -812,7 +940,7 @@ void BlockCipher::set_DES_mode(){
 	cipher_decode = DES::decrypt;
 }
 
-XStr BlockCipher::ECB_encrypt(XStr message, XStr key){
+Xstr BlockCipher::ECB_encrypt(Xstr message, Xstr key){
 	if(key.size() != AES::BLOCKSIZE){
 		cout << "ECB_AES_encrypt(): input key is not 16 bytes long." << endl;
 
@@ -831,11 +959,11 @@ XStr BlockCipher::ECB_encrypt(XStr message, XStr key){
 	}
 
 	// make cipher holder same size as message, fill with 0's
-	XStr ciphertext;
+	Xstr ciphertext;
 	ciphertext.resize(num_ciphers * AES::BLOCKSIZE, 0);
 
 	for(int cipher = 0; cipher < num_ciphers; cipher++){
-		XStr plaintext = XStr();
+		Xstr plaintext = Xstr();
 
 		// only execute if we are on the last block, which needs to be padded
 		if(pad_last and cipher == (num_ciphers - 1)){
@@ -845,14 +973,14 @@ XStr BlockCipher::ECB_encrypt(XStr message, XStr key){
 
 			// pad to 16 bytes
 			// NOTE: this used to be PKCS7 padding but exercise 14 was hanging up
-			plaintext = plaintext.add_padding(XStr::ZERO_PADDING, AES::BLOCKSIZE);
+			plaintext = plaintext.add_padding(Xstr::ZERO_PADDING, AES::BLOCKSIZE);
 		}
 		// only execute if we are on blocks with a guaranteed 16 bytes
 		else{
 			plaintext = message.substr(cipher * AES::BLOCKSIZE, AES::BLOCKSIZE);
 		}
 
-		XStr encrypted = cipher_encode(plaintext, key);
+		Xstr encrypted = cipher_encode(plaintext, key);
 
 		// copy newly encrypted ciphertext into it's home
 		ciphertext = ciphertext.embed_string(encrypted, cipher * AES::BLOCKSIZE, AES::BLOCKSIZE);
@@ -861,7 +989,7 @@ XStr BlockCipher::ECB_encrypt(XStr message, XStr key){
 	return ciphertext;
 }
 
-XStr BlockCipher::ECB_decrypt(XStr message, XStr key){
+Xstr BlockCipher::ECB_decrypt(Xstr message, Xstr key){
 	if((message.size() % AES::BLOCKSIZE) != 0){
 		cout << "ECB_AES_decrypt(): input encrypted message is not divisible by 16." << endl;
 
@@ -876,25 +1004,25 @@ XStr BlockCipher::ECB_decrypt(XStr message, XStr key){
 	int num_ciphers = message.size() / AES::BLOCKSIZE;
 
 	// make cipher holder same size as message, fill with 0's
-	XStr plaintext = string();
+	Xstr plaintext = string();
 	plaintext.resize(num_ciphers * AES::BLOCKSIZE, 0);
 
 	for(int cipher = num_ciphers - 1; cipher >= 0; cipher--){
-		XStr ciphertext = message.substr(cipher * AES::BLOCKSIZE, AES::BLOCKSIZE);
+		Xstr ciphertext = message.substr(cipher * AES::BLOCKSIZE, AES::BLOCKSIZE);
 
-		XStr decrypted = cipher_decode(ciphertext, key);
+		Xstr decrypted = cipher_decode(ciphertext, key);
 
 		// copy newly encrypted plaintext into it's home
 		plaintext = plaintext.embed_string(decrypted, cipher * AES::BLOCKSIZE, AES::BLOCKSIZE);
 	}
 
 	// remove any padding
-	plaintext = plaintext.remove_padding(XStr::PKCS7_PADDING);
+	plaintext = plaintext.remove_padding(Xstr::PKCS7_PADDING);
 
 	return plaintext;
 }
 
-XStr BlockCipher::CBC_encrypt(XStr message, XStr key, XStr IV){
+Xstr BlockCipher::CBC_encrypt(Xstr message, Xstr key, Xstr IV){
 	if(key.size() != AES::BLOCKSIZE){
 		cout << "CBC_AES_encrypt(): input key is not 16 bytes long." << endl;
 
@@ -919,14 +1047,14 @@ XStr BlockCipher::CBC_encrypt(XStr message, XStr key, XStr IV){
 
 	// cipher text that tracks the last ciphertext produced by the ECB function
 	// at first set it to IV since the IV is XOR'd with the plaintext intially
-	XStr last_ciphertext = IV;
+	Xstr last_ciphertext = IV;
 
 	// make cipher holder same size as message, fill with 0's
-	XStr ciphertext;
+	Xstr ciphertext;
 	ciphertext.resize(num_ciphers * AES::BLOCKSIZE, 0);
 
 	for(int cipher = 0; cipher < num_ciphers; cipher++){
-		XStr plaintext = string();
+		Xstr plaintext = string();
 
 		// only execute if we are on the last block, which needs to be padded
 		if(pad_last and cipher == (num_ciphers - 1)){
@@ -935,14 +1063,14 @@ XStr BlockCipher::CBC_encrypt(XStr message, XStr key, XStr IV){
 			plaintext = message.substr(cipher * AES::BLOCKSIZE, message.size() % AES::BLOCKSIZE);
 
 			// pad to 16 bytes
-			plaintext = plaintext.add_padding(XStr::PKCS7_PADDING, AES::BLOCKSIZE);
+			plaintext = plaintext.add_padding(Xstr::PKCS7_PADDING, AES::BLOCKSIZE);
 		}
 		// only execute if we are on blocks with a guaranteed 16 bytes
 		else{
 			plaintext = message.substr(cipher * AES::BLOCKSIZE, AES::BLOCKSIZE);
 		}
 
-		XStr holder = plaintext.XOR( last_ciphertext );
+		Xstr holder = plaintext.XOR( last_ciphertext );
 		holder = cipher_encode(holder, key);
 
 		last_ciphertext = holder;
@@ -954,7 +1082,7 @@ XStr BlockCipher::CBC_encrypt(XStr message, XStr key, XStr IV){
 	return ciphertext;
 }
 
-XStr BlockCipher::CBC_decrypt(XStr message, XStr key, XStr IV){
+Xstr BlockCipher::CBC_decrypt(Xstr message, Xstr key, Xstr IV){
 	if((message.size() % AES::BLOCKSIZE) != 0){
 		cout << "CBC_AES_decrypt(): input encrypted message or key is not divisible by 16." << endl;
 
@@ -974,14 +1102,14 @@ XStr BlockCipher::CBC_decrypt(XStr message, XStr key, XStr IV){
 	int num_ciphers = message.size() / AES::BLOCKSIZE;
 
 	// the ciphertext - make it equal to the very last cipher text
-	XStr next_ciphertext = message.substr((num_ciphers - 1) * AES::BLOCKSIZE, AES::BLOCKSIZE);
+	Xstr next_ciphertext = message.substr((num_ciphers - 1) * AES::BLOCKSIZE, AES::BLOCKSIZE);
 
 	// make cipher holder same size as message, fill with 0's
-	XStr ciphertext;
+	Xstr ciphertext;
 	ciphertext.resize(num_ciphers * AES::BLOCKSIZE, 0);
 
 	// make holder for output plaintext
-	XStr plaintext;
+	Xstr plaintext;
 	plaintext.resize(message.size(), 0);
 
 	for(int cipher = num_ciphers - 1; cipher >= 0; cipher--){
@@ -997,7 +1125,7 @@ XStr BlockCipher::CBC_decrypt(XStr message, XStr key, XStr IV){
 			next_ciphertext = message.substr((cipher - 1) * AES::BLOCKSIZE, AES::BLOCKSIZE);
 		}
 
-		XStr holder = cipher_decode(ciphertext, key);
+		Xstr holder = cipher_decode(ciphertext, key);
 		holder = holder ^ next_ciphertext ;
 
 		// copy newly decrypted ciphertext into it's home
@@ -1010,7 +1138,7 @@ XStr BlockCipher::CBC_decrypt(XStr message, XStr key, XStr IV){
 
 // this implementation accepts nonces up to 16 bytes. Nonces under 16 bytes are zero
 // padded to 16 bytes. The nonce value is then incremented by 1 each round.
-XStr BlockCipher::CTR_encrypt(XStr message, XStr key, XStr nonce){
+Xstr BlockCipher::CTR_encrypt(Xstr message, Xstr key, Xstr nonce){
 	if(key.size() != AES::BLOCKSIZE){
 		cout << "CTR_AES_encrypt(): input key is not 16 bytes long." << endl;
 
@@ -1023,7 +1151,7 @@ XStr BlockCipher::CTR_encrypt(XStr message, XStr key, XStr nonce){
 	}
 	// if nonce isn't quite 16 bytes, then pad with zeros up to 16
 	else if(nonce.size() < AES::CTR_NONCE_SIZE){
-		nonce = nonce.add_padding( XStr::ZERO_PADDING, AES::CTR_COUNTER_SIZE );
+		nonce = nonce.add_padding( Xstr::ZERO_PADDING, AES::CTR_COUNTER_SIZE );
 	}
 
 	// if message isn't completely divisible into 16 byte chunks,
@@ -1033,16 +1161,16 @@ XStr BlockCipher::CTR_encrypt(XStr message, XStr key, XStr nonce){
 	int num_ciphers = ceil((float) message.size() / (float) AES::BLOCKSIZE);
 
 
-	XStr ciphertext = XStr();
-	XStr cipher_input;
-	XStr counter;
+	Xstr ciphertext = Xstr();
+	Xstr cipher_input;
+	Xstr counter;
 	counter.fill(AES::CTR_COUNTER_SIZE, 0);
 
 	for(int cipher = 0; cipher < num_ciphers; cipher++){
-		XStr plaintext = message.substr(cipher * AES::BLOCKSIZE, AES::BLOCKSIZE);
+		Xstr plaintext = message.substr(cipher * AES::BLOCKSIZE, AES::BLOCKSIZE);
 
 		cipher_input = nonce.little_endian() + counter.little_endian();
-		XStr encrypted_nonce = cipher_encode(cipher_input, key);
+		Xstr encrypted_nonce = cipher_encode(cipher_input, key);
 
 		// TODO: IDEA: instead of copying blocks over, just use container as accumulator that gets XOR'd
 
@@ -1056,7 +1184,10 @@ XStr BlockCipher::CTR_encrypt(XStr message, XStr key, XStr nonce){
 	return ciphertext;
 }
 
-XStr BlockCipher::CTR_decrypt(XStr message, XStr key, XStr nonce){
+// TODO: need to make AES::BLOCKSIE and others more general
+// TODO: put these checks in their own encapsulated checking functions
+
+Xstr BlockCipher::CTR_decrypt(Xstr message, Xstr key, Xstr nonce){
 	if(key.size() != AES::BLOCKSIZE){
 		cout << "CTR_AES_decrypt(): input key is not 16 bytes long." << endl;
 
@@ -1069,7 +1200,7 @@ XStr BlockCipher::CTR_decrypt(XStr message, XStr key, XStr nonce){
 	}
 	// if nonce isn't quite 16 bytes, then pad with zeros up to 16
 	else if(nonce.size() < AES::CTR_NONCE_SIZE){
-		nonce = nonce.add_padding( XStr::ZERO_PADDING, AES::CTR_COUNTER_SIZE );
+		nonce = nonce.add_padding( Xstr::ZERO_PADDING, AES::CTR_COUNTER_SIZE );
 	}
 
 	// if message isn't completely divisible into 16 byte chunks,
@@ -1078,20 +1209,20 @@ XStr BlockCipher::CTR_decrypt(XStr message, XStr key, XStr nonce){
 	// corresponding subsection of the keystream
 	int num_ciphers = ceil((float) message.size() / (float) AES::BLOCKSIZE);
 
-	XStr plaintext = XStr();
+	Xstr plaintext = Xstr();
 
-	XStr cipher_input;
-	XStr counter;
+	Xstr cipher_input;
+	Xstr counter;
 	counter.fill(AES::CTR_COUNTER_SIZE, 0);
 
 	for(int cipher = 0; cipher < num_ciphers; cipher++){
-		XStr ciphertext = message.substr(cipher * AES::BLOCKSIZE, AES::BLOCKSIZE);
+		Xstr ciphertext = message.substr(cipher * AES::BLOCKSIZE, AES::BLOCKSIZE);
 
 		cipher_input = nonce.little_endian() + counter.little_endian();
 
 		// TODO: IDEA: instead of copying blocks over, just use container as accumulator that gets XOR'd
 
-		XStr encrypted_nonce = cipher_encode(cipher_input, key);
+		Xstr encrypted_nonce = cipher_encode(cipher_input, key);
 
 		// add new plaintext by XORing with encrypted nonce
 		plaintext += encrypted_nonce ^ ciphertext;
