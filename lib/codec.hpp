@@ -94,6 +94,7 @@ public:
 	// std::string functions that must be implemented
 	size_t size();
 	void resize(size_t new_size, char value);
+	void resize(size_t new_size);
 	Xstr substr(unsigned int position, size_t size);
 	const char* c_str();
 	void fill(const size_t s, const char& val);
@@ -121,7 +122,7 @@ public:
 
 	/* mathematical operations for string */
 	int hamming_distance(Xstr string2);
-	int rank_message_using_common_chars();
+	int get_num_english_characters();
 	void increment(int step = 1);
 	void decrement(int step = -1);
 	Xstr XOR(Xstr xor_str);

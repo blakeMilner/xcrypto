@@ -282,6 +282,7 @@ string Xstr::ascii_to_base64(string input){
 }
 
 // TODO: URGENT: STILL LOSING CHARS AT THE END OF THE STRING...
+// TDDO: check that number is valid Base64
 
 string Xstr::base64_to_ascii(string input){
 	int input_length = input.size();
@@ -386,6 +387,10 @@ void Xstr::resize(size_t new_size, char value){
 	ascii_str.resize(new_size, value);
 }
 
+void Xstr::resize(size_t new_size){
+	ascii_str.resize(new_size);
+}
+
 Xstr Xstr::substr(unsigned int position, size_t size){
 	return ascii_str.substr(position, size);
 }
@@ -432,7 +437,7 @@ int Xstr::hamming_distance(Xstr string2){
 	return distance;
 }
 
-int Xstr::rank_message_using_common_chars(){
+int Xstr::get_num_english_characters(){
 	int total = 0;
 
 	for(int i = 0; i < ascii_str.size(); i++){
@@ -931,7 +936,7 @@ decoded_message solve_single_byte_xor(Xstr encoded){
 
 		possible_message = Xstr( encoded ^ key_string );
 
-		int score = possible_message.rank_message_using_common_chars();
+		int score = possible_message.get_num_english_characters();
 
 		if(score > max_score){
 			max_score = score;
@@ -1011,7 +1016,7 @@ decoded_message solve_repeating_key_xor(Xstr encoded){
 
 	    // decode message according to key and score it based on english characters
 	    Xstr decoded_message = encoded ^ multi_byte_key;
-	    int key_score = decoded_message.rank_message_using_common_chars( );
+	    int key_score = decoded_message.get_num_english_characters( );
 
 	    // check if we've found maximum
 	    if(key_score > max_score){

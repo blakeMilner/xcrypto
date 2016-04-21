@@ -30,7 +30,15 @@ void tick(){
 }
 
 void tock(){
-	cout << "\t\t" << (std::clock() - start) / (double)(CLOCKS_PER_SEC / 1000) << " ms" << endl;
+	double epoch = (std::clock() - start) / (double)(CLOCKS_PER_SEC / 1000);
+
+	// print as seconds if more than 1000 ms
+	if(epoch > 1000){
+		cout << "\t\t" << epoch / 1000.0 << " sec" << endl;
+	}
+	else{
+		cout << "\t\t" << epoch << " ms" << endl;
+	}
 }
 
 
@@ -42,19 +50,15 @@ void crypto_exercise_test(int num, bool test){
 
 	if(test)
 	{
-		cout << "\033[1;32m[PASSED]\033[0m" << endl;
+		cout << "\033[1;32m[PASSED]\033[0m";
 	}
 	else{
-		cout << "\033[1;31m[FAILED]\033[0m" << endl;
+		cout << "\033[1;31m[FAILED]\033[0m";
 	}
 }
 
 
 //  TODO: fault_check(key.size() != AES::BLOCKSIZE, message or error enum)
-
-//  TODO:
-// IDEA: after making error reporting class, if multiple identical errors
-// keep coming through, then just print 1 so it doesn't clog the terminal output
 
 //  TODO:
 // IDEA: make red and yellow alarms for debug messages.
@@ -63,6 +67,7 @@ void crypto_exercise_test(int num, bool test){
 //  TODO:
 // IDEA: make command line arguments for specific exercise tests.
 // e.g. ./crypto_test 3 8 12 18
+// include ALL command for all test
 
 int main(int argc, char* argv[])
 {
@@ -93,19 +98,11 @@ int main(int argc, char* argv[])
 			}
 		}
 
-		cout << "\t\t\t";
-		if(failed){
-			cout << "\033[1;31m[FAILED]\033[0m" << endl;
-		}
-		else{
-			cout << "\033[1;32m[PASSED]\033[0m" << endl;
-		}
-		/********************/
+		//		cout << unknown_string.pretty(CR_str::ASCII_ENCODED) << endl;
 
-
-
-//		cout << unknown_string.pretty(CR_str::ASCII_ENCODED) << endl;
-
+		crypto_exercise_test(1,
+					!failed
+				);
 	}
 	tock();
 
@@ -153,7 +150,7 @@ int main(int argc, char* argv[])
 			string_file.close();
 		}
 		else{
-			cout << "Unable to open file" << endl;
+			cout << "Exercise 10: Unable to open file" << endl;
 		}
 
 		Xstr ascii_encoded = Xstr( base64_encoded, Xstr::BASE64_ENCODED );
@@ -174,12 +171,12 @@ int main(int argc, char* argv[])
 		EncryptType encryption_type = detect_ECB_or_CBC_encryption(encrypt_using_CBC_or_ECB);
 
 		if(encryption_type == EncryptType::CBC_ENCRYPT){
-			cout << "Detected CBC encryption" << endl;
+			cout << "Detected CBC";
 		}else if(encryption_type == EncryptType::ECB_ENCRYPT){
-			cout << "Detected ECB encryption" << endl;
+			cout << "Detected ECB";
 		}
 		else{
-			cout << "Encryption not recognized!" << endl;
+			cout << "Unknown Encryption";
 		}
 
 	}
@@ -338,7 +335,150 @@ int main(int argc, char* argv[])
 	tock();
 
 	/* Exercise 19 */
+	// TODO: fix base64 encoding because it works when feeding in raw ascii
+	tick();
+	{
+		Xstr first_cipher = Xstr(
+				"I have met them atCloseOfda",
+				Xstr::ASCII_ENCODED);
 
+		const string strings[40] = {
+				"SSBoYXZlIG1ldCB0aGVtIGF0IGNsb3NlIG9mIGRheQ==",
+				"Q29taW5nIHdpdGggdml2aWQgZmFjZXM=",
+				"RnJvbSBjb3VudGVyIG9yIGRlc2sgYW1vbmcgZ3JleQ==",
+				"RWlnaHRlZW50aC1jZW50dXJ5IGhvdXNlcy4=",
+				"SSBoYXZlIHBhc3NlZCB3aXRoIGEgbm9kIG9mIHRoZSBoZWFk",
+				"T3IgcG9saXRlIG1lYW5pbmdsZXNzIHdvcmRzLA==",
+				"T3IgaGF2ZSBsaW5nZXJlZCBhd2hpbGUgYW5kIHNhaWQ=",
+				"UG9saXRlIG1lYW5pbmdsZXNzIHdvcmRzLA==",
+				"QW5kIHRob3VnaHQgYmVmb3JlIEkgaGFkIGRvbmU=",
+				"T2YgYSBtb2NraW5nIHRhbGUgb3IgYSBnaWJl",
+				"VG8gcGxlYXNlIGEgY29tcGFuaW9u",
+				"QXJvdW5kIHRoZSBmaXJlIGF0IHRoZSBjbHViLA==",
+				"QmVpbmcgY2VydGFpbiB0aGF0IHRoZXkgYW5kIEk=",
+				"QnV0IGxpdmVkIHdoZXJlIG1vdGxleSBpcyB3b3JuOg==",
+				"QWxsIGNoYW5nZWQsIGNoYW5nZWQgdXR0ZXJseTo=",
+				"QSB0ZXJyaWJsZSBiZWF1dHkgaXMgYm9ybi4=",
+				"VGhhdCB3b21hbidzIGRheXMgd2VyZSBzcGVudA==",
+				"SW4gaWdub3JhbnQgZ29vZCB3aWxsLA==",
+				"SGVyIG5pZ2h0cyBpbiBhcmd1bWVudA==",
+				"VW50aWwgaGVyIHZvaWNlIGdyZXcgc2hyaWxsLg==",
+				"V2hhdCB2b2ljZSBtb3JlIHN3ZWV0IHRoYW4gaGVycw==",
+				"V2hlbiB5b3VuZyBhbmQgYmVhdXRpZnVsLA==",
+				"U2hlIHJvZGUgdG8gaGFycmllcnM/",
+				"VGhpcyBtYW4gaGFkIGtlcHQgYSBzY2hvb2w=",
+				"QW5kIHJvZGUgb3VyIHdpbmdlZCBob3JzZS4=",
+				"VGhpcyBvdGhlciBoaXMgaGVscGVyIGFuZCBmcmllbmQ=",
+				"V2FzIGNvbWluZyBpbnRvIGhpcyBmb3JjZTs=",
+				"SGUgbWlnaHQgaGF2ZSB3b24gZmFtZSBpbiB0aGUgZW5kLA==",
+				"U28gc2Vuc2l0aXZlIGhpcyBuYXR1cmUgc2VlbWVkLA==",
+				"U28gZGFyaW5nIGFuZCBzd2VldCBoaXMgdGhvdWdodC4=",
+				"VGhpcyBvdGhlciBtYW4gSSBoYWQgZHJlYW1lZA==",
+				"QSBkcnVua2VuLCB2YWluLWdsb3Jpb3VzIGxvdXQu",
+				"SGUgaGFkIGRvbmUgbW9zdCBiaXR0ZXIgd3Jvbmc=",
+				"VG8gc29tZSB3aG8gYXJlIG5lYXIgbXkgaGVhcnQs",
+				"WWV0IEkgbnVtYmVyIGhpbSBpbiB0aGUgc29uZzs=",
+				"SGUsIHRvbywgaGFzIHJlc2lnbmVkIGhpcyBwYXJ0",
+				"SW4gdGhlIGNhc3VhbCBjb21lZHk7",
+				"SGUsIHRvbywgaGFzIGJlZW4gY2hhbmdlZCBpbiBoaXMgdHVybiw=",
+				"VHJhbnNmb3JtZWQgdXR0ZXJseTo=",
+				"QSB0ZXJyaWJsZSBiZWF1dHkgaXMgYm9ybi4="
+		};
+
+		vector<Xstr> ciphers;
+		Xstr random_key = generate_random_AES_key();
+
+		/* Make 8-byte nonce for CTR, fill with 0's
+		 * We use the same nonce for all encryptions, which is where the
+		 * weakness is */
+		Xstr nonce;
+		nonce.resize(AES::CTR_NONCE_SIZE, 0);
+
+		// encrypt the strings
+		for(int in = 0; in < 40; in++){
+//			cout << Xstr(strings[in], Xstr::BASE64_ENCODED).as_ascii() << endl;
+			Xstr next_str = Xstr(strings[in], Xstr::BASE64_ENCODED);
+			Xstr next_cipher = BlockCipher::encrypt(EncryptType::CTR_ENCRYPT, next_str, random_key, nonce);
+
+			ciphers.push_back( next_cipher );
+		}
+
+		Xstr keystream = break_fixed_nonce_CTR_by_substituting(ciphers);
+
+		// guesses based on partially decoded ciphers (wheel of fortune style)
+	    keystream[0]  = (ciphers[4][0] ^ 'I');
+	    keystream[30] = (ciphers[4][30] ^ 'e');
+	    keystream[33] = (ciphers[4][33] ^ 'e');
+	    keystream[34] = (ciphers[4][34] ^ 'a');
+	    keystream[35] = (ciphers[4][35] ^ 'd');
+	    keystream[36] = (ciphers[37][36] ^ 'n');
+	    keystream[37] = (ciphers[37][37] ^ ',');
+
+		// decrypt the strings with the hacked keystream
+		for(Xstr cipher: ciphers){
+//			cout << (keystream ^ cipher).as_ascii() << endl;
+		}
+
+		for(int i = 0; i < 27; i++){
+
+//			cout <<  (uint8_t)keystream[i] << " " << (uint8_t)ciphers[0][i] << " " << (uint8_t)first_cipher[i] << endl;
+
+//			cout << (int) (keystream[i] ^ ciphers[0][i]) << " " << (int) first_cipher[i];
+//			cout << endl;
+//			cout << ((keystream[i] ^ ciphers[0][i]) == first_cipher[i]);
+//			cout << endl;
+
+		}
+
+//		cout << (keystream ^ ciphers[0]) << endl;
+//		cout << Xstr(first_cipher) << endl;
+//		cout << Xstr(first_cipher).size() << endl;
+//		cout << (keystream.substr(0,Xstr(first_cipher).size()) ^ ciphers[0]).size() << endl;
+
+		crypto_exercise_test(19,
+					Xstr(first_cipher).substr(0,10) == Xstr((keystream.substr(0,Xstr(first_cipher).size()) ^ ciphers[0])).substr(0,10)
+				);
+
+	}
+	tock();
+
+	/* Exercise 20 */
+//	tick();
+//	{
+//		vector<Xstr> strings;
+//		vector<Xstr> ciphers;
+//		Xstr random_key = generate_random_AES_key();
+//
+//		/* Make 8-byte nonce for CTR, fill with 0's
+//		 * We use the same nonce for all encryptions, which is where the
+//		 * weakness is */
+//		Xstr nonce;
+//		nonce.resize(AES::CTR_NONCE_SIZE, 0);
+//
+//		ifstream string_file("plaintext_ex20.txt");
+//		string line;
+//
+//		// read string into vector from file and encrypt
+//		if (string_file.is_open()){
+//			while( getline(string_file, line) ){
+//				Xstr newstr = Xstr(line, Xstr::BASE64_ENCODED);
+//				strings.push_back( newstr );
+//
+//				Xstr next_cipher = BlockCipher::encrypt(
+//						EncryptType::CTR_ENCRYPT, newstr, random_key, nonce);
+//
+//				ciphers.push_back(next_cipher);
+//			}
+//			string_file.close();
+//		}
+//		else{
+//			cout << "Exercise 20: Unable to open file" << endl;
+//		}
+//
+//		break_fixed_nonce_CTR_statistically(ciphers);
+//
+//	}
+//	tock();
 
 	return 0;
 }

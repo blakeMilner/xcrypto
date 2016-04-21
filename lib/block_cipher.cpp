@@ -839,8 +839,6 @@ Xstr break_AES_CBC_via_server_leak(BlockCipher::CipherData cipher_info){
 
 }
 
-/* Challenge 17 */
-
 bool server_decrypt_CBC_leak_padding(BlockCipher::CipherData info){
 	Xstr decrypted = BlockCipher::decrypt(CBC_ENCRYPT, info);
 
@@ -852,7 +850,115 @@ bool server_decrypt_CBC_leak_padding(BlockCipher::CipherData info){
 	}
 }
 
-/* BLOCK CIPHER */
+
+/* Challenge 19 */
+
+bool contains_space_xor_with_special(char ch){
+	if(
+		ch == 0 or
+		ch == ('.'  ^ ' ') or
+		ch == ('/'  ^ ' ') or
+		ch == (','  ^ ' ') or
+		ch == ('!'  ^ ' ') or
+		ch == ('-'  ^ ' ') or
+		ch == (':'  ^ ' ') or
+		ch == ('\'' ^ ' ') or
+		ch == ('?'  ^ ' ') or
+		ch == (';'  ^ ' ') or
+		ch == ('\n' ^ ' ')
+	)
+		return true;
+	else
+		return false	;
+
+}
+
+bool contains_english_characters(char ch){
+	if(
+			(ch >= '0' && ch <= '9')
+		|| (ch >= 'a' && ch <= 'z')
+		|| (ch >= 'A' && ch <= 'Z')
+		|| ch == ' ' || ch == '-' || ch == '\''
+		|| ch == '\n' || ch == '/' || ch == ','
+		|| ch == '.' || ch == '?'
+	){
+		return true;
+	}
+	else{
+		return false;
+	}
+}
+
+Xstr break_fixed_nonce_CTR_by_substituting(vector<Xstr> input){
+	// make keystream holder
+	// we don't know max length of cipher right now but we will
+	Xstr keystream;
+	keystream.fill(250, 0);
+
+	int max_cipher_size = 0;
+
+	list<int> space_elements;
+
+	for(auto outer_cipher : input){
+		if(outer_cipher.size() > max_cipher_size){
+			max_cipher_size = outer_cipher.size();
+		}
+
+		// Initialize vector with all elements
+		space_elements.clear();
+		for(int i = 0; i < outer_cipher.size(); i++){
+			space_elements.push_back(i);
+		}
+
+		// do analysis on ciphers, search one byte at a time
+		for(auto inner_cipher : input){
+			// results in a cipher same length as shortest input cipher
+			Xstr combined = inner_cipher ^ outer_cipher;
+
+			for(int i = 0; i < combined.size(); i++){
+				if( !contains_english_characters(combined[i]) and
+					!contains_space_xor_with_special(combined[i]) )
+				{
+					space_elements.remove(i);
+				}
+			}
+		}
+
+		// using info gleaned from this cipher, partially reconstruct keystream
+		for(int space_pos: space_elements){
+			keystream[space_pos] = outer_cipher[space_pos] ^ ' ';
+		}
+	}
+
+	keystream.resize(max_cipher_size);
+
+	return keystream;
+}
+
+
+// Challenge 20
+void break_fixed_nonce_CTR_statistically(vector<Xstr> input){
+
+}
+
+
+
+
+
+
+/*
+ *
+ *
+ *
+ *
+ *
+ *
+ * BLOCK CIPHER
+ *
+ *
+ *
+ *
+ */
 
 // Set AES as default
 CipherType BlockCipher::cipher_mode = CipherType::AES;
