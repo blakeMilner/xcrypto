@@ -83,6 +83,10 @@ Xstr::Xstr(string input, EncodeType encoding){
 	}
 }
 
+Xstr::Xstr(size_t n, char c){
+	ascii_str.resize(n, c);
+}
+
 Xstr::~Xstr(){
 }
 
@@ -224,9 +228,18 @@ string Xstr::int_to_ascii(uint64_t input){
 
 // TODO: implement changes in this section (accounting for remainder) into other functions)
 // TODO: document why we use % 3 or % 4
+// TODO: output == placeholders
 
 string Xstr::ascii_to_base64(string input){
+	int input_length = input.size();
+
+    if (input[input.size() - 1] == '=') input_length--;
+    if (input[input.size() - 2] == '=') input_length--;
+    if (input[input.size() - 3] == '=') input_length--;
+
     int output_length = ceil((float) (input.size() * 4) / (float) 3);
+
+//    cout << output_length << endl;
 
     string encoded_data = string();
     encoded_data.resize(output_length, 0);
@@ -243,6 +256,10 @@ string Xstr::ascii_to_base64(string input){
 		encoded_data[b64    ] = encoding_table[ encoded_data[b64    ] ];
 		encoded_data[b64 + 1] = encoding_table[ encoded_data[b64 + 1] ];
 
+
+		cout << "ab1" << endl;
+		cout << "encoded_data " << (int)encoded_data[b64    ] << endl;
+		cout << "encoded_data +1 " << (int)encoded_data[b64   +1 ] << endl;
 		asc = 1;
 		b64 = 2;
 	}
@@ -260,6 +277,8 @@ string Xstr::ascii_to_base64(string input){
 
 		asc = 2;
 		b64 = 3;
+
+		cout << "ab2" << endl;
 	}
 
     for (asc, b64; asc < input.size(); asc += 3, b64 += 4){
@@ -276,40 +295,104 @@ string Xstr::ascii_to_base64(string input){
         encoded_data[b64 + 1] = encoding_table[ encoded_data[b64 + 1] ];
         encoded_data[b64 + 2] = encoding_table[ encoded_data[b64 + 2] ];
         encoded_data[b64 + 3] = encoding_table[ encoded_data[b64 + 3] ];
+
     }
+
+//    for(int i =0; i < encoded_data.size(); i++){
+//    cout << " >>" << (int)encoded_data[i];
+//    }
+//    cout << endl;
 
     return encoded_data;
 }
 
 // TODO: URGENT: STILL LOSING CHARS AT THE END OF THE STRING...
 // TDDO: check that number is valid Base64
+// TODO: update other with new format
 
 string Xstr::base64_to_ascii(string input){
-	int input_length = input.size();
+	int in_len = input.size();
 
-    if (input[input.size() - 1] == '=') input_length--;
-    if (input[input.size() - 2] == '=') input_length--;
-    if (input[input.size() - 3] == '=') input_length--;
+    if (input[in_len - 1] == '=') in_len--;
+    if (input[in_len - 2] == '=') in_len--;
+    if (input[in_len - 3] == '=') in_len--;
 
-    int output_length = (float) (input_length * 3) / (float) 4;
+    int output_length = ceil((float)(in_len * 3) / (float) 4);
 
-    string decoded_data = string();
-    decoded_data.resize(output_length, 0);
+//    cout << output_length << endl;
 
-    for(int asc = 0, b64 = 0; b64 < (int) input.size(); asc += 3, b64 += 4){
-        if (asc > output_length - 3) break;
+    string decoded_data = string(output_length, 0);
+
+    int asc = 0;
+    int b64 = 0;
+
+    uint8_t base64_1 = decoding_table[ input[b64    ] ];
+    uint8_t base64_2 = decoding_table[ input[b64 + 1] ];
+    uint8_t base64_3 = decoding_table[ input[b64 + 2] ];
+    uint8_t base64_4;
+
+	if((input.size() % 4) == 1){
+        decoded_data[asc    ] = ((base64_1           ));
+
+		cout << "ba1" << endl;
+//		cout << "decoded_data " << (int)decoded_data[asc    ] << endl;
+
+   		asc += 1;
+   		b64 += 1;
+   	}
+   	else if((input.size() % 4) == 2){
 
         uint8_t base64_1 = decoding_table[ input[b64    ] ];
         uint8_t base64_2 = decoding_table[ input[b64 + 1] ];
-        uint8_t base64_3 = decoding_table[ input[b64 + 2] ];
-        uint8_t base64_4 = decoding_table[ input[b64 + 3] ];
+
+		decoded_data[asc    ] = ((base64_1 & 0b111100) >> 2);
+		decoded_data[asc + 1] = ((base64_1 & 0b000011) << 6) + ((base64_2          ));
+
+		asc += 2;
+		b64 += 2;
+
+		cout << "ba2" << endl;
+   	}
+   	else if((input.size() % 4) == 3){
+        decoded_data[asc    ] = ((base64_1 & 0b110000) << 4);
+        decoded_data[asc + 1] = ((base64_1 & 0b001111) << 4) + ((base64_2 & 0b111100) >> 2);
+        decoded_data[asc + 1] = ((base64_2 & 0b110000) << 6) + ((base64_3			));
+
+//        cout << (int)decoded_data[asc    ] << " "<< (int)decoded_data[asc+1    ] << " " << (int)	decoded_data[asc+2    ];
+
+   		asc += 3;
+   		b64 += 3;
+
+		cout << "ba3" << endl;
+   	}
+
+	// main loop, for the rest of the base 64 characters that are aligned to an 8-byte multiple
+    for(asc, b64; b64 < (int) input.size(); asc += 3, b64 += 4){
+        base64_1 = decoding_table[ input[b64    ] ];
+        base64_2 = decoding_table[ input[b64 + 1] ];
+        base64_3 = decoding_table[ input[b64 + 2] ];
+        base64_4 = decoding_table[ input[b64 + 3] ];
+
+//       cout << ">>>> " << input[b64    ] << input[b64 +1   ] << input[b64 +2   ] << input[b64    +3]  << endl;
 
         decoded_data[asc    ] = ((base64_1           ) << 2) + ((base64_2 & 0b110000) >> 4);
         decoded_data[asc + 1] = ((base64_2 & 0b001111) << 4) + ((base64_3 & 0b111100) >> 2);
         decoded_data[asc + 2] = ((base64_3 & 0b000011) << 6) + ((base64_4           )     );
 
 //        cout << asc + 2 << endl;
+
+//        cout << (unsigned char) decoded_data[asc] << " " << (unsigned char) decoded_data[asc+1] << " " << (unsigned char) decoded_data[asc+2] << endl;
     }
+//    cout <<  (int) decoded_data[asc] << " " << (int)  decoded_data[asc+1] << " " << (int) decoded_data[asc+2] << endl;
+
+    if( (input.size() % 4) == 3){
+		if( decoding_table[ input[0] ] <= 0b001111 )
+			decoded_data.erase(0, 1);
+
+		if( decoding_table[ input[0] ] == 0 and decoding_table[ input[1] ] <= 0b000011 )
+			decoded_data.erase(0, 2);
+    }
+
 
     return decoded_data;
 }
@@ -528,6 +611,27 @@ Xstr Xstr::XOR(Xstr xor_str){
 	}
 
 	return shorter;
+}
+
+Xstr Xstr::XOR_wraparound(Xstr xor_str){
+	Xstr longer, shorter;
+
+	if(this->size() > xor_str.size()){
+		longer = *this;
+		shorter = xor_str;
+	}
+	else{
+		longer = xor_str;
+		shorter = *this;
+	}
+
+	// when we get to the end of the shorter string, we just wrap around
+	// and start back at the first character of the shorter string
+	for(int i = 0; i < longer.size(); i++){
+		longer[i] = longer[i] ^ shorter[i % shorter.size()];
+	}
+
+	return longer;
 }
 
 Xstr Xstr::embed_string(Xstr substring, int position, int bytes){
@@ -914,6 +1018,8 @@ string Xstr::pretty(EncodeType encoding /* = BASE64_ENCODED */){
 
 
 
+/* Challenge 3 */
+
 decoded_message solve_single_byte_xor(Xstr encoded){
 	// TODO: replace this with init function
 	decoded_message message;
@@ -956,10 +1062,14 @@ decoded_message solve_single_byte_xor(Xstr encoded){
 	return message;
 }
 
+/* Challenge 6 */
+
 // struct that defines how to sort a vector containing keysize-distance pairs
 struct myClass {
 	bool operator() (std::pair<int, int> i, std::pair<int, int> j) { return (i.second < j.second); }
 } hamming_distance_sort_struct;
+
+
 
 decoded_message solve_repeating_key_xor(Xstr encoded){
 	decoded_message message;
@@ -968,15 +1078,15 @@ decoded_message solve_repeating_key_xor(Xstr encoded){
 
 	// compute hamming distance between first and second groups of KEYSIZE LENGTH
 	// save in vector as pair for sorting
-	for(int keysize = MIN_KEYSIZE; keysize <= MAX_KEYSIZE; keysize++){
+	for(int keysize = MIN_XOR_KEYSIZE; keysize <= MAX_XOR_KEYSIZE; keysize++){
 		int dist = 0;
 
 		// sum together distances for all successive pairs
 		for(int keypair = 0; keypair < (encoded.size() / keysize) - 1; keypair++){
-			Xstr first_keysize =  encoded.substr((keypair * keysize)           , keysize);
-			Xstr second_keysize = encoded.substr((keypair * keysize) + keysize , keysize);
+			Xstr first_block =  encoded.substr((keypair * keysize)           , keysize);
+			Xstr second_block = encoded.substr((keypair * keysize) + keysize , keysize);
 
-			dist += first_keysize.hamming_distance( second_keysize );
+			dist += first_block.hamming_distance( second_block );
 		}
 
 		std::pair<int, int> key_pair = std::pair<int, int>(keysize, dist);
@@ -995,23 +1105,22 @@ decoded_message solve_repeating_key_xor(Xstr encoded){
 	for(int keysize_idx = 0; keysize_idx < 5; keysize_idx++){
 		int keysize = key_distances[keysize_idx].first;
 
-		int tposed_block_size = encoded.size() / keysize;
-	    string tposed_block = string();
-	    tposed_block.resize(tposed_block_size, 0);
+		int tposed_block_size = encoded.size() / keysize; // round down
+	    string tposed_block = string(tposed_block_size, 0);
 
 	    string multi_byte_key = string();
 	    multi_byte_key.resize(keysize, 0);
 
-	    for(int key_chr = 0; key_chr < keysize; key_chr++){
+	    for(int key_pos = 0; key_pos < keysize; key_pos++){
 
 	    	// make transposed block of size keysize by picking out every n'th element (n = key_chr)
 		    for(int i = 0; i < tposed_block_size; i++){
-		    	tposed_block[i] = encoded[(i * keysize) + key_chr];
+		    	tposed_block[i] = encoded[(i * keysize) + key_pos];
 		    }
 
 		    // find single-byte key that best solves according to histgram.
 	    	decoded_message single_byte_key = solve_single_byte_xor(tposed_block);
-	    	multi_byte_key[key_chr] = single_byte_key.key[0];
+	    	multi_byte_key[key_pos] = single_byte_key.key[0];
 	    }
 
 	    // decode message according to key and score it based on english characters
@@ -1032,4 +1141,90 @@ decoded_message solve_repeating_key_xor(Xstr encoded){
 	message.key_found = true;
 
 	return message;
+}
+
+
+decoded_message solve_repeating_key_xor_2(Xstr encoded, int keysize){
+	decoded_message message;
+
+//	int tposed_block_size = encoded.size() / keysize; // round down
+	string tposed_block = string(keysize, 0);
+
+	string multi_byte_key = string();
+	multi_byte_key.resize(keysize, 0);
+
+	cout << "1" << endl;
+
+	for(int key_pos = 0; key_pos < keysize; key_pos++){
+
+		// make transposed block of size keysize by picking out every n'th element (n = key_chr)
+		for(int i = 0; i < keysize; i++){
+			tposed_block[i] = encoded[(i * keysize) + key_pos];
+		}
+
+		cout << "2 " << Xstr(tposed_block, Xstr::ASCII_ENCODED).as_hex() << endl;
+
+
+
+		// find single-byte key that best solves according to histgram.
+		decoded_message single_byte_key = solve_single_byte_xor(tposed_block);
+		cout << "3 "<< endl;
+		multi_byte_key[key_pos] = single_byte_key.key[0];
+		cout << "4 " << endl;
+	}
+
+	cout << "5" << endl;
+
+	// decode message according to key and score it based on english characters
+	Xstr decoded_message = encoded ^ multi_byte_key;
+
+
+	cout << "6" << endl;
+
+	// return message decoded
+	message.decoded = decoded_message;
+	message.key = multi_byte_key;
+	message.score = 0;
+	message.key_found = true;
+
+	cout << "7" << endl;
+
+	return message;
+}
+
+// TODO: make analyzer class for these and others
+bool contains_space_xor_with_special(char ch){
+	if(
+		ch == 0 or
+		ch == ('.'  ^ ' ') or
+		ch == ('/'  ^ ' ') or
+		ch == (','  ^ ' ') or
+		ch == ('!'  ^ ' ') or
+		ch == ('-'  ^ ' ') or
+		ch == (':'  ^ ' ') or
+		ch == ('\'' ^ ' ') or
+		ch == ('?'  ^ ' ') or
+		ch == (';'  ^ ' ') or
+		ch == ('\n' ^ ' ')
+	)
+		return true;
+	else
+		return false	;
+
+}
+
+bool contains_english_characters(char ch){
+	if(
+			(ch >= '0' && ch <= '9')
+		|| (ch >= 'a' && ch <= 'z')
+		|| (ch >= 'A' && ch <= 'Z')
+		|| ch == ' ' || ch == '-' || ch == '\''
+		|| ch == '\n' || ch == '/' || ch == ','
+		|| ch == '.' || ch == '?'
+	){
+		return true;
+	}
+	else{
+		return false;
+	}
 }

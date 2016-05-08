@@ -7,10 +7,8 @@
 #include "cookie.hpp"
 
 
-
-
-
-// Code for unique cookie functionality
+// TODO: put this in utils class
+// function for cookie operations
 string replace_str(string str, string oldStr, string newStr){
 	size_t pos = 0;
 	while((pos = str.find(oldStr, pos)) != std::string::npos){

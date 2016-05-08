@@ -1,6 +1,7 @@
 #include "block_cipher.hpp"
 
 
+// TODO put these in util class
 int generate_rand_num_between(int lbound, int ubound){
 	return (rand() % (ubound - lbound)) + lbound;
 }
@@ -20,6 +21,7 @@ Xstr generate_random_ascii_string(int num_bytes){
 	return rand_s;
 }
 
+// TODO: put these in BlockCipher class
 Xstr generate_random_AES_IV(){
 	return generate_random_ascii_string(AES::BLOCKSIZE);
 }
@@ -852,43 +854,6 @@ bool server_decrypt_CBC_leak_padding(BlockCipher::CipherData info){
 
 
 /* Challenge 19 */
-
-bool contains_space_xor_with_special(char ch){
-	if(
-		ch == 0 or
-		ch == ('.'  ^ ' ') or
-		ch == ('/'  ^ ' ') or
-		ch == (','  ^ ' ') or
-		ch == ('!'  ^ ' ') or
-		ch == ('-'  ^ ' ') or
-		ch == (':'  ^ ' ') or
-		ch == ('\'' ^ ' ') or
-		ch == ('?'  ^ ' ') or
-		ch == (';'  ^ ' ') or
-		ch == ('\n' ^ ' ')
-	)
-		return true;
-	else
-		return false	;
-
-}
-
-bool contains_english_characters(char ch){
-	if(
-			(ch >= '0' && ch <= '9')
-		|| (ch >= 'a' && ch <= 'z')
-		|| (ch >= 'A' && ch <= 'Z')
-		|| ch == ' ' || ch == '-' || ch == '\''
-		|| ch == '\n' || ch == '/' || ch == ','
-		|| ch == '.' || ch == '?'
-	){
-		return true;
-	}
-	else{
-		return false;
-	}
-}
-
 Xstr break_fixed_nonce_CTR_by_substituting(vector<Xstr> input){
 	// make keystream holder
 	// we don't know max length of cipher right now but we will
@@ -935,10 +900,68 @@ Xstr break_fixed_nonce_CTR_by_substituting(vector<Xstr> input){
 	return keystream;
 }
 
+/* Challenge 20 */
 
-// Challenge 20
-void break_fixed_nonce_CTR_statistically(vector<Xstr> input){
+vector<Xstr> break_fixed_nonce_CTR_statistically(vector<Xstr> input){
+	// find smallest cipher
+	int minsize = 1000000;
+	int keysize = AES::BLOCKSIZE; // ??????????????
 
+	for(Xstr cipher: input){
+		if(cipher.size() < minsize)
+			minsize = cipher.size();
+	}
+
+	// truncate ciphertexts to length of smallest cipher
+	Xstr encoded = Xstr(input.size() * minsize, 0);
+
+	for(Xstr cipher: input){
+		cipher.resize(minsize);
+		encoded += cipher;
+	}
+
+	/* solve ciphers using same method as repeating-key-xor */
+
+	// TODO: make a function for the following, and reuse it in exercise 6
+	int tposed_block_size = encoded.size() / keysize; // round down
+	Xstr tposed_block = Xstr(encoded.size(), 0);
+
+	// make transposed block of size keysize by picking out every n'th element (n = key_chr)
+	for(int i = 0; i < encoded.size(); i++){
+		int row = i % keysize;
+		int line = i / keysize;
+
+		tposed_block[(row * tposed_block_size) + line] = encoded[i];
+	}
+
+	Xstr key = Xstr();
+
+	for(int blk = 0; blk < encoded.size() / tposed_block_size; blk++){
+		cout << blk <<  " " << encoded.size() / tposed_block_size << endl;
+
+		// find single-byte key that best solves according to histogram.
+		cout << tposed_block.get_single_block(blk).size() << endl;
+
+		decoded_message repeating_byte_key = solve_single_byte_xor(tposed_block.get_single_block(blk));
+
+		key += repeating_byte_key.key[0];
+	}
+
+	cout << key << endl;
+
+//	for(int i = 0; i < encoded.size(); i++){
+//		int row = i % tposed_block_size;
+//		int line = i / tposed_block_size;
+//
+//		tposed_block[(row * tposed_block_size) + line] = decoded[i];
+//	}
+//
+//	cout << "= " << tposed_block << endl;
+//
+//	// decode message according to key and score it based on english characters
+//	Xstr decoded_message = input[0].XOR_wraparound(repeating_byte_key.key);
+//
+//	cout << decoded_message << endl;
 }
 
 

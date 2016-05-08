@@ -22,12 +22,14 @@ using namespace std;
 #define NUMBER_BASE64_CHARS 64
 #define NUMBER_ASCII_CHARS 256
 
-#define MIN_KEYSIZE 2
-#define MAX_KEYSIZE 40
+#define MIN_XOR_KEYSIZE 2
+#define MAX_XOR_KEYSIZE 40
 
 #define NUMBER_COMMON_CHARS 6
 #define NUMBER_BASE64_CHARS 64
 
+// TODO: refactor all uint8_t as uint8
+typedef uint8_t uint8;
 
 
 /* functions and tables related to encoding BASE64 */
@@ -74,10 +76,10 @@ class Xstr {
 
 public:
 	enum PaddingType	{
-			PKCS7_PADDING = '7',
-			ZERO_PADDING = '0',
+			PKCS7_PADDING 	= '7',
+			ZERO_PADDING 	= '0',
 			UNKNOWN_PADDING = 'U',
-			NO_PADDING = 'N'
+			NO_PADDING 		= 'N'
 			};
 
 	enum EncodeType { ASCII_ENCODED, BASE64_ENCODED, HEX_ENCODED };
@@ -89,6 +91,7 @@ public:
 	Xstr(uint64_t); // for when a string is to be extracted from string binary
 	Xstr(string); // assume lone string is in ascii
 	Xstr(string, EncodeType); // user specifies type
+	Xstr(size_t n, char c);
 	virtual ~Xstr();
 
 	// std::string functions that must be implemented
@@ -126,6 +129,7 @@ public:
 	void increment(int step = 1);
 	void decrement(int step = -1);
 	Xstr XOR(Xstr xor_str);
+	Xstr XOR_wraparound(Xstr xor_str);
 	Xstr embed_string(Xstr substring, int position, int bytes);
 	Xstr little_endian();
 
@@ -328,6 +332,9 @@ typedef struct {
 
 decoded_message solve_single_byte_xor(Xstr encoded);
 decoded_message solve_repeating_key_xor(Xstr encoded);
+decoded_message solve_repeating_key_xor_2(Xstr encoded, int keysize);
 
+bool contains_space_xor_with_special(char ch);
+bool contains_english_characters(char ch);
 
 #endif

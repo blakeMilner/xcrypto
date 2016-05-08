@@ -128,8 +128,10 @@ private:
 
 
 //  TODO: make function pointers for AES/DES encryption
+// TODO: make option to hand in vector of ciphers and encrypt/decrypt
 class BlockCipher {
 public:
+	// TODO: separate IV and nonce and make union instead
 	struct CipherData {
 		Xstr message;
 		Xstr key;
@@ -176,11 +178,9 @@ Xstr break_AES_CBC_via_server_leak(BlockCipher::CipherData cipher_infor);
 bool server_decrypt_CBC_leak_padding(BlockCipher::CipherData info);
 
 // Challenge 19
-bool contains_space_xor_with_special(char ch);
-bool contains_english_characters(char ch);
 Xstr break_fixed_nonce_CTR_by_substituting(vector<Xstr> input);
 
 // Challenge 20
-void break_fixed_nonce_CTR_statistically(vector<Xstr> input);
+vector<Xstr> break_fixed_nonce_CTR_statistically(vector<Xstr> input);
 
 #endif
