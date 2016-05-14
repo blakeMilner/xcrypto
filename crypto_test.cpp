@@ -9,11 +9,13 @@
 #include "lib/codec.hpp"
 #include "lib/block_cipher.hpp"
 #include "lib/cookie.hpp"
+#include "lib/rng.hpp"
 
 #include <ctime>
 #include <fstream>
 #include <map>
 #include <vector>
+#include <array>
 
 using namespace std;
 
@@ -454,47 +456,88 @@ int main(int argc, char* argv[])
 //	}
 //	tock();
 //
-	/* Exercise 20 */
+//	/* Exercise 20 */
+//	tick();
+//	{
+//		vector<Xstr> strings;
+//		vector<Xstr> ciphers;
+//		Xstr random_key = generate_random_AES_key();
+//
+//		/* Make 8-byte nonce for CTR, fill with 0's
+//		 * We use the same nonce for all encryptions, which is where the
+//		 * weakness is */
+//		Xstr nonce;
+//		nonce.resize(AES::CTR_NONCE_SIZE, 0);
+//
+//		ifstream string_file("plaintext_ex20.txt");
+//		string line;
+//
+//		// read string into vector from file and encrypt
+//		// TODO: make function that will encrypt batch
+//		if (string_file.is_open()){
+//			while( getline(string_file, line) ){
+//				Xstr newstr = Xstr(line, Xstr::BASE64_ENCODED);
+//				strings.push_back( newstr );
+//
+//				Xstr next_cipher = BlockCipher::encrypt(
+//						EncryptType::CTR_ENCRYPT, newstr, random_key, nonce);
+//
+//				ciphers.push_back(next_cipher);
+//			}
+//			string_file.close();
+//		}
+//		else{
+//			cout << " Unable to open file" << endl;
+//		}
+//
+//		vector<Xstr> decoded = break_fixed_nonce_CTR_statistically(ciphers);
+//
+////		for (auto i = decoded.begin(); i != decoded.end(); ++i)
+////		    std::cout << *i << ' ' << endl;
+//
+//	}
+//	tock();
+
+	/* Exercise 21 */
 	tick();
 	{
-		vector<Xstr> strings;
-		vector<Xstr> ciphers;
-		Xstr random_key = generate_random_AES_key();
+		std::array<long int, 30> expected_out =
+				{
+				1791095845, -12091157,	-59818354, -1431042742,
+				491263,	1690620555,	1298508491,	-1144451193, 1637472845,
+				1013994432, 396591248, 1703301249, 799981516, 1666063943,
+				1484172013,
 
-		/* Make 8-byte nonce for CTR, fill with 0's
-		 * We use the same nonce for all encryptions, which is where the
-		 * weakness is */
-		Xstr nonce;
-		nonce.resize(AES::CTR_NONCE_SIZE, 0);
+				2469588189546311528, 5937829314747939781, -1488664451840123274,
+				8414607737543979063, -8983179180370611640, -4813816549494704131,
+				-5143718920953096580, -3311530619265271089,	5943497028716478977,
+				2456665931235054654, 5698940622110840090, -5231858944456961090,
+				5552614544520314474, 6131760866643541936, 8415486058342034190
+				};
 
-		ifstream string_file("plaintext_ex20.txt");
-		string line;
+		std::array<long int, 30> actual_out;
 
-		// read string into vector from file and encrypt
-		// TODO: make function that will encrypte batch
-		if (string_file.is_open()){
-			while( getline(string_file, line) ){
-				Xstr newstr = Xstr(line, Xstr::BASE64_ENCODED);
-				strings.push_back( newstr );
+		// 32-bit test
+		MersenneTwister::set_bitsize(MersenneTwister::_32BIT);
+		MersenneTwister::srand_mt(1);
 
-				Xstr next_cipher = BlockCipher::encrypt(
-						EncryptType::CTR_ENCRYPT, newstr, random_key, nonce);
-
-				ciphers.push_back(next_cipher);
-			}
-			string_file.close();
-		}
-		else{
-			cout << " Unable to open file" << endl;
+		int i;
+		for(i = 0; i < 15; i++){
+			actual_out[i] = MersenneTwister::rand_mt();
 		}
 
-		vector<Xstr> decoded = break_fixed_nonce_CTR_statistically(ciphers);
+		// 64-bit test
+		MersenneTwister::set_bitsize(MersenneTwister::_64BIT);
+		MersenneTwister::srand_mt(1);
 
-//		for (auto i = decoded.begin(); i != decoded.end(); ++i)
-//		    std::cout << *i << ' ' << endl;
+		for(; i < 30; i++){
+			actual_out[i] = MersenneTwister::rand_mt();
+		}
 
+		crypto_exercise_test(21, expected_out == actual_out);
 	}
 	tock();
+
 
 	return 0;
 }
