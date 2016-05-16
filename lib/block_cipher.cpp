@@ -1,33 +1,13 @@
 #include "block_cipher.hpp"
 
 
-// TODO put these in util class
-int generate_rand_num_between(int lbound, int ubound){
-	return (rand() % (ubound - lbound)) + lbound;
-}
-
-Xstr generate_random_ascii_string(int num_bytes){
-	// seed the rand() function with the current time.
-	srand(time(NULL));
-
-	Xstr rand_s;
-	rand_s.resize(num_bytes, 0);
-
-	// fill each byte of the key up with random numbers
-	for(int i = 0; i < num_bytes; i++){
-		rand_s[i] = (uint8_t) generate_rand_num_between(0, 256);
-	}
-
-	return rand_s;
-}
-
 // TODO: put these in BlockCipher class
 Xstr generate_random_AES_IV(){
-	return generate_random_ascii_string(AES::BLOCKSIZE);
+	return RNG::rand_ascii_string(AES::BLOCKSIZE);
 }
 
 Xstr generate_random_AES_key(){
-	return generate_random_ascii_string(AES::BLOCKSIZE);
+	return RNG::rand_ascii_string(AES::BLOCKSIZE);
 }
 
 /* AES ENCRYPTION STUFF */
@@ -512,11 +492,11 @@ bool detect_ECB_AES_encryption(Xstr message){
 }
 
 Xstr encrypt_using_CBC_or_ECB(Xstr message){
-	int num_rand_prefix_bytes = generate_rand_num_between(5, 10);
-	int num_rand_suffix_bytes = generate_rand_num_between(5, 10);
+	int num_rand_prefix_bytes = RNG::rand_in_range(5, 10);
+	int num_rand_suffix_bytes = RNG::rand_in_range(5, 10);
 
-	Xstr prefix_string = generate_random_ascii_string(num_rand_prefix_bytes);
-	Xstr suffix_string = generate_random_ascii_string(num_rand_suffix_bytes);
+	Xstr prefix_string = RNG::rand_ascii_string(num_rand_prefix_bytes);
+	Xstr suffix_string = RNG::rand_ascii_string(num_rand_suffix_bytes);
 
 	Xstr appended_message = prefix_string + message + suffix_string;
 	appended_message = appended_message.add_padding(Xstr::PKCS7_PADDING, AES::BLOCKSIZE); // pad appended message up to even block size
@@ -756,7 +736,7 @@ BlockCipher::CipherData pad_random_string_and_encrypt_CBC(){
 	static Xstr random_IV = generate_random_AES_IV();
 
 	// create unknown string only once, by picking from list of 10
-	static int i = generate_rand_num_between(0, 9);
+	static int i = RNG::rand_in_range(0, 9);
 	static string random_string = unknown_strings[i];
 
 	static Xstr unknown_string = Xstr(random_string, Xstr::BASE64_ENCODED);

@@ -226,50 +226,116 @@ string Xstr::int_to_ascii(uint64_t input){
 	return output;
 }
 
-// TODO: implement changes in this section (accounting for remainder) into other functions)
 // TODO: document why we use % 3 or % 4
-// TODO: output == placeholders
+string Xstr::base64_to_ascii(string input){
+	int in_len = input.size();
 
-string Xstr::ascii_to_base64(string input){
-	int input_length = input.size();
+//    cout << in_len << endl;
 
-    if (input[input.size() - 1] == '=') input_length--;
-    if (input[input.size() - 2] == '=') input_length--;
-    if (input[input.size() - 3] == '=') input_length--;
+    // TODO: make sure we don't have less than 1 character left after this
+	// removing any trailing bit padding
+	for(int i = 0; i < in_len; i++)
+		if (input[in_len - 1] == '=') in_len--;
 
-    int output_length = ceil((float) (input.size() * 4) / (float) 3);
+    // 8 bits for ASCII, 6 bits for B64
+    int out_len = ceil((in_len * 6.0) / 8.0);
 
-//    cout << output_length << endl;
+//    cout << out_len << " " << in_len << endl;
 
-    string encoded_data = string();
-    encoded_data.resize(output_length, 0);
+    string decoded_data = string(out_len, 1);
 
     int asc = 0;
     int b64 = 0;
 
-   	if((input.size() % 3) == 1){
-		uint8_t ascii_1 = input[asc    ];
+    uint8_t base64_1 = decoding_table[ input[b64    ] ];
+    uint8_t base64_2 = decoding_table[ input[b64 + 1] ];
+    uint8_t base64_3 = decoding_table[ input[b64 + 2] ];
+    uint8_t base64_4;
 
-		encoded_data[b64    ] = ((ascii_1 & 0b11111100) >> 2);
-		encoded_data[b64 + 1] = ((ascii_1 & 0b00000011));
+	if((in_len % 4) == 1){
+        decoded_data[asc    ] = ((base64_1           ));
+
+//		cout << "ba1" << endl;
+
+   		asc += 1;
+   		b64 += 1;
+   	}
+   	else if((in_len % 4) == 2){
+		decoded_data[asc    ] = ((base64_1 & 0b111100) >> 2);
+		decoded_data[asc + 1] = ((base64_1 & 0b000011) << 6) + ((base64_2          ));
+
+		asc += 2;
+		b64 += 2;
+
+//		cout << "ba2" << endl;
+   	}
+   	else if((in_len % 4) == 3){
+        decoded_data[asc    ] = ((base64_1 & 0b110000) >> 4);
+        decoded_data[asc + 1] = ((base64_1 & 0b001111) << 4) + ((base64_2 & 0b111100) >> 2);
+        decoded_data[asc + 2] = ((base64_2 & 0b000011) << 6) + ((base64_3			));
+
+   		asc += 3;
+   		b64 += 3;
+
+//		cout << "ba3" << endl;
+   	}
+
+	// main loop, for the rest of the base 64 characters that are aligned to an 8-byte multiple
+    for( ; b64 < in_len; asc += 3, b64 += 4){
+        base64_1 = decoding_table[ input[b64    ] ];
+        base64_2 = decoding_table[ input[b64 + 1] ];
+        base64_3 = decoding_table[ input[b64 + 2] ];
+        base64_4 = decoding_table[ input[b64 + 3] ];
+
+        decoded_data[asc    ] = ((base64_1           ) << 2) + ((base64_2 & 0b110000) >> 4);
+        decoded_data[asc + 1] = ((base64_2 & 0b001111) << 4) + ((base64_3 & 0b111100) >> 2);
+        decoded_data[asc + 2] = ((base64_3 & 0b000011) << 6) + ((base64_4           )     );
+    }
+
+//    cout << Xstr(decoded_data, Xstr::ASCII_ENCODED).as_hex() << endl;
+
+
+    return decoded_data;
+}
+
+
+// TODO: document why we use % 3 or % 4
+
+string Xstr::ascii_to_base64(string input){
+	int in_len = input.size();
+
+    // 8 bits for ASCII, 6 bits for B64
+    int out_len = ceil((in_len * 8.0) / 6.0);
+
+//    cout << out_len << " " << in_len << endl;
+
+    string encoded_data = string();
+    encoded_data.resize(out_len, 1);
+
+    int asc = 0;
+    int b64 = 0;
+
+    uint8_t ascii_1 = input[asc    ];
+    uint8_t ascii_2 = input[asc + 1];
+    uint8_t ascii_3;
+
+    /* Take care of uneven ASCII/Base64 alignment */
+   	if((in_len % 3) == 1){
+		encoded_data[b64    ] = ((ascii_1 & 0b11000000) >> 6);
+		encoded_data[b64 + 1] = ((ascii_1 & 0b00111111));
 
 		encoded_data[b64    ] = encoding_table[ encoded_data[b64    ] ];
 		encoded_data[b64 + 1] = encoding_table[ encoded_data[b64 + 1] ];
 
 
-		cout << "ab1" << endl;
-		cout << "encoded_data " << (int)encoded_data[b64    ] << endl;
-		cout << "encoded_data +1 " << (int)encoded_data[b64   +1 ] << endl;
+//		cout << "ab1" << endl;
 		asc = 1;
 		b64 = 2;
 	}
-	else if((input.size() % 3) == 2){
-		uint8_t ascii_1 = input[asc    ];
-		uint8_t ascii_2 = input[asc + 1];
-
-		encoded_data[b64    ] = ((ascii_1 & 0b11111100) >> 2);
-		encoded_data[b64 + 1] = ((ascii_1 & 0b00000011) << 4) + ((ascii_2 & 0b11110000) >> 4);
-		encoded_data[b64 + 2] = ((ascii_2 & 0b00001111));
+	else if((in_len % 3) == 2){
+		encoded_data[b64    ] = ((ascii_1 & 0b11110000) >> 4);
+		encoded_data[b64 + 1] = ((ascii_1 & 0b00001111) << 2) + ((ascii_2 & 0b11000000) >> 6);
+		encoded_data[b64 + 2] = ((ascii_2 & 0b00111111));
 
 		encoded_data[b64    ] = encoding_table[ encoded_data[b64    ] ];
 		encoded_data[b64 + 1] = encoding_table[ encoded_data[b64 + 1] ];
@@ -278,13 +344,14 @@ string Xstr::ascii_to_base64(string input){
 		asc = 2;
 		b64 = 3;
 
-		cout << "ab2" << endl;
+//		cout << "ab2" << endl;
 	}
 
-    for (asc, b64; asc < input.size(); asc += 3, b64 += 4){
+   	// perform bulk of work for alighned lower bits
+    for ( ; asc < in_len; asc += 3, b64 += 4){
         uint8_t ascii_1 = input[asc    ];
         uint8_t ascii_2 = input[asc + 1];
-        uint8_t ascii_3 = input[asc + 2];
+        uint8_t ascii_3 = input[asc + 2];;
 
         encoded_data[b64    ] = ((ascii_1 & 0b11111100) >> 2);
         encoded_data[b64 + 1] = ((ascii_1 & 0b00000011) << 4) + ((ascii_2 & 0b11110000) >> 4);
@@ -296,105 +363,25 @@ string Xstr::ascii_to_base64(string input){
         encoded_data[b64 + 2] = encoding_table[ encoded_data[b64 + 2] ];
         encoded_data[b64 + 3] = encoding_table[ encoded_data[b64 + 3] ];
 
+//                cout << asc + 2 << " " << b64 + 3 << endl;
     }
 
-//    for(int i =0; i < encoded_data.size(); i++){
-//    cout << " >>" << (int)encoded_data[i];
-//    }
-//    cout << endl;
+	/*	removing leading zeros - represented by 'A' in base64
+    	This occurs naturally when an input base64 number has an uneven
+    	number of bits with respect to ASCII.
+    	i.e When the base64 string % 4 != 0		*/
+	if(encoded_data[0] == 'A'){
+		encoded_data.erase(0, 1);
+		out_len--;
+	}
+
+	// add base64 placeholders if we're at an uneven length
+	while((out_len % 4) != 0){
+		out_len++;
+		encoded_data.push_back('=');
+	}
 
     return encoded_data;
-}
-
-// TODO: URGENT: STILL LOSING CHARS AT THE END OF THE STRING...
-// TDDO: check that number is valid Base64
-// TODO: update other with new format
-
-string Xstr::base64_to_ascii(string input){
-	int in_len = input.size();
-
-    if (input[in_len - 1] == '=') in_len--;
-    if (input[in_len - 2] == '=') in_len--;
-    if (input[in_len - 3] == '=') in_len--;
-
-    int output_length = ceil((float)(in_len * 3) / (float) 4);
-
-//    cout << output_length << endl;
-
-    string decoded_data = string(output_length, 0);
-
-    int asc = 0;
-    int b64 = 0;
-
-    uint8_t base64_1 = decoding_table[ input[b64    ] ];
-    uint8_t base64_2 = decoding_table[ input[b64 + 1] ];
-    uint8_t base64_3 = decoding_table[ input[b64 + 2] ];
-    uint8_t base64_4;
-
-	if((input.size() % 4) == 1){
-        decoded_data[asc    ] = ((base64_1           ));
-
-		cout << "ba1" << endl;
-//		cout << "decoded_data " << (int)decoded_data[asc    ] << endl;
-
-   		asc += 1;
-   		b64 += 1;
-   	}
-   	else if((input.size() % 4) == 2){
-
-        uint8_t base64_1 = decoding_table[ input[b64    ] ];
-        uint8_t base64_2 = decoding_table[ input[b64 + 1] ];
-
-		decoded_data[asc    ] = ((base64_1 & 0b111100) >> 2);
-		decoded_data[asc + 1] = ((base64_1 & 0b000011) << 6) + ((base64_2          ));
-
-		asc += 2;
-		b64 += 2;
-
-		cout << "ba2" << endl;
-   	}
-   	else if((input.size() % 4) == 3){
-        decoded_data[asc    ] = ((base64_1 & 0b110000) << 4);
-        decoded_data[asc + 1] = ((base64_1 & 0b001111) << 4) + ((base64_2 & 0b111100) >> 2);
-        decoded_data[asc + 1] = ((base64_2 & 0b110000) << 6) + ((base64_3			));
-
-//        cout << (int)decoded_data[asc    ] << " "<< (int)decoded_data[asc+1    ] << " " << (int)	decoded_data[asc+2    ];
-
-   		asc += 3;
-   		b64 += 3;
-
-		cout << "ba3" << endl;
-   	}
-
-	// main loop, for the rest of the base 64 characters that are aligned to an 8-byte multiple
-    for(asc, b64; b64 < (int) input.size(); asc += 3, b64 += 4){
-        base64_1 = decoding_table[ input[b64    ] ];
-        base64_2 = decoding_table[ input[b64 + 1] ];
-        base64_3 = decoding_table[ input[b64 + 2] ];
-        base64_4 = decoding_table[ input[b64 + 3] ];
-
-//       cout << ">>>> " << input[b64    ] << input[b64 +1   ] << input[b64 +2   ] << input[b64    +3]  << endl;
-
-        decoded_data[asc    ] = ((base64_1           ) << 2) + ((base64_2 & 0b110000) >> 4);
-        decoded_data[asc + 1] = ((base64_2 & 0b001111) << 4) + ((base64_3 & 0b111100) >> 2);
-        decoded_data[asc + 2] = ((base64_3 & 0b000011) << 6) + ((base64_4           )     );
-
-//        cout << asc + 2 << endl;
-
-//        cout << (unsigned char) decoded_data[asc] << " " << (unsigned char) decoded_data[asc+1] << " " << (unsigned char) decoded_data[asc+2] << endl;
-    }
-//    cout <<  (int) decoded_data[asc] << " " << (int)  decoded_data[asc+1] << " " << (int) decoded_data[asc+2] << endl;
-
-    if( (input.size() % 4) == 3){
-		if( decoding_table[ input[0] ] <= 0b001111 )
-			decoded_data.erase(0, 1);
-
-		if( decoding_table[ input[0] ] == 0 and decoding_table[ input[1] ] <= 0b000011 )
-			decoded_data.erase(0, 2);
-    }
-
-
-    return decoded_data;
 }
 
 

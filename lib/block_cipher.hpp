@@ -12,12 +12,11 @@
 #include <string.h>
 
 #include "codec.hpp"
+#include "rng.hpp"
 
 using namespace std;
 
 
-int generate_rand_num_between(int lbound, int ubound);
-Xstr generate_random_ascii_string(int num_bytes);
 Xstr generate_random_AES_IV();
 Xstr generate_random_AES_key();
 

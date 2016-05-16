@@ -7,20 +7,22 @@
 #include "rng.hpp"
 
 
+/* MERSENNE-TWISTER */
 // assume 32-bits during initialization
-MT_CONST MersenneTwister::CONST = _INIT(MersenneTwister::_32BIT);
-MersenneTwister::BITSIZE MersenneTwister::bitsize = _32BIT;
 
-int MersenneTwister::index = CONST.N + 1;
-uint64_t MersenneTwister::lower_mask = ((uint64_t) 1 << CONST.R) - 1;
-uint64_t MersenneTwister::upper_mask = (!lower_mask) & CONST.LOWER_W_BITS_MASK;
+MT::MT_CONST MT::CONST = _INIT(MersenneTwister::_32BIT);
+MT::BITSIZE MT::bitsize = _32BIT;
+
+int MT::index = CONST.N + 1;
+uint64_t MT::lower_mask = ((uint64_t) 1 << CONST.R) - 1;
+uint64_t MT::upper_mask = (!lower_mask) & CONST.LOWER_W_BITS_MASK;
 
 // make state holder large enough to accommodate both 32 and 64 bit
-uint64_t MersenneTwister::state[624] = {0};
+uint64_t MT::state[624] = {0};
 
 
 // assign constants based on bitsize of MersenneTwister chosen
-MT_CONST MersenneTwister::_INIT(BITSIZE bsz){
+MT::MT_CONST MersenneTwister::_INIT(BITSIZE bsz){
 	MT_CONST _CONST;
 
 	if(bsz == _32BIT){
@@ -119,7 +121,40 @@ long int MersenneTwister::rand_mt(){
 		 // cast to int first before we convert to long int in function return
 		 return (int) (y & CONST.LOWER_W_BITS_MASK);
 
-	 else if(bitsize == _64BIT)
+	 else /*bitsize == _64BIT */
 		 return (long int) (y & CONST.LOWER_W_BITS_MASK);
 }
 
+
+/* RNG HELPER FUNCTIONS */
+
+int RNG::rand_in_range(int lbound, int ubound){
+	return (rand() % (ubound - lbound)) + lbound;
+}
+
+char RNG::rand_ascii_char(){
+	int rand_char = rand_in_range(0,255);
+
+	return (char) rand_char;
+}
+
+char RNG::rand_base64_char(){
+	int rand_char = rand_in_range(0, NUMBER_BASE64_CHARS - 1);
+
+	return (char) encoding_table[rand_char];
+}
+
+Xstr RNG::rand_ascii_string(int num_bytes){
+	// seed the rand() function with the current time.
+	srand(time(NULL));
+
+	Xstr rand_s;
+	rand_s.resize(num_bytes, 0);
+
+	// fill each byte of the key up with random numbers
+	for(int i = 0; i < num_bytes; i++){
+		rand_s[i] = (uint8_t) rand_in_range(0, 256);
+	}
+
+	return rand_s;
+}

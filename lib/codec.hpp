@@ -16,6 +16,7 @@
 using namespace std;
 
 
+// TODO: but these at const vars in own namespace, change references in code
 #define LC_TO_US_ADJUSTER 32
 #define ASCII_MAX_VALUE 256
 
@@ -26,7 +27,6 @@ using namespace std;
 #define MAX_XOR_KEYSIZE 40
 
 #define NUMBER_COMMON_CHARS 6
-#define NUMBER_BASE64_CHARS 64
 
 // TODO: refactor all uint8_t as uint8
 typedef uint8_t uint8;
