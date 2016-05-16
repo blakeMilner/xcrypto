@@ -32,6 +32,7 @@ $(PROJECT): $(OBJS)
 
 # Static Library
 lib: $(LIB)
+.PHONY : lib
 
 $(LIB): $(LIB_OBJS)
 		-@echo ' '
@@ -39,7 +40,6 @@ $(LIB): $(LIB_OBJS)
 		-@echo ' '
 		ar -rs $(LIB) $(LIB_OBJS)
 
-.PHONY: lib
 
 # Test Program
 #test: $(TEST)

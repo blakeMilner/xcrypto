@@ -76,53 +76,53 @@ int main(int argc, char* argv[])
 {
 	/* Set 1 */
 	// notation conversion testing
-	cout << ">> " << "Now performing codec test " << endl;
-	tick();
-	{
-		string test = string("dGhpcyBpcyBhIHRlc3Qf");
-		string orig_test = test;
-		string expected;
-
-		Xstr ascii = Xstr(test, Xstr::BASE64_ENCODED);
-
-		bool failed = false;
-
-		// test different amounts of trailing '=' placeholders
-		// these placeholders should be stripped properly
-		for(int s = 0; s < 3; s++){
-			test += '=';
-
-			Xstr ascii_str = Xstr(test, Xstr::BASE64_ENCODED);
-
-			if(ascii_str.as_base64() != orig_test){
-				failed = true;
-				goto eval;
-				break;
-			}
-		}
-
-		// test uneven amounts of base64 chars, i.e. the base64 string length
-		// is not divisible by 4.
-		test = orig_test;
-		expected = orig_test;
-
-		for(int s = 0; s < 4; s++){
-
-			Xstr ascii_str = Xstr(test, Xstr::BASE64_ENCODED);
-
-			if(ascii_str.as_base64() != expected){
-				failed = true;
-				goto eval;
-				break;
-			}
-
-			test.pop_back();
-			expected[expected.size() - s - 1] = '=';
-		}
-
-		eval:	crypto_exercise_test(1,	!failed);
-	}
-	tock();
+//	cout << ">> " << "Now performing codec test " << endl;
+//	tick();
+//	{
+//		string test = string("dGhpcyBpcyBhIHRlc3Qf");
+//		string orig_test = test;
+//		string expected;
+//
+//		Xstr ascii = Xstr(test, Xstr::BASE64_ENCODED);
+//
+//		bool failed = false;
+//
+//		// test different amounts of trailing '=' placeholders
+//		// these placeholders should be stripped properly
+//		for(int s = 0; s < 3; s++){
+//			test += '=';
+//
+//			Xstr ascii_str = Xstr(test, Xstr::BASE64_ENCODED);
+//
+//			if(ascii_str.as_base64() != orig_test){
+//				failed = true;
+//				goto eval;
+//				break;
+//			}
+//		}
+//
+//		// test uneven amounts of base64 chars, i.e. the base64 string length
+//		// is not divisible by 4.
+//		test = orig_test;
+//		expected = orig_test;
+//
+//		for(int s = 0; s < 4; s++){
+//
+//			Xstr ascii_str = Xstr(test, Xstr::BASE64_ENCODED);
+//
+//			if(ascii_str.as_base64() != expected){
+//				failed = true;
+//				goto eval;
+//				break;
+//			}
+//
+//			test.pop_back();
+//			expected[expected.size() - s - 1] = '=';
+//		}
+//
+//		eval:	crypto_exercise_test(1,	!failed);
+//	}
+//	tock();
 
 //	/* Set 2 */
 //	cout << ">> Now testing: Set 2" << endl;
@@ -506,46 +506,46 @@ int main(int argc, char* argv[])
 //	}
 //	tock();
 //
-//	/* Exercise 21 */
-//	// TODO: IMplement chi-squared testing
-//	tick();
-//	{
-//		std::array<long int, 30> expected_out =
-//				{
-//				1791095845, -12091157,	-59818354, -1431042742,
-//				491263,	1690620555,	1298508491,	-1144451193, 1637472845,
-//				1013994432, 396591248, 1703301249, 799981516, 1666063943,
-//				1484172013,
-//
-//				2469588189546311528, 5937829314747939781, -1488664451840123274,
-//				8414607737543979063, -8983179180370611640, -4813816549494704131,
-//				-5143718920953096580, -3311530619265271089,	5943497028716478977,
-//				2456665931235054654, 5698940622110840090, -5231858944456961090,
-//				5552614544520314474, 6131760866643541936, 8415486058342034190
-//				};
-//
-//		std::array<long int, 30> actual_out;
-//
-//		// 32-bit test
-//		MersenneTwister::set_bitsize(MersenneTwister::_32BIT);
-//		MersenneTwister::srand_mt(1);
-//
-//		int i;
-//		for(i = 0; i < 15; i++){
-//			actual_out[i] = MersenneTwister::rand_mt();
-//		}
-//
-//		// 64-bit test
-//		MersenneTwister::set_bitsize(MersenneTwister::_64BIT);
-//		MersenneTwister::srand_mt(1);
-//
-//		for(; i < 30; i++){
-//			actual_out[i] = MersenneTwister::rand_mt();
-//		}
-//
-//		crypto_exercise_test(21, expected_out == actual_out);
-//	}
-//	tock();
+	/* Exercise 21 */
+	// TODO: IMplement chi-squared testing
+	tick();
+	{
+		std::array<long int, 30> expected_out =
+				{
+				1791095845, -12091157,	-59818354, -1431042742,
+				491263,	1690620555,	1298508491,	-1144451193, 1637472845,
+				1013994432, 396591248, 1703301249, 799981516, 1666063943,
+				1484172013,
+
+				2469588189546311528, 5937829314747939781, -1488664451840123274,
+				8414607737543979063, -8983179180370611640, -4813816549494704131,
+				-5143718920953096580, -3311530619265271089,	5943497028716478977,
+				2456665931235054654, 5698940622110840090, -5231858944456961090,
+				5552614544520314474, 6131760866643541936, 8415486058342034190
+				};
+
+		std::array<long int, 30> actual_out;
+
+		// 32-bit test
+		MersenneTwister::set_bitsize(MersenneTwister::_32BIT);
+		MersenneTwister::srand_mt(1);
+
+		int i;
+		for(i = 0; i < 15; i++){
+			actual_out[i] = MersenneTwister::rand_mt();
+		}
+
+		// 64-bit test
+		MersenneTwister::set_bitsize(MersenneTwister::_64BIT);
+		MersenneTwister::srand_mt(1);
+
+		for(; i < 30; i++){
+			actual_out[i] = MersenneTwister::rand_mt();
+		}
+
+		crypto_exercise_test(21, expected_out == actual_out);
+	}
+	tock();
 
 
 	return 0;
