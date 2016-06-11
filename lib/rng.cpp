@@ -128,6 +128,21 @@ long int MersenneTwister::rand_mt(){
 }
 
 
+/* Exercise 22 */
+long int rand_wait_then_seed_with_time(){
+	// converted from us to sec
+	// wait between 1 and 2 seconds
+	usleep(RNG::rand_in_range(1, 2) * 1000 * 1000);
+
+	MersenneTwister::srand_mt(time(NULL));
+
+	// converted from us to sec
+	// wait between 1 and 2 seconds
+	usleep(RNG::rand_in_range(1, 2) * 1000 * 1000);
+
+	return MersenneTwister::rand_mt();
+}
+
 /* RNG HELPER FUNCTIONS */
 
 int RNG::rand_in_range(int lbound, int ubound){

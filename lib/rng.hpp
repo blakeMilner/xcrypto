@@ -8,6 +8,7 @@
 #define LIB_RNG_HPP_
 
 #include <iostream>
+#include <unistd.h>
 
 #include "codec.hpp"
 
@@ -69,6 +70,10 @@ namespace RNG {
 	char rand_base64_char();
 	Xstr rand_ascii_string(int num_bytes);
 };
+
+
+/* Exercise 22 */
+long int rand_wait_then_seed_with_time();
 
 
 #endif /* LIB_RNG_HPP_ */

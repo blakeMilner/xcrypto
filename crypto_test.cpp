@@ -513,7 +513,73 @@ int main(int argc, char* argv[])
 //	}
 //	tock();
 //
-//	/* Exercise 21 */
+	/* Exercise 21 */
+	tick();
+	{
+		std::array<long int, 30> expected_out =
+				{
+				1791095845, -12091157,	-59818354, -1431042742,
+				491263,	1690620555,	1298508491,	-1144451193, 1637472845,
+				1013994432, 396591248, 1703301249, 799981516, 1666063943,
+				1484172013,
+
+				2469588189546311528, 5937829314747939781, -1488664451840123274,
+				8414607737543979063, -8983179180370611640, -4813816549494704131,
+				-5143718920953096580, -3311530619265271089,	5943497028716478977,
+				2456665931235054654, 5698940622110840090, -5231858944456961090,
+				5552614544520314474, 6131760866643541936, 8415486058342034190
+				};
+
+		std::array<long int, 30> actual_out;
+
+		// 32-bit test
+		MersenneTwister::set_bitsize(MersenneTwister::_32BIT);
+		MersenneTwister::srand_mt(1);
+
+		int i;
+		for(i = 0; i < 15; i++){
+			actual_out[i] = MersenneTwister::rand_mt();
+		}
+
+		// 64-bit test
+		MersenneTwister::set_bitsize(MersenneTwister::_64BIT);
+		MersenneTwister::srand_mt(1);
+
+		for(; i < 30; i++){
+			actual_out[i] = MersenneTwister::rand_mt();
+		}
+
+		crypto_exercise_test(21, expected_out == actual_out);
+	}
+	tock();
+
+	/* Exercise 22 */
+	tick();
+	{
+		long int cracked_seed = 0;
+		bool success = false;
+
+		long int rand_output = rand_wait_then_seed_with_time();
+
+		// from time we received rand_output, work backwards incrementally
+		// seeding the Twister and checking the first value.
+		// We keep working backwards until we find a match - then the current seed
+		// must be the original seed
+		for(long int seed = time(NULL); seed > time(NULL) - 1000*1000*10; seed--){
+			MersenneTwister::srand_mt(seed);
+
+			if(rand_output == MersenneTwister::rand_mt()){
+				success = true;
+				cracked_seed = seed;
+				break;
+			}
+		}
+
+		crypto_exercise_test(22, success);
+	}
+	tock();
+
+	/* Exercise 23 */
 //	tick();
 //	{
 //		std::array<long int, 30> expected_out =
@@ -552,7 +618,6 @@ int main(int argc, char* argv[])
 //		crypto_exercise_test(21, expected_out == actual_out);
 //	}
 //	tock();
-
 
 	return 0;
 }
