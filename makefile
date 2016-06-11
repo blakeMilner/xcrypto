@@ -19,7 +19,7 @@ all: lib $(PROJECT)
 
 
 %.o: %.cpp $(DEPS)
-	$(CC) -c -o $@ $< $(CXXFLAGS) 		
+	$(CC) -c -o $@ $< $(CXXFLAGS)
 	-@echo ' '		
         
 $(PROJECT): $(OBJS)
@@ -32,7 +32,6 @@ $(PROJECT): $(OBJS)
 
 # Static Library
 lib: $(LIB)
-.PHONY : lib
 
 $(LIB): $(LIB_OBJS)
 		-@echo ' '
@@ -55,8 +54,7 @@ $(LIB): $(LIB_OBJS)
 		
 
 
-# Other Targets
-.PHONY: 
+# Other Targets 
 clean:
 	-$(RM) $(OBJS) $(LIB_OBJS) $(PROJECT) $(LIB)
 	-@echo ' '

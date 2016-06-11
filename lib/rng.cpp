@@ -7,10 +7,12 @@
 #include "rng.hpp"
 
 
+/* Challenge 21 */
 /* MERSENNE-TWISTER */
+
 // assume 32-bits during initialization
 
-MT::MT_CONST MT::CONST = _INIT(MersenneTwister::_32BIT);
+MT::MT_CONST MT::CONST = _INIT(MT::_32BIT);
 MT::BITSIZE MT::bitsize = _32BIT;
 
 int MT::index = CONST.N + 1;

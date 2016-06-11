@@ -72,58 +72,54 @@ void crypto_exercise_test(int num, bool test){
 // e.g. ./crypto_test 3 8 12 18
 // include ALL command for all test
 
+
 int main(int argc, char* argv[])
 {
 	/* Set 1 */
-	// notation conversion testing
+	// Notation conversion testing
+	// Going from base64 to ascii and then back to base64 should produce
+	// a base64 output that is identical to the base64 input.
+
 //	cout << ">> " << "Now performing codec test " << endl;
 //	tick();
 //	{
-//		string test = string("dGhpcyBpcyBhIHRlc3Qf");
-//		string orig_test = test;
-//		string expected;
-//
-//		Xstr ascii = Xstr(test, Xstr::BASE64_ENCODED);
-//
 //		bool failed = false;
 //
+//		ifstream encoded_strings("encoded_b64_ex19.txt");
+//
+//		Xstr newstr;
+//		string b64_str;
+//		string new_b64_str;
+//
+//		string test[4] = {
+//				"dGhpcyBpcyBhIHRlc3Qu",
+//				"dGhpcyBpcyBhIHRlc3QuLg==",
+//				"dGhpcyBpcyBhIHRlc3QuLi4=",
+//				"dGhpcyBpcyBhIHRlc3QuLi4u"
+//		};
+//
 //		// test different amounts of trailing '=' placeholders
-//		// these placeholders should be stripped properly
-//		for(int s = 0; s < 3; s++){
-//			test += '=';
+//		// and uneven b64:ascii element ratios
+//		for(int s = 0; s <= 3; s++){
 //
-//			Xstr ascii_str = Xstr(test, Xstr::BASE64_ENCODED);
+//			Xstr ascii_str = Xstr(test[s], Xstr::BASE64_ENCODED);
 //
-//			if(ascii_str.as_base64() != orig_test){
+////			cout << test[s] << endl;
+////			cout << ascii_str.as_base64() << endl;
+//
+//			if(ascii_str.as_base64() != test[s]){
 //				failed = true;
 //				goto eval;
 //				break;
 //			}
 //		}
 //
-//		// test uneven amounts of base64 chars, i.e. the base64 string length
-//		// is not divisible by 4.
-//		test = orig_test;
-//		expected = orig_test;
-//
-//		for(int s = 0; s < 4; s++){
-//
-//			Xstr ascii_str = Xstr(test, Xstr::BASE64_ENCODED);
-//
-//			if(ascii_str.as_base64() != expected){
-//				failed = true;
-//				goto eval;
-//				break;
-//			}
-//
-//			test.pop_back();
-//			expected[expected.size() - s - 1] = '=';
-//		}
 //
 //		eval:	crypto_exercise_test(1,	!failed);
+//
 //	}
 //	tock();
-
+//
 //	/* Set 2 */
 //	cout << ">> Now testing: Set 2" << endl;
 //
@@ -144,7 +140,7 @@ int main(int argc, char* argv[])
 //	/* Exercise 10 */
 //	tick();
 //	{
-//		static Xstr output =
+//		static string output =
 //			"I'm back and I'm ringin' the bell \nA rockin' on the mike while the fly girls yell \nIn ecstasy in the back of me \nWell that's my DJ Deshay cuttin' all them Z's \nHittin' hard and the girlies goin' crazy \nVanilla's on the mike, man I'm not lazy. \n\nI'm lettin' my drug kick in \nIt controls my mouth and I begin \nTo just let it flow, let my concepts go \nMy posse's to the side yellin', Go Vanilla Go! \n\nSmooth 'cause that's the way I will be \nAnd if you don't give a damn, then \nWhy you starin' at me \nSo get off 'cause I control the stage \nThere's no dissin' allowed \nI'm in my own phase \nThe girlies sa y they love me and that is ok \n"
 //			"And I can dance better than any kid n' play \n\nStage 2 -- Yea the one ya' wanna listen to \nIt's off my head so let the beat play through \nSo I can funk it up and make it sound good \n1-2-3 Yo -- Knock on some wood \nFor good luck, I like my rhymes atrocious \nSupercalafragilisticexpialidocious \nI'm an effect and that you can bet \nI can take a fly girl and make her wet. \n\nI'm like Samson -- Samson to Delilah \nThere's no denyin', You can try to hang \nBut you'll keep tryin' to get my style \nOver and over, practice makes perfect \nBut not if you're a loafer. \n\nYou'll get nowhere, no place, no time, no girls \nSoon -- Oh my God, homebody, you probably eat \n"
 //			"Spaghetti with a spoon! Come on and say it! \n\nVIP. Vanilla Ice yep, yep, I'm comin' hard like a rhino \nIntoxicating so you stagger like a wino \nSo punks stop trying and girl stop cryin' \nVanilla Ice is sellin' and you people are buyin' \n'Cause why the freaks are jockin' like Crazy Glue \nMovin' and groovin' trying to sing along \nAll through the ghetto groovin' this here song \nNow you're amazed by the VIP posse. \n\nSteppin' so hard like a German Nazi \nStartled by the bases hittin' ground \nThere's no trippin' on mine, I'm just gettin' down \nSparkamatic, I'm hangin' tight like a fanatic \nYou trapped me once and I thought that \nYou might have it \nSo step down and lend me your ear \n"
@@ -307,18 +303,20 @@ int main(int argc, char* argv[])
 //	/* Exercise 17 */
 //	tick();
 //	{
+//		// cracked strings are truncated at the beginning since the first
+//		// block can't be deciphered
 //        vector<string> out = {
-//				"he party is jumpi",
-//				"ass kicked in and the Vega's are pumpi",
-//				"he point, to the point, no fakin",
-//				"'s like a pound of baco",
+//				"he party is jumping",
+//				"ass kicked in and the Vega's are pumpin'",
+//				"he point, to the point, no faking",
+//				"'s like a pound of bacon",
 //				"m, if you ain't quick and nimble",
-//				" when I hear a cymba",
-//				" hat with a souped up temp",
-//				"oll, it's time to go so",
-//				"my five point ",
+//				" hat with a souped up tempo",
+//				"oll, it's time to go solo",
+//				"my five point oh",
 //				"-top down so my hair can blow"
 //		};
+//
 //
 //		BlockCipher::CipherData info = pad_random_string_and_encrypt_CBC();
 //
@@ -326,7 +324,7 @@ int main(int argc, char* argv[])
 //		decrypted = decrypted.remove_padding(Xstr::UNKNOWN_PADDING);
 //
 //		crypto_exercise_test(17,
-//					find(out.begin(), out.end(), decrypted.as_ascii()) != out.end()
+//					std::find(out.begin(), out.end(), decrypted.as_ascii()) != out.end()
 //				);
 //
 //	}
@@ -352,56 +350,37 @@ int main(int argc, char* argv[])
 //	}
 //	tock();
 //
+//
+//	vector.push_back() is busted
+//
 //	/* Exercise 19 */
 //	// TODO: fix base64 encoding because it works when feeding in raw ascii
 //	tick();
 //	{
-//		Xstr first_cipher = Xstr(
-//				"I have met them atCloseOfda",
-//				Xstr::ASCII_ENCODED);
+//		vector<Xstr> strings;
 //
-//		const string strings[40] = {
-//				"SSBoYXZlIG1ldCB0aGVtIGF0IGNsb3NlIG9mIGRhe==",
-//				"Q29taW5nIHdpdGggdml2aWQgZmFjZXM=",
-//				"RnJvbSBjb3VudGVyIG9yIGRlc2sgYW1vbmcgZ3JleQ==",
-//				"RWlnaHRlZW50aC1jZW50dXJ5IGhvdXNlcy4=",
-//				"SSBoYXZlIHBhc3NlZCB3aXRoIGEgbm9kIG9mIHRoZSBoZWFk",
-//				"T3IgcG9saXRlIG1lYW5pbmdsZXNzIHdvcmRzLA==",
-//				"T3IgaGF2ZSBsaW5nZXJlZCBhd2hpbGUgYW5kIHNhaWQ=",
-//				"UG9saXRlIG1lYW5pbmdsZXNzIHdvcmRzLA==",
-//				"QW5kIHRob3VnaHQgYmVmb3JlIEkgaGFkIGRvbmU=",
-//				"T2YgYSBtb2NraW5nIHRhbGUgb3IgYSBnaWJl",
-//				"VG8gcGxlYXNlIGEgY29tcGFuaW9u",
-//				"QXJvdW5kIHRoZSBmaXJlIGF0IHRoZSBjbHViLA==",
-//				"QmVpbmcgY2VydGFpbiB0aGF0IHRoZXkgYW5kIEk=",
-//				"QnV0IGxpdmVkIHdoZXJlIG1vdGxleSBpcyB3b3JuOg==",
-//				"QWxsIGNoYW5nZWQsIGNoYW5nZWQgdXR0ZXJseTo=",
-//				"QSB0ZXJyaWJsZSBiZWF1dHkgaXMgYm9ybi4=",
-//				"VGhhdCB3b21hbidzIGRheXMgd2VyZSBzcGVudA==",
-//				"SW4gaWdub3JhbnQgZ29vZCB3aWxsLA==",
-//				"SGVyIG5pZ2h0cyBpbiBhcmd1bWVudA==",
-//				"VW50aWwgaGVyIHZvaWNlIGdyZXcgc2hyaWxsLg==",
-//				"V2hhdCB2b2ljZSBtb3JlIHN3ZWV0IHRoYW4gaGVycw==",
-//				"V2hlbiB5b3VuZyBhbmQgYmVhdXRpZnVsLA==",
-//				"U2hlIHJvZGUgdG8gaGFycmllcnM/",
-//				"VGhpcyBtYW4gaGFkIGtlcHQgYSBzY2hvb2w=",
-//				"QW5kIHJvZGUgb3VyIHdpbmdlZCBob3JzZS4=",
-//				"VGhpcyBvdGhlciBoaXMgaGVscGVyIGFuZCBmcmllbmQ=",
-//				"V2FzIGNvbWluZyBpbnRvIGhpcyBmb3JjZTs=",
-//				"SGUgbWlnaHQgaGF2ZSB3b24gZmFtZSBpbiB0aGUgZW5kLA==",
-//				"U28gc2Vuc2l0aXZlIGhpcyBuYXR1cmUgc2VlbWVkLA==",
-//				"U28gZGFyaW5nIGFuZCBzd2VldCBoaXMgdGhvdWdodC4=",
-//				"VGhpcyBvdGhlciBtYW4gSSBoYWQgZHJlYW1lZA==",
-//				"QSBkcnVua2VuLCB2YWluLWdsb3Jpb3VzIGxvdXQu",
-//				"SGUgaGFkIGRvbmUgbW9zdCBiaXR0ZXIgd3Jvbmc=",
-//				"VG8gc29tZSB3aG8gYXJlIG5lYXIgbXkgaGVhcnQs",
-//				"WWV0IEkgbnVtYmVyIGhpbSBpbiB0aGUgc29uZzs=",
-//				"SGUsIHRvbywgaGFzIHJlc2lnbmVkIGhpcyBwYXJ0",
-//				"SW4gdGhlIGNhc3VhbCBjb21lZHk7",
-//				"SGUsIHRvbywgaGFzIGJlZW4gY2hhbmdlZCBpbiBoaXMgdHVybiw=",
-//				"VHJhbnNmb3JtZWQgdXR0ZXJseTo=",
-//				"QSB0ZXJyaWJsZSBiZWF1dHkgaXMgYm9ybi4="
-//		};
+//		ifstream string_file("encoded_b64_ex19.txt");
+//		string line;
+//
+//		// read string into vector from file and encrypt
+//		// TODO: make function that will encrypt batch
+//		if (string_file.is_open()){
+//			while( getline(string_file, line) ){
+////				cout << 1 << endl;
+////				cout << "before decoding: " << line << endl;
+//
+//				Xstr newstr = Xstr(line, Xstr::BASE64_ENCODED);
+////				cout << 2 << endl;
+//
+////				cout << "after decoding:  " << newstr.as_base64() << endl;
+////				cout << 3 << endl;
+//				strings.push_back( newstr );
+//			}
+//			string_file.close();
+//		}
+//		else{
+//			cout << " Unable to open file" << endl;
+//		}
 //
 //		vector<Xstr> ciphers;
 //		Xstr random_key = generate_random_AES_key();
@@ -412,14 +391,24 @@ int main(int argc, char* argv[])
 //		Xstr nonce;
 //		nonce.resize(AES::CTR_NONCE_SIZE, 0);
 //
+//
+//		Xstr next_str;
+//		Xstr next_cipher;
+//
 //		// encrypt the strings
-//		for(int in = 0; in < 40; in++){
-//			Xstr next_str = Xstr(strings[in], Xstr::BASE64_ENCODED);
-//			Xstr next_cipher = BlockCipher::encrypt(EncryptType::CTR_ENCRYPT, next_str, random_key, nonce);
+//		for(int i = 0; i < strings.size(); i++){
+////			cout << "1" << endl;
+//			next_str = Xstr(strings[i], Xstr::BASE64_ENCODED);
+////			cout << "2" << endl;
+////			cout << "after decoding: " << next_str.as_base64() << endl;
+//			next_cipher = BlockCipher::encrypt(EncryptType::CTR_ENCRYPT, next_str, random_key, nonce);
 //
 //			ciphers.push_back( next_cipher );
+//
+////			cout << "3" << endl;
 //		}
 //
+////		cout << "4" << endl;
 //		Xstr keystream = break_fixed_nonce_CTR_by_substituting(ciphers);
 //
 //		// guesses based on partially decoded ciphers (wheel of fortune style)
@@ -436,16 +425,16 @@ int main(int argc, char* argv[])
 //			cout << (keystream ^ cipher).as_ascii() << endl;
 //		}
 //
-//		for(int i = 0; i < 27; i++){
-//
+////		for(int i = 0; i < 27; i++){
+////
 ////			cout <<  (uint8_t)keystream[i] << " " << (uint8_t)ciphers[0][i] << " " << (uint8_t)first_cipher[i] << endl;
-//
+////
 ////			cout << (int) (keystream[i] ^ ciphers[0][i]) << " " << (int) first_cipher[i];
 ////			cout << endl;
 ////			cout << ((keystream[i] ^ ciphers[0][i]) == first_cipher[i]);
 ////			cout << endl;
-//
-//		}
+////
+////		}
 //
 ////		cout << (keystream ^ ciphers[0]) << endl;
 ////		cout << Xstr(first_cipher) << endl;
@@ -453,23 +442,32 @@ int main(int argc, char* argv[])
 ////		cout << (keystream.substr(0,Xstr(first_cipher).size()) ^ ciphers[0]).size() << endl;
 //
 //
-//		Xstr cracked_cipher = keystream.substr(0,Xstr(first_cipher).size()) ^ ciphers[0];
-//
-//		cout << Xstr(first_cipher).substr(0,10) << " " << cracked_cipher.substr(0,10) << endl;
-//
-//		crypto_exercise_test(19,
-//					Xstr(first_cipher).substr(0,10) == cracked_cipher.substr(0,10)
-//				);
+////		Xstr cracked_cipher = keystream.substr(0,Xstr(first_cipher).size()) ^ ciphers[0];
+////
+////		cout << Xstr(first_cipher).substr(0,10) << " " << cracked_cipher.substr(0,10) << endl;
+////
+////		crypto_exercise_test(19,
+////					Xstr(first_cipher).substr(0,10) == cracked_cipher.substr(0,10)
+////				);
 //
 //	}
 //	tock();
+//
+//
+//	vector.push_back() is busted
 //
 //	/* Exercise 20 */
 //	tick();
 //	{
 //		vector<Xstr> strings;
 //		vector<Xstr> ciphers;
+//		strings.reserve(60);
+//		ciphers.reserve(60);
+//
 //		Xstr random_key = generate_random_AES_key();
+//
+//		Xstr newstr;
+//		Xstr next_cipher;
 //
 //		/* Make 8-byte nonce for CTR, fill with 0's
 //		 * We use the same nonce for all encryptions, which is where the
@@ -480,24 +478,33 @@ int main(int argc, char* argv[])
 //		ifstream string_file("plaintext_ex20.txt");
 //		string line;
 //
+//		cout << "HERE" << endl;
+//		int i = 0;
 //		// read string into vector from file and encrypt
 //		// TODO: make function that will encrypt batch
 //		if (string_file.is_open()){
 //			while( getline(string_file, line) ){
-//				Xstr newstr = Xstr(line, Xstr::BASE64_ENCODED);
-//				strings.push_back( newstr );
+//				newstr = Xstr(line, Xstr::BASE64_ENCODED);
+//				cout << "\tHERE0" << endl;
+//				strings[i] = ( newstr );
 //
-//				Xstr next_cipher = BlockCipher::encrypt(
+//				cout << "\tHERE1" << endl;
+//				next_cipher = BlockCipher::encrypt(
 //						EncryptType::CTR_ENCRYPT, newstr, random_key, nonce);
 //
-//				ciphers.push_back(next_cipher);
+//				cout << "\tHERE2" << endl;
+//				ciphers[i] = (next_cipher);
+//				cout << "\tHERE3" << endl;
+//				i++;
 //			}
+//			cout << "HERE" << endl;
 //			string_file.close();
 //		}
 //		else{
 //			cout << " Unable to open file" << endl;
 //		}
 //
+//		cout << "HERE" << endl;
 //		vector<Xstr> decoded = break_fixed_nonce_CTR_statistically(ciphers);
 //
 ////		for (auto i = decoded.begin(); i != decoded.end(); ++i)
@@ -506,46 +513,45 @@ int main(int argc, char* argv[])
 //	}
 //	tock();
 //
-	/* Exercise 21 */
-	// TODO: IMplement chi-squared testing
-	tick();
-	{
-		std::array<long int, 30> expected_out =
-				{
-				1791095845, -12091157,	-59818354, -1431042742,
-				491263,	1690620555,	1298508491,	-1144451193, 1637472845,
-				1013994432, 396591248, 1703301249, 799981516, 1666063943,
-				1484172013,
-
-				2469588189546311528, 5937829314747939781, -1488664451840123274,
-				8414607737543979063, -8983179180370611640, -4813816549494704131,
-				-5143718920953096580, -3311530619265271089,	5943497028716478977,
-				2456665931235054654, 5698940622110840090, -5231858944456961090,
-				5552614544520314474, 6131760866643541936, 8415486058342034190
-				};
-
-		std::array<long int, 30> actual_out;
-
-		// 32-bit test
-		MersenneTwister::set_bitsize(MersenneTwister::_32BIT);
-		MersenneTwister::srand_mt(1);
-
-		int i;
-		for(i = 0; i < 15; i++){
-			actual_out[i] = MersenneTwister::rand_mt();
-		}
-
-		// 64-bit test
-		MersenneTwister::set_bitsize(MersenneTwister::_64BIT);
-		MersenneTwister::srand_mt(1);
-
-		for(; i < 30; i++){
-			actual_out[i] = MersenneTwister::rand_mt();
-		}
-
-		crypto_exercise_test(21, expected_out == actual_out);
-	}
-	tock();
+//	/* Exercise 21 */
+//	tick();
+//	{
+//		std::array<long int, 30> expected_out =
+//				{
+//				1791095845, -12091157,	-59818354, -1431042742,
+//				491263,	1690620555,	1298508491,	-1144451193, 1637472845,
+//				1013994432, 396591248, 1703301249, 799981516, 1666063943,
+//				1484172013,
+//
+//				2469588189546311528, 5937829314747939781, -1488664451840123274,
+//				8414607737543979063, -8983179180370611640, -4813816549494704131,
+//				-5143718920953096580, -3311530619265271089,	5943497028716478977,
+//				2456665931235054654, 5698940622110840090, -5231858944456961090,
+//				5552614544520314474, 6131760866643541936, 8415486058342034190
+//				};
+//
+//		std::array<long int, 30> actual_out;
+//
+//		// 32-bit test
+//		MersenneTwister::set_bitsize(MersenneTwister::_32BIT);
+//		MersenneTwister::srand_mt(1);
+//
+//		int i;
+//		for(i = 0; i < 15; i++){
+//			actual_out[i] = MersenneTwister::rand_mt();
+//		}
+//
+//		// 64-bit test
+//		MersenneTwister::set_bitsize(MersenneTwister::_64BIT);
+//		MersenneTwister::srand_mt(1);
+//
+//		for(; i < 30; i++){
+//			actual_out[i] = MersenneTwister::rand_mt();
+//		}
+//
+//		crypto_exercise_test(21, expected_out == actual_out);
+//	}
+//	tock();
 
 
 	return 0;

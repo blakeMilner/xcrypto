@@ -333,8 +333,8 @@ vector<string> AES::expand_key(unsigned char *input) {
 		}
 	}
 
-	string all_keys = string();
-	all_keys.resize(176, 0);
+	// TODO: change all resize operations to this format
+	string all_keys(176, 0);
 
 	// copy c string "in" into "all_keys" manually because giving it to the string
 	// contructor will fail if "in" contains a 0 - interpreted as delimiter \0
@@ -347,7 +347,7 @@ vector<string> AES::expand_key(unsigned char *input) {
 	// fill vector of up with substrings of main buffer - these are keys
 	// for different rounds
 	for(int i = 0; i < 11; i++){
-		expanded_keys.push_back( all_keys.substr(i * 16, 16) );
+	    expanded_keys.push_back( all_keys.substr(i * 16, 16) );
 	}
 
 	return expanded_keys;
@@ -545,16 +545,17 @@ EncryptType detect_ECB_or_CBC_encryption(Xstr (*encryption_fnc)(Xstr message)){
 	}
 }
 
+/* Challenge 12 */
 Xstr append_unknown_string_and_encrypt_ECB(Xstr message){
 	// generate unknown key only once
-	static Xstr random_key = generate_random_AES_key();
+	static Xstr rand_key = generate_random_AES_key();
 	// create unknown string once
 	static Xstr unknown_string = Xstr("Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkg"
 												"aGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBq"
 												"dXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUg"
 												"YnkK", Xstr::BASE64_ENCODED);
 
-	return BlockCipher::encrypt(ECB_ENCRYPT, message + unknown_string, random_key);
+	return BlockCipher::encrypt(ECB_ENCRYPT, message + unknown_string, rand_key);
 }
 
 Xstr byte_at_a_time_ECB_decrypt_simple(){
@@ -626,17 +627,18 @@ Xstr byte_at_a_time_ECB_decrypt_simple(){
 	return previous_blocks;
 }
 
+/* Challenge 14 */
 // TODO: there is no prefix being added here!
 Xstr append_unknown_string_random_prefix_and_encrypt_ECB(Xstr message){
 	// generate unknown key only once
-	static Xstr random_key = generate_random_AES_key();
+	static Xstr rand_key = generate_random_AES_key();
 	// create unknown string once
 	static Xstr unknown_string = Xstr("Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkg"
 												"aGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBq"
 												"dXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUg"
 												"YnkK", Xstr::BASE64_ENCODED);
 
-	return BlockCipher::encrypt(ECB_ENCRYPT, message + unknown_string, random_key);
+	return BlockCipher::encrypt(ECB_ENCRYPT, message + unknown_string, rand_key);
 }
 
 Xstr byte_at_a_time_ECB_decrypt_hard(){
@@ -717,13 +719,12 @@ Xstr byte_at_a_time_ECB_decrypt_hard(){
 /* Challenge 17 */
 
 BlockCipher::CipherData pad_random_string_and_encrypt_CBC(){
-	static const string unknown_strings[10] =
-		{"MDAwMDAwTm93IHRoYXQgdGhlIHBhcnR5IGlzIGp1bXBpbmc=",
+	static const string unknown_strings[9] = {
+		"MDAwMDAwTm93IHRoYXQgdGhlIHBhcnR5IGlzIGp1bXBpbmc=",
 		"MDAwMDAxV2l0aCB0aGUgYmFzcyBraWNrZWQgaW4gYW5kIHRoZSBWZWdhJ3MgYXJlIHB1bXBpbic=",
 		"MDAwMDAyUXVpY2sgdG8gdGhlIHBvaW50LCB0byB0aGUgcG9pbnQsIG5vIGZha2luZw==",
 		"MDAwMDAzQ29va2luZyBNQydzIGxpa2UgYSBwb3VuZCBvZiBiYWNvbg==",
 		"MDAwMDA0QnVybmluZyAnZW0sIGlmIHlvdSBhaW4ndCBxdWljayBhbmQgbmltYmxl",
-		"MDAwMDA1SSBnbyBjcmF6eSB3aGVuIEkgaGVhciBhIGN5bWJhbA==",
 		"MDAwMDA2QW5kIGEgaGlnaCBoYXQgd2l0aCBhIHNvdXBlZCB1cCB0ZW1wbw==",
 		"MDAwMDA3SSdtIG9uIGEgcm9sbCwgaXQncyB0aW1lIHRvIGdvIHNvbG8=",
 		"MDAwMDA4b2xsaW4nIGluIG15IGZpdmUgcG9pbnQgb2g=",
@@ -731,12 +732,12 @@ BlockCipher::CipherData pad_random_string_and_encrypt_CBC(){
 	};
 
 	// generate unknown key only once
-	static Xstr random_key = generate_random_AES_key();
+	static Xstr rand_key = generate_random_AES_key();
 	// generate unknown key only once
-	static Xstr random_IV = generate_random_AES_IV();
+	static Xstr rand_IV = generate_random_AES_IV();
 
 	// create unknown string only once, by picking from list of 10
-	static int i = RNG::rand_in_range(0, 9);
+	static int i = RNG::rand_in_range(0, 8);
 	static string random_string = unknown_strings[i];
 
 	static Xstr unknown_string = Xstr(random_string, Xstr::BASE64_ENCODED);
@@ -745,9 +746,9 @@ BlockCipher::CipherData pad_random_string_and_encrypt_CBC(){
 
 	BlockCipher::CipherData out;
 
-	out.message = BlockCipher::encrypt(CBC_ENCRYPT, unknown_string, random_key, random_IV);
-	out.key = random_key;
-	out.IV_nonce = random_IV;
+	out.message = BlockCipher::encrypt(CBC_ENCRYPT, unknown_string, rand_key, rand_IV);
+	out.key = rand_key;
+	out.IV_nonce = rand_IV;
 
 	return out;
 }
@@ -782,7 +783,7 @@ Xstr break_AES_CBC_via_server_leak(BlockCipher::CipherData cipher_info){
 	 */
 	for(int c = 0; c < num_ciphers - 1; c++){
 		 // padding value gets incremented as we move down block, per PKCS7
-		uint8_t pkcs7_pad_value = 0b01;
+		uint8_t pkcs7_pad_value = 0x01;
 
 		// get cipher we're trying to solve and cipher we will manipulate
 		int offset = (num_ciphers - c - 2) * AES::BLOCKSIZE;
@@ -1180,6 +1181,7 @@ Xstr BlockCipher::CBC_encrypt(Xstr message, Xstr key, Xstr IV){
 		}
 
 		Xstr holder = plaintext.XOR( last_ciphertext );
+
 		holder = cipher_encode(holder, key);
 
 		last_ciphertext = holder;

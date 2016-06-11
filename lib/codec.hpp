@@ -28,6 +28,10 @@ using namespace std;
 
 #define NUMBER_COMMON_CHARS 6
 
+#define INVALID_BASE64_CHAR (char)255
+
+
+
 // TODO: refactor all uint8_t as uint8
 typedef uint8_t uint8;
 
@@ -39,10 +43,21 @@ extern const char common_chars_UC[NUMBER_COMMON_CHARS];
 extern const char encoding_table[NUMBER_BASE64_CHARS];
 
 static const char* BUILD_DECODING_TABLE() {
-	char* table = (char*) malloc(NUMBER_ASCII_CHARS);
+	char* table = (char*) malloc(NUMBER_ASCII_CHARS * sizeof(char));
 
+	// initialize with INVALID_CHAR so we can quickly figure out
+	// if a user-supplied base64 char is invalid
+	for(int i = 0; i < NUMBER_ASCII_CHARS; i++){
+		table[i] = INVALID_BASE64_CHAR;
+	}
+
+	// make placeholder char (=) the same as the b64 char 'A', which is 0
+	table[(unsigned char) '='] = 0;
+
+	// build table
 	for (int i = 0; i < NUMBER_BASE64_CHARS; i++)
 		table[(unsigned char) encoding_table[i]] = i;
+
 
 	return table;
 }
@@ -51,7 +66,11 @@ extern const char* decoding_table;
 
 
 
-// TODO: Store encoding representations (e.g. b64).
+
+// TODO: Store encoding representations (e.g. b64). Once they are created
+// or possibly when they are initially provided.
+// However will this eat up memory for large amounts of Xstr's?
+
 // make flag as to whether underlying ascii string has been altered.
 // or store old ascii string along with encoded string, check old ascii == new
 
@@ -82,6 +101,7 @@ public:
 			NO_PADDING 		= 'N'
 			};
 
+	// TODO: add base32?
 	enum EncodeType { ASCII_ENCODED, BASE64_ENCODED, HEX_ENCODED };
 
 	/* Constructors / Destructor */
@@ -134,10 +154,7 @@ public:
 	Xstr little_endian();
 
 	/* block-wise operations */
-		// block_num starts at 0
-
-	// TODO: since blocksize is now set internally, remove all these block size parameters
-
+	// block_num starts at 0
 	int get_num_blocks();
 	Xstr get_single_block(int block_num);
 	Xstr embed_single_block(Xstr str, int block_num);
@@ -153,6 +170,10 @@ public:
 
 	/* Overloaded operators */
 
+	// Copy assignment operator
+//    Xstr& operator= (const Xstr& other);
+
+    // array access operator
     char& operator[](int i);
     // Addition operator (+) for CR_string
     Xstr operator+(const Xstr& x);
@@ -196,6 +217,8 @@ private:
 	BlockSize blksz = BlockSize::_16BYTE;
 };
 
+
+
 /* Binary comparison operators - should be implemented as non-member functions */
 inline bool operator==(const Xstr& lhs, const Xstr& rhs){
 	return (lhs.ascii_str == rhs.ascii_str);
@@ -215,6 +238,16 @@ inline bool operator<=(const Xstr& lhs, const Xstr& rhs){
 inline bool operator>=(const Xstr& lhs, const Xstr& rhs){
 	return (lhs.ascii_str >= rhs.ascii_str);
 }
+
+
+
+// Copy assignment operator
+//inline Xstr& Xstr::operator= (const Xstr& other)
+//{
+//    Xstr tmp(other);         // re-use copy-constructor
+//    *this = std::move(tmp); // re-use move-assignment
+//    return *this;
+//}
 
 inline char& Xstr::operator[](int i)
  {
