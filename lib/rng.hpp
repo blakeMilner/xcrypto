@@ -51,28 +51,25 @@ public:
 	MersenneTwister(BITSIZE bitsz);
 	MersenneTwister(uint64_t seed = time(NULL), BITSIZE bitsz = _32BIT);
 
+	static MT_CONST GEN_CONSTANTS(BITSIZE bitsz);
+
 	void srand_mt(uint64_t seed);
 	void load_state(vector<uint64_t> state);
 	void twist_mt();
 	void set_bitsize(BITSIZE bsz);
 	long int rand_mt();
 
-	static MT_CONST GEN_CONSTANTS(BITSIZE bitsz);
-
 private:
 	void _INIT(uint64_t seed, BITSIZE bitsz);
 
-	 BITSIZE bitsize;
-	 MT_CONST CONST;
+	BITSIZE bitsize;
+	MT_CONST CONST;
 
-	 // make state holder large enough to accommodate both 32 and 64 bit
-	 uint64_t state[624];
-	 int index;
-	 uint64_t lower_mask;
-	 uint64_t upper_mask;
-
-	// make MT_hacker a friend so it can access CONSTANTS
-	friend MT_hacker;
+	// make state holder large enough to accommodate both 32 and 64 bit
+	uint64_t state[624];
+	int index;
+	uint64_t lower_mask;
+	uint64_t upper_mask;
 };
 
 // typedef to shorten class name

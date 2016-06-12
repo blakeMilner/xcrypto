@@ -156,6 +156,7 @@ long int MersenneTwister::rand_mt(){
 }
 
 
+
 /* MT_hacker */
 /* Exercise 22 */
 long int MT_hacker::rand_wait_then_seed_with_time(){

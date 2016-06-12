@@ -3,7 +3,7 @@
 PROJECT = crypto_test 
 OBJS = crypto_test.o
 
-DEPS = lib/*.h
+DEPS = lib/*.hpp
 LIB = cryptolib.a
 LIB_SRC = lib/*.cpp
 LIB_OBJS = lib/codec.o lib/block_cipher.o lib/cookie.o lib/rng.o

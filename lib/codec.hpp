@@ -13,6 +13,8 @@
 
 #include <stdint.h>
 
+#include "types.hpp"
+
 using namespace std;
 
 
@@ -32,8 +34,6 @@ using namespace std;
 
 
 
-// TODO: refactor all uint8_t as uint8
-typedef uint8_t uint8;
 
 
 /* functions and tables related to encoding BASE64 */
@@ -75,18 +75,6 @@ extern const char* decoding_table;
 // or store old ascii string along with encoded string, check old ascii == new
 
 // TODO: reimplement using char[] - will this even be faster?
-
-enum EncryptType {
-	ECB_ENCRYPT,
-	CBC_ENCRYPT,
-	CTR_ENCRYPT,
-	UKNOWN_ENCRYPTION
-};
-enum BlockSize {
-	_4BYTE = 4, 	_8BYTE = 8, 	_16BYTE = 16,
-	_32BYTE = 32, 	_64BYTE = 64,	_128BYTE = 128,
-	_256BYTE = 256
-};
 
 
 // TODO: make end() and begin() methods

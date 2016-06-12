@@ -13,22 +13,14 @@
 
 #include "codec.hpp"
 #include "rng.hpp"
+#include "types.hpp"
 
 using namespace std;
 
 
+// TODO: put these in AES class
 Xstr generate_random_AES_IV();
 Xstr generate_random_AES_key();
-
-
-
-
-
-enum CipherType {
-	AES,
-	DES
-};
-
 
 
 
@@ -154,6 +146,8 @@ private:
 	static Xstr CTR_decrypt(Xstr message, Xstr key, Xstr nonce);
 
 	static CipherType cipher_mode;
+
+	// function pointers that redirect to encryption type, e.g. AES or DES
 	static Xstr (*cipher_encode)(Xstr, Xstr);
 	static Xstr (*cipher_decode)(Xstr, Xstr);
 };
