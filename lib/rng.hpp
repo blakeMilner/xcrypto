@@ -9,10 +9,11 @@
 
 #include <iostream>
 #include <unistd.h>
-
 #include "codec.hpp"
 
+
 using namespace std;
+
 
 // TODO: make sure system has uint64_t
 
@@ -20,35 +21,54 @@ using namespace std;
 #define LOWER_32_BITS_MASK 	0xFFFFFFFF;
 #define LOWER_64_BITS_MASK	0xFFFFFFFFFFFFFFFF;;
 
+
+// constants for MT algorithm
+typedef struct {
+	uint64_t W;
+	uint64_t N;
+	uint64_t M;
+	uint64_t R;
+	uint64_t A;
+	uint64_t U;
+	uint64_t D;
+	uint64_t S;
+	uint64_t B;
+	uint64_t T;
+	uint64_t C;
+	uint64_t L;
+	uint64_t F;
+	uint64_t LOWER_W_BITS_MASK;
+} MT_CONST;
+
+
+
+class MT_hacker{
+public:
+	/* Exercise 22 */
+	static long int rand_wait_then_seed_with_time();
+
+	/* Exercise 22 */
+	static vector<uint64_t> clone_MT_from_output(vector<long int> outputs);
+	static long int crack_MT_seed(long int output);
+
+private:
+	static uint64_t untemper_MT_output(long int in);
+};
+
+
+
 class MersenneTwister{
 
 public:
 	enum BITSIZE {_32BIT = 32, _64BIT = 64};
 
 	static void srand_mt(uint64_t seed);
+	static void load_state(vector<uint64_t> state);
 	static void twist_mt();
 	static void set_bitsize(BITSIZE bsz);
 	static long int rand_mt();
 
 private:
-	// constants for MT algorithm
-	typedef struct {
-		uint64_t W;
-		uint64_t N;
-		uint64_t M;
-		uint64_t R;
-		uint64_t A;
-		uint64_t U;
-		uint64_t D;
-		uint64_t S;
-		uint64_t B;
-		uint64_t T;
-		uint64_t C;
-		uint64_t L;
-		uint64_t F;
-		uint64_t LOWER_W_BITS_MASK;
-	} MT_CONST;
-
 	static BITSIZE bitsize;
 	static MT_CONST CONST;
 	static MT_CONST _INIT(BITSIZE bsz);
@@ -58,10 +78,17 @@ private:
 	static int index;
 	static uint64_t lower_mask;
 	static uint64_t upper_mask;
+
+	// make MT_hacker a friend so it can access CONSTANTS
+	friend MT_hacker;
 };
+
+
 
 // typed to shorten class name
 typedef MersenneTwister MT;
+
+
 
 /* Basic RNG utilities */
 namespace RNG {
@@ -72,8 +99,6 @@ namespace RNG {
 };
 
 
-/* Exercise 22 */
-long int rand_wait_then_seed_with_time();
 
 
 #endif /* LIB_RNG_HPP_ */
