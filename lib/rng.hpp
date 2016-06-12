@@ -8,6 +8,7 @@
 #define LIB_RNG_HPP_
 
 #include <iostream>
+#include <limits>
 #include <unistd.h>
 #include "codec.hpp"
 
@@ -57,7 +58,7 @@ public:
 	void load_state(vector<uint64_t> state);
 	void twist_mt();
 	void set_bitsize(BITSIZE bsz);
-	long int rand_mt();
+	long int rand_mt(int output_bytes = -1000000);
 
 private:
 	void _INIT(uint64_t seed, BITSIZE bitsz);

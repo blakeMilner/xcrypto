@@ -47,8 +47,13 @@ Xstr::Xstr(const Xstr& s){
 }
 
 // for when a string is to be extracted from string binary
+//Xstr::Xstr(uint64_t number){
+//	this->ascii_str = int_to_ascii(number);
+//}
+
+// form string based on binary representation of of int
 Xstr::Xstr(uint64_t number){
-	this->ascii_str = int_to_ascii(number);
+	this->ascii_str = int_to_binary(number);
 }
 
 // assume lone string is in ascii
@@ -415,7 +420,21 @@ string Xstr::ascii_to_base64(string input){
     return encoded_data;
 }
 
+// This function extracts the discrete bytes that represent
+// the binary representation of the input uint
+string Xstr::int_to_binary(uint64_t input){
+	int num_output_bytes = ceil( log2(input) / (float) 8 ); // divide by 8 to convert bits to bytes
+	string output(num_output_bytes, 0);
 
+	// extract byte-by-byte
+	for(int i = 0; i < num_output_bytes; i++){
+		// here we are masking off everything except the current byte,
+		// then we align it to the LSB to convert it to a single byte
+		output[num_output_bytes - 1 - i] = ( (input & ((uint64_t)0xFF << (8*i))) >> (8*i));
+	}
+
+	return output;
+}
 
 
 
@@ -454,7 +473,7 @@ string Xstr::as_encoded(EncodeType format){
 	}
 }
 
-uint64_t Xstr::as_int(){
+uint64_t Xstr::as_decimal(){
 	return ascii_to_int(ascii_str);
 }
 

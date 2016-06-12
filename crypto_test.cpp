@@ -109,13 +109,13 @@ int main(int argc, char* argv[])
 //
 //			if(ascii_str.as_base64() != test[s]){
 //				failed = true;
-//				goto eval;
+//				goto eval1;
 //				break;
 //			}
 //		}
 //
 //
-//		eval:	crypto_exercise_test(1,	!failed);
+//		eval1:	crypto_exercise_test(1,	!failed);
 //
 //	}
 //	tock();
@@ -597,35 +597,25 @@ int main(int argc, char* argv[])
 	}
 	tock();
 
-//	/* Exercise 24 */
-//	tick();
-//	{
-//		vector<long int> orig_outputs;
-//		vector<long int> cloned_outputs;
-//
-//		// 64-bit test - 32-bit functionality has already been verified to work
-//		MersenneTwister::set_bitsize(MersenneTwister::_64BIT);
-//		MersenneTwister::srand_mt(69);
-//
-//		// completely tap the twister for all 624 outputs in a single state
-//		for(int i = 0; i < 312; i++){
-//			orig_outputs.push_back(MersenneTwister::rand_mt());
-//		}
-//
-//		// Get vector of unsigned long int's because that's how they are represented
-//		// the the MersenneTwisters internal state
-//		vector<uint64_t> state = MT_hacker::clone_MT_from_output(orig_outputs);
-//
-//		// refresh MT to reload state and verify
-//		MersenneTwister::load_state(state);
-//
-//		for(int i = 0; i < 312; i++){
-//			cloned_outputs.push_back(MersenneTwister::rand_mt());
-//		}
-//
-//		crypto_exercise_test(23, orig_outputs == cloned_outputs);
-//	}
-//	tock();
+	/* Exercise 24 */
+	tick();
+	{
+		bool failed = false;
+
+		// testing MT19937 encryption/decryption
+		Xstr test_str = "AAAAAAAAAAAAAAAA";
+		Xstr encrypted = BlockCipher::MT19937_encrypt(test_str, "AA");
+		Xstr decrypted = BlockCipher::MT19937_decrypt(encrypted, "AA");
+
+		if(decrypted != test_str){
+			failed = true;
+			goto eval2;
+		}
+
+
+		eval2:	crypto_exercise_test(24, !failed);
+	}
+	tock();
 
 	return 0;
 }

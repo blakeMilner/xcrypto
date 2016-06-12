@@ -120,19 +120,29 @@ private:
 
 //  TODO: make function pointers for AES/DES encryption
 // TODO: make option to hand in vector of ciphers and encrypt/decrypt
+
+// TODO: should this be a non static class? since other pieces of code could
+// change the mode without other pieces knowing
+
+// TODO: need to make all routines do checks on input message
+// TODO: make generic input checking functions, so we don't have to repeat code
+
 class BlockCipher {
 public:
 	// TODO: separate IV and nonce and make union instead
 	struct CipherData {
 		Xstr message;
 		Xstr key;
-		Xstr IV_nonce;
+		Xstr IV_nonce; // TODO: make union for IV and nonce as separate vars
 	};
 
 	static Xstr encrypt(EncryptType e, Xstr message, Xstr key, Xstr IV_nonce = Xstr());
 	static Xstr decrypt(EncryptType e, Xstr message, Xstr key, Xstr IV_nonce = Xstr());
 	static Xstr encrypt(EncryptType e, CipherData info);
 	static Xstr decrypt(EncryptType e, CipherData info);
+
+	static Xstr MT19937_encrypt(Xstr decrypted, Xstr key);
+	static Xstr MT19937_decrypt(Xstr encrypted, Xstr key);
 
 	static void set_AES_mode();
 	static void set_DES_mode();
@@ -144,6 +154,8 @@ private:
 	static Xstr CBC_decrypt(Xstr message, Xstr key, Xstr IV);
 	static Xstr CTR_encrypt(Xstr message, Xstr key, Xstr nonce);
 	static Xstr CTR_decrypt(Xstr message, Xstr key, Xstr nonce);
+
+	static Xstr gen_MT19937_keystream(Xstr key, int stream_size);
 
 	static CipherType cipher_mode;
 

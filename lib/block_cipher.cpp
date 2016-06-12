@@ -997,6 +997,20 @@ Xstr BlockCipher::encrypt(EncryptType e, Xstr message, Xstr key, Xstr IV_nonce /
 
 			return CTR_encrypt(message, key, IV_nonce);
 			break;
+
+		case MT19937_ENCRYPT:
+			if( !IV_nonce.empty() ){
+				cout << "BlockEncrypt::encrypt(): IV provided for MT19937 encryption, ignoring." << endl;
+			}
+
+			return MT19937_encrypt(message, key);
+			break;
+
+		default:
+			cout << "BlockCipher::encrypt(): ERROR: Encryption type not recognized." << endl;
+
+			return Xstr();
+			break;
 	}
 }
 
@@ -1026,6 +1040,20 @@ Xstr BlockCipher::decrypt(EncryptType e, Xstr message, Xstr key, Xstr IV_nonce){
 			}
 
 			return CTR_decrypt(message, key, IV_nonce);
+			break;
+
+		case MT19937_ENCRYPT:
+			if( !IV_nonce.empty() ){
+				cout << "BlockEncrypt::decrypt(): IV provided for MT19937 decryption, ignoring." << endl;
+			}
+
+			return MT19937_decrypt(message, key);
+			break;
+
+		default:
+			cout << "BlockCipher::decrypt(): ERROR: Encryption type not recognized." << endl;
+
+			return Xstr();
 			break;
 		}
 }
@@ -1343,4 +1371,48 @@ Xstr BlockCipher::CTR_decrypt(Xstr message, Xstr key, Xstr nonce){
 	}
 
 	return plaintext;
+}
+
+/* Challenge 24 */
+
+Xstr BlockCipher::gen_MT19937_keystream(Xstr key, int stream_size){
+	MersenneTwister mt(key.as_decimal(), MT::_64BIT);
+	Xstr keystream = Xstr(stream_size, 0);
+
+	// put keystream gen into separate function
+	for(int i = 0; i < stream_size; i++){
+		uint8_t new_byte = (uint8_t) mt.rand_mt(1); // want 8-bit output for sequence
+
+		keystream[i] = new_byte;
+	}
+
+	return keystream;
+}
+
+Xstr BlockCipher::MT19937_encrypt(Xstr decrypted, Xstr key){
+	if(key.size() != 2){ // key must be 16 bit
+		cout << "BlockCipher::MT19937_encrypt(): input key is not 16 bytes long." << endl;
+
+		return Xstr();
+	}
+
+	Xstr keystream = gen_MT19937_keystream(key, decrypted.size());
+
+	Xstr encrypted = decrypted ^ keystream;
+
+	return encrypted;
+}
+
+Xstr BlockCipher::MT19937_decrypt(Xstr encrypted, Xstr key){
+	if(key.size() != 2){ // key must be 16 bit
+		cout << "BlockCipher::MT19937_decrypt(): input key is not 16 bytes long." << endl;
+
+		return Xstr();
+	}
+
+	Xstr keystream = gen_MT19937_keystream(key, encrypted.size());
+
+	Xstr decrypted = encrypted ^ keystream;
+
+	return decrypted;
 }

@@ -96,7 +96,7 @@ public:
 	Xstr();
     Xstr(const Xstr&); // copy constructor for CR_string
     Xstr(const char*); // copy constructor for C-style char*
-	Xstr(uint64_t); // for when a string is to be extracted from string binary
+	Xstr(uint64_t); // form string based on binary representation of of int
 	Xstr(string); // assume lone string is in ascii
 	Xstr(string, EncodeType); // user specifies type
 	Xstr(size_t n, char c);
@@ -117,7 +117,7 @@ public:
 	string as_hex();
 	string as_base64();
 	string as_encoded(EncodeType format); // general case where the user inputs desired encoding format
-	uint64_t as_int();
+	uint64_t as_decimal();
 	string as_int_string();
 
 	/* static helper functions that convert between different encoding types */
@@ -130,6 +130,7 @@ public:
 	string ascii_to_base64(string data);
 	uint64_t ascii_to_int(string input);
 	string int_to_ascii(uint64_t input);
+	string int_to_binary(uint64_t input);
 
 	/* mathematical operations for string */
 	int hamming_distance(Xstr string2);

@@ -124,8 +124,33 @@ void MersenneTwister::twist_mt(){
 	index = 0;
 }
 
-long int MersenneTwister::rand_mt(){
-	long int result;
+long int MersenneTwister::rand_mt(int output_bytes /* = -1000000 */){
+	// TODO: make 8 and 4 dependent on system sizeof() for portability
+
+	bool scale_output = true;
+
+	if(bitsize == _64BIT){
+		if(output_bytes == -1000000)
+			output_bytes = 8;
+		else if(output_bytes > 8)
+			cout << "MersenneTwister::rand_mt(): ERROR: Output bytes for 64 bit number requested is greater than 8." << endl;
+		else if(output_bytes < 1)
+			cout << "MersenneTwister::rand_mt(): ERROR: Output bytes requested is less than 1." << endl;
+
+		if(output_bytes == 8)
+			scale_output = false;
+	}
+	else if(bitsize == _32BIT){
+		if(output_bytes == -1000000)
+			output_bytes = 4;
+		else if(output_bytes > 4)
+			cout << "MersenneTwister::rand_mt(): ERROR: Output bytes for 32 bit number requested is greater than 4." << endl;
+		else if(output_bytes < 1)
+			cout << "MersenneTwister::rand_mt(): ERROR: Output bytes requested is less than 1." << endl;
+
+		if(output_bytes == 4)
+			scale_output = false;
+	}
 
 	if (index >= CONST.N) {
 		 if (index > CONST.N) {
@@ -142,17 +167,21 @@ long int MersenneTwister::rand_mt(){
 	 y = y ^ ((y << CONST.S) & CONST.B);
 	 y = y ^ ((y << CONST.T) & CONST.C);
 	 y = y ^  (y >> CONST.L);
-	 result = y & CONST.LOWER_W_BITS_MASK;
+	 y = y & CONST.LOWER_W_BITS_MASK;
+
+	 // if user wants a shorter number of bytes, scale the output down
+	 if(scale_output)
+		 y = (uint64_t) floor(((pow(256, 8) - 1)) * ((double) y / (double) numeric_limits<uint64_t>::max()));
 
 	 index++;
 
 
 	 if(bitsize == _32BIT)
 		 // cast to int first before we convert to long int in function return
-		 return (int) result;
+		 return (int) y;
 
 	 else /*bitsize == _64BIT */
-		 return (long int) result;
+		 return (long int) y;
 }
 
 
