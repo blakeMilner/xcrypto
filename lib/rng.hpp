@@ -41,6 +41,43 @@ typedef struct {
 } MT_CONST;
 
 
+class MT_hacker;
+
+
+class MersenneTwister{
+public:
+	enum BITSIZE {_32BIT = 32, _64BIT = 64};
+
+	MersenneTwister(BITSIZE bitsz);
+	MersenneTwister(uint64_t seed = time(NULL), BITSIZE bitsz = _32BIT);
+
+	void srand_mt(uint64_t seed);
+	void load_state(vector<uint64_t> state);
+	void twist_mt();
+	void set_bitsize(BITSIZE bsz);
+	long int rand_mt();
+
+	static MT_CONST GEN_CONSTANTS(BITSIZE bitsz);
+
+private:
+	void _INIT(uint64_t seed, BITSIZE bitsz);
+
+	 BITSIZE bitsize;
+	 MT_CONST CONST;
+
+	 // make state holder large enough to accommodate both 32 and 64 bit
+	 uint64_t state[624];
+	 int index;
+	 uint64_t lower_mask;
+	 uint64_t upper_mask;
+
+	// make MT_hacker a friend so it can access CONSTANTS
+	friend MT_hacker;
+};
+
+// typedef to shorten class name
+typedef MersenneTwister MT;
+
 
 class MT_hacker{
 public:
@@ -48,45 +85,13 @@ public:
 	static long int rand_wait_then_seed_with_time();
 
 	/* Exercise 22 */
-	static vector<uint64_t> clone_MT_from_output(vector<long int> outputs);
+	static vector<uint64_t> clone_MT_from_output(vector<long int> outputs, MT::BITSIZE bitsz);
 	static long int crack_MT_seed(long int output);
 
 private:
-	static uint64_t untemper_MT_output(long int in);
+	static uint64_t untemper_MT_output(long int in, MT::BITSIZE bitsz);
 };
 
-
-
-class MersenneTwister{
-
-public:
-	enum BITSIZE {_32BIT = 32, _64BIT = 64};
-
-	static void srand_mt(uint64_t seed);
-	static void load_state(vector<uint64_t> state);
-	static void twist_mt();
-	static void set_bitsize(BITSIZE bsz);
-	static long int rand_mt();
-
-private:
-	static BITSIZE bitsize;
-	static MT_CONST CONST;
-	static MT_CONST _INIT(BITSIZE bsz);
-
-	 // make state holder large enough to accommodate both 32 and 64 bit
-	static uint64_t state[624];
-	static int index;
-	static uint64_t lower_mask;
-	static uint64_t upper_mask;
-
-	// make MT_hacker a friend so it can access CONSTANTS
-	friend MT_hacker;
-};
-
-
-
-// typed to shorten class name
-typedef MersenneTwister MT;
 
 
 

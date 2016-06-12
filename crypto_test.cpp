@@ -513,87 +513,119 @@ int main(int argc, char* argv[])
 //	}
 //	tock();
 //
-//	/* Exercise 21 */
-//	tick();
-//	{
-//		std::array<long int, 30> expected_out =
-//				{
-//				1791095845, -12091157,	-59818354, -1431042742,
-//				491263,	1690620555,	1298508491,	-1144451193, 1637472845,
-//				1013994432, 396591248, 1703301249, 799981516, 1666063943,
-//				1484172013,
-//
-//				2469588189546311528, 5937829314747939781, -1488664451840123274,
-//				8414607737543979063, -8983179180370611640, -4813816549494704131,
-//				-5143718920953096580, -3311530619265271089,	5943497028716478977,
-//				2456665931235054654, 5698940622110840090, -5231858944456961090,
-//				5552614544520314474, 6131760866643541936, 8415486058342034190
-//				};
-//
-//		std::array<long int, 30> actual_out;
-//
-//		// 32-bit test
-//		MersenneTwister::set_bitsize(MersenneTwister::_32BIT);
-//		MersenneTwister::srand_mt(1);
-//
-//		int i;
-//		for(i = 0; i < 15; i++){
-//			actual_out[i] = MersenneTwister::rand_mt();
-//		}
-//
-//		// 64-bit test
-//		MersenneTwister::set_bitsize(MersenneTwister::_64BIT);
-//		MersenneTwister::srand_mt(1);
-//
-//		for(; i < 30; i++){
-//			actual_out[i] = MersenneTwister::rand_mt();
-//		}
-//
-//		crypto_exercise_test(21, expected_out == actual_out);
-//	}
-//	tock();
-//
-//	/* Exercise 22 */
-//	tick();
-//	{
-//		long int rand_output = MT_hacker::rand_wait_then_seed_with_time();
-//
-//		long int cracked_seed = MT_hacker::crack_MT_seed(rand_output);
-//
-//		crypto_exercise_test(22, cracked_seed != -1);
-//	}
-//	tock();
+	/* Exercise 21 */
+	tick();
+	{
+		std::array<long int, 30> expected_out =
+				{
+				1791095845, -12091157,	-59818354, -1431042742,
+				491263,	1690620555,	1298508491,	-1144451193, 1637472845,
+				1013994432, 396591248, 1703301249, 799981516, 1666063943,
+				1484172013,
+
+				2469588189546311528, 5937829314747939781, -1488664451840123274,
+				8414607737543979063, -8983179180370611640, -4813816549494704131,
+				-5143718920953096580, -3311530619265271089,	5943497028716478977,
+				2456665931235054654, 5698940622110840090, -5231858944456961090,
+				5552614544520314474, 6131760866643541936, 8415486058342034190
+				};
+
+		std::array<long int, 30> actual_out;
+
+		MersenneTwister mt;
+
+		// 32-bit test
+		mt.set_bitsize(mt._32BIT);
+		mt.srand_mt(1);
+
+		int i;
+		for(i = 0; i < 15; i++){
+			actual_out[i] = mt.rand_mt();
+		}
+
+		// 64-bit test
+		mt.set_bitsize(mt._64BIT);
+		mt.srand_mt(1);
+
+		for(; i < 30; i++){
+			actual_out[i] = mt.rand_mt();
+		}
+
+		crypto_exercise_test(21, expected_out == actual_out);
+	}
+	tock();
+
+	/* Exercise 22 */
+	tick();
+	{
+		long int rand_output = MT_hacker::rand_wait_then_seed_with_time();
+
+		long int cracked_seed = MT_hacker::crack_MT_seed(rand_output);
+
+		crypto_exercise_test(22, cracked_seed != -1);
+	}
+	tock();
 
 	/* Exercise 23 */
-	// TODO: make untemper function for 64 bit and implement in test
 	tick();
 	{
 		vector<long int> orig_outputs;
 		vector<long int> cloned_outputs;
 
-		// 32-bit test
-		MersenneTwister::set_bitsize(MersenneTwister::_32BIT);
-		MersenneTwister::srand_mt(69);
+		// 64-bit test - 32-bit functionality has already been verified to work
+		MT::BITSIZE bitsize = MT::_64BIT;
+
+		MersenneTwister mt(0, bitsize);
 
 		// completely tap the twister for all 624 outputs in a single state
-		for(int i = 0; i < 624; i++){
-			orig_outputs.push_back(MersenneTwister::rand_mt());
+		for(int i = 0; i < 312; i++){
+			orig_outputs.push_back(mt.rand_mt());
 		}
 
 		// Get vector of unsigned long int's because that's how they are represented
 		// the the MersenneTwisters internal state
-		vector<uint64_t> state = MT_hacker::clone_MT_from_output(orig_outputs);
+		vector<uint64_t> state = MT_hacker::clone_MT_from_output(orig_outputs, bitsize);
 
 		// refresh MT to reload state and verify
-		MersenneTwister::load_state(state);
+		mt.load_state(state);
 
-		for(int i = 0; i < 624; i++){
-			cloned_outputs.push_back(MersenneTwister::rand_mt());
+		for(int i = 0; i < 312; i++){
+			cloned_outputs.push_back(mt.rand_mt());
 		}
 
 		crypto_exercise_test(23, orig_outputs == cloned_outputs);
 	}
 	tock();
+
+//	/* Exercise 24 */
+//	tick();
+//	{
+//		vector<long int> orig_outputs;
+//		vector<long int> cloned_outputs;
+//
+//		// 64-bit test - 32-bit functionality has already been verified to work
+//		MersenneTwister::set_bitsize(MersenneTwister::_64BIT);
+//		MersenneTwister::srand_mt(69);
+//
+//		// completely tap the twister for all 624 outputs in a single state
+//		for(int i = 0; i < 312; i++){
+//			orig_outputs.push_back(MersenneTwister::rand_mt());
+//		}
+//
+//		// Get vector of unsigned long int's because that's how they are represented
+//		// the the MersenneTwisters internal state
+//		vector<uint64_t> state = MT_hacker::clone_MT_from_output(orig_outputs);
+//
+//		// refresh MT to reload state and verify
+//		MersenneTwister::load_state(state);
+//
+//		for(int i = 0; i < 312; i++){
+//			cloned_outputs.push_back(MersenneTwister::rand_mt());
+//		}
+//
+//		crypto_exercise_test(23, orig_outputs == cloned_outputs);
+//	}
+//	tock();
 
 	return 0;
 }
