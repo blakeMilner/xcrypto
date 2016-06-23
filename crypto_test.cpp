@@ -80,12 +80,13 @@ int main(int argc, char* argv[])
 	// Going from base64 to ascii and then back to base64 should produce
 	// a base64 output that is identical to the base64 input.
 
+//	cout << ">> Now testing: Set 1" << endl;
 //	cout << ">> " << "Now performing codec test " << endl;
 //	tick();
 //	{
 //		bool failed = false;
 //
-//		ifstream encoded_strings("encoded_b64_ex19.txt");
+//		ifstream encoded_strings("test_files/encoded_b64_ex19.txt");
 //
 //		Xstr newstr;
 //		string b64_str;
@@ -119,6 +120,60 @@ int main(int argc, char* argv[])
 //
 //	}
 //	tock();
+//
+//
+//	/* Exercise 7 */
+	tick();
+	{
+		bool failed = false;
+		string line;
+		string base64_encoded = string("");
+		Xstr encoded, decoded;
+
+		Xstr decoded_part = "I'm back and I'm ringin' the bell \n"
+							"A rockin' on the mike while the fly girls yell \n"
+							"In ecstasy in the back of me \n"
+							"Well that's my DJ Deshay cuttin' all them Z's \n"
+							"Hittin' hard and the girlies goin' crazy \n"
+							"Vanilla's on the mike, man I'm not lazy.";
+
+		ifstream string_file("test_files/encoded_ex7.txt");
+		string key = string("YELLOW SUBMARINE");
+
+
+		// read string into vector from file
+		if (string_file.is_open()){
+			while( getline(string_file, line) ){
+				base64_encoded += line;
+			}
+
+			string_file.close();
+		}
+		else{
+			cout << "ERROR: Unable to open file" << endl;
+			//TODO: put two next lines in all file open operations
+			//TODO: also, make read_file() function
+			failed = true;
+			goto eval7;
+		}
+
+		encoded = Xstr( base64_encoded, Xstr::BASE64_ENCODED );
+		decoded = BlockCipher::decrypt(EncryptType::ECB_ENCRYPT, encoded, key);
+
+//		cout << decoded_part.size() << endl;
+//		cout << decoded.substr(0, decoded_part.size()).size() << endl;
+//		cout << decoded.substr(0, decoded_part.size()) << endl;
+
+		if(decoded.substr(0, decoded_part.size()) != decoded_part){
+			failed = true;
+		}
+
+		eval7: ;
+		crypto_exercise_test(7, !failed);
+
+	};
+	tock();
+//
 //
 //	/* Set 2 */
 //	cout << ">> Now testing: Set 2" << endl;
@@ -154,7 +209,7 @@ int main(int argc, char* argv[])
 //		string IV = string();
 //		IV.resize(AES::BLOCKSIZE, 0); // size 16 - IV is all zeroes!
 //
-//		ifstream string_file("encoded_ex10.txt");
+//		ifstream string_file("test_files/encoded_ex10.txt");
 //
 //		// read string into vector from file
 //		if (string_file.is_open()){
@@ -182,6 +237,7 @@ int main(int argc, char* argv[])
 //
 //	tick();
 //	{
+//		//TODO: add this to hacker class maybe?
 //		EncryptType encryption_type = detect_ECB_or_CBC_encryption(encrypt_using_CBC_or_ECB);
 //
 //		if(encryption_type == EncryptType::CBC_ENCRYPT){
@@ -359,7 +415,7 @@ int main(int argc, char* argv[])
 //	{
 //		vector<Xstr> strings;
 //
-//		ifstream string_file("encoded_b64_ex19.txt");
+//		ifstream string_file("test_files/encoded_b64_ex19.txt");
 //		string line;
 //
 //		// read string into vector from file and encrypt
@@ -513,144 +569,144 @@ int main(int argc, char* argv[])
 //	}
 //	tock();
 //
-	/* Exercise 21 */
-	tick();
-	{
-		std::array<long int, 30> expected_out =
-				{
-				1791095845, -12091157,	-59818354, -1431042742,
-				491263,	1690620555,	1298508491,	-1144451193, 1637472845,
-				1013994432, 396591248, 1703301249, 799981516, 1666063943,
-				1484172013,
-
-				2469588189546311528, 5937829314747939781, -1488664451840123274,
-				8414607737543979063, -8983179180370611640, -4813816549494704131,
-				-5143718920953096580, -3311530619265271089,	5943497028716478977,
-				2456665931235054654, 5698940622110840090, -5231858944456961090,
-				5552614544520314474, 6131760866643541936, 8415486058342034190
-				};
-
-		std::array<long int, 30> actual_out;
-
-		MersenneTwister mt;
-
-		// 32-bit test
-		mt.set_bitsize(mt._32BIT);
-		mt.srand_mt(1);
-
-		int i;
-		for(i = 0; i < 15; i++){
-			actual_out[i] = mt.rand_mt();
-		}
-
-		// 64-bit test
-		mt.set_bitsize(mt._64BIT);
-		mt.srand_mt(1);
-
-		for(; i < 30; i++){
-			actual_out[i] = mt.rand_mt();
-		}
-
-		crypto_exercise_test(21, expected_out == actual_out);
-	}
-	tock();
-
-	/* Exercise 22 */
-	tick();
-	{
-		long int rand_output = MT_hacker::rand_wait_then_seed_with_time();
-
-		long int cracked_seed = MT_hacker::crack_MT_seed(rand_output);
-
-		crypto_exercise_test(22, cracked_seed != -1);
-	}
-	tock();
-
-	/* Exercise 23 */
-	tick();
-	{
-		vector<long int> orig_outputs;
-		vector<long int> cloned_outputs;
-
-		// 64-bit test - 32-bit functionality has already been verified to work
-		MT::BITSIZE bitsize = MT::_64BIT;
-
-		MersenneTwister mt(0, bitsize);
-
-		// completely tap the twister for all 624 outputs in a single state
-		for(int i = 0; i < 312; i++){
-			orig_outputs.push_back(mt.rand_mt());
-		}
-
-		// Get vector of unsigned long int's because that's how they are represented
-		// the the MersenneTwisters internal state
-		vector<uint64_t> state = MT_hacker::clone_MT_from_output(orig_outputs, bitsize);
-
-		// refresh MT to reload state and verify
-		mt.load_state(state);
-
-		for(int i = 0; i < 312; i++){
-			cloned_outputs.push_back(mt.rand_mt());
-		}
-
-		crypto_exercise_test(23, orig_outputs == cloned_outputs);
-	}
-	tock();
-
-	/* Exercise 24 */
-	tick();
-	{
-		bool failed = false;
-
-		int max_score = 1;
-		Xstr best_key = Xstr();
-		Xstr test_str = Xstr("This is test str");
-		Xstr key_guess = Xstr(2, 0); // 2 bytes, start at 0x0000
-		Xstr result = Xstr();
-
-		// testing MT19937 encryption/decryption
-		Xstr encrypted = BlockCipher::MT19937_encrypt(test_str, "AA");
-		Xstr decrypted = BlockCipher::MT19937_decrypt(encrypted, "AA");
-
-		if(decrypted != test_str){
-			failed = true;
-			goto eval24;
-		}
-
-		// testing MT19937 key cracking
-		failed = false;
-
-		// 0xFFFF represents the capacity of 16 bits
-		// iterate through possibilities (65536) and evaluate for common
-		// egnlish characters
-		for(int i = 0; i < 0xFFFF; i++){
-			result = BlockCipher::MT19937_decrypt(test_str, key_guess);
-
-			char element;
-			int score = 0;
-
-			do{
-				element = result[result.size() - score - 1];
-			}while(is_english_character(element) and ++score < result.size());
-
-			if(score > max_score){
-				best_key = key_guess;
-				max_score = score;
-			}
-
-			key_guess++;
-		}
-
-		decrypted = BlockCipher::MT19937_decrypt(test_str, best_key);
-
-		if(decrypted != test_str){
-			failed = true;
-			goto eval24;
-		}
-
-		eval24:	crypto_exercise_test(24, !failed);
-	}
-	tock();
+//	/* Exercise 21 */
+//	tick();
+//	{
+//		std::array<long int, 30> expected_out =
+//				{
+//				1791095845, -12091157,	-59818354, -1431042742,
+//				491263,	1690620555,	1298508491,	-1144451193, 1637472845,
+//				1013994432, 396591248, 1703301249, 799981516, 1666063943,
+//				1484172013,
+//
+//				2469588189546311528, 5937829314747939781, -1488664451840123274,
+//				8414607737543979063, -8983179180370611640, -4813816549494704131,
+//				-5143718920953096580, -3311530619265271089,	5943497028716478977,
+//				2456665931235054654, 5698940622110840090, -5231858944456961090,
+//				5552614544520314474, 6131760866643541936, 8415486058342034190
+//				};
+//
+//		std::array<long int, 30> actual_out;
+//
+//		MersenneTwister mt;
+//
+//		// 32-bit test
+//		mt.set_bitsize(mt._32BIT);
+//		mt.srand_mt(1);
+//
+//		int i;
+//		for(i = 0; i < 15; i++){
+//			actual_out[i] = mt.rand_mt();
+//		}
+//
+//		// 64-bit test
+//		mt.set_bitsize(mt._64BIT);
+//		mt.srand_mt(1);
+//
+//		for(; i < 30; i++){
+//			actual_out[i] = mt.rand_mt();
+//		}
+//
+//		crypto_exercise_test(21, expected_out == actual_out);
+//	}
+//	tock();
+//
+//	/* Exercise 22 */
+//	tick();
+//	{
+//		long int rand_output = MT_hacker::rand_wait_then_seed_with_time();
+//
+//		long int cracked_seed = MT_hacker::crack_MT_seed(rand_output);
+//
+//		crypto_exercise_test(22, cracked_seed != -1);
+//	}
+//	tock();
+//
+//	/* Exercise 23 */
+//	tick();
+//	{
+//		vector<long int> orig_outputs;
+//		vector<long int> cloned_outputs;
+//
+//		// 64-bit test - 32-bit functionality has already been verified to work
+//		MT::BITSIZE bitsize = MT::_64BIT;
+//
+//		MersenneTwister mt(0, bitsize);
+//
+//		// completely tap the twister for all 624 outputs in a single state
+//		for(int i = 0; i < 312; i++){
+//			orig_outputs.push_back(mt.rand_mt());
+//		}
+//
+//		// Get vector of unsigned long int's because that's how they are represented
+//		// the the MersenneTwisters internal state
+//		vector<uint64_t> state = MT_hacker::clone_MT_from_output(orig_outputs, bitsize);
+//
+//		// refresh MT to reload state and verify
+//		mt.load_state(state);
+//
+//		for(int i = 0; i < 312; i++){
+//			cloned_outputs.push_back(mt.rand_mt());
+//		}
+//
+//		crypto_exercise_test(23, orig_outputs == cloned_outputs);
+//	}
+//	tock();
+//
+//	/* Exercise 24 */
+//	tick();
+//	{
+//		bool failed = false;
+//
+//		int max_score = 1;
+//		Xstr best_key = Xstr();
+//		Xstr test_str = Xstr("This is test str");
+//		Xstr key_guess = Xstr(2, 0); // 2 bytes, start at 0x0000
+//		Xstr result = Xstr();
+//
+//		// testing MT19937 encryption/decryption
+//		Xstr encrypted = BlockCipher::MT19937_encrypt(test_str, "AA");
+//		Xstr decrypted = BlockCipher::MT19937_decrypt(encrypted, "AA");
+//
+//		if(decrypted != test_str){
+//			failed = true;
+//			goto eval24;
+//		}
+//
+//		// testing MT19937 key cracking
+//		failed = false;
+//
+//		// 0xFFFF represents the capacity of 16 bits
+//		// iterate through possibilities (65536) and evaluate for common
+//		// egnlish characters
+//		for(int i = 0; i < 0xFFFF; i++){
+//			result = BlockCipher::MT19937_decrypt(test_str, key_guess);
+//
+//			char element;
+//			int score = 0;
+//
+//			do{
+//				element = result[result.size() - score - 1];
+//			}while(is_english_character(element) and ++score < result.size());
+//
+//			if(score > max_score){
+//				best_key = key_guess;
+//				max_score = score;
+//			}
+//
+//			key_guess++;
+//		}
+//
+//		decrypted = BlockCipher::MT19937_decrypt(test_str, best_key);
+//
+//		if(decrypted != test_str){
+//			failed = true;
+//			goto eval24;
+//		}
+//
+//		eval24:	crypto_exercise_test(24, !failed);
+//	}
+//	tock();
 
 	return 0;
 }
