@@ -142,7 +142,7 @@ int main(int argc, char* argv[])
 //		string key = string("YELLOW SUBMARINE");
 //
 //
-//		// read string into vector from file
+//		// read string in from file
 //		if (string_file.is_open()){
 //			while( getline(string_file, line) ){
 //				base64_encoded += line;
@@ -212,7 +212,7 @@ int main(int argc, char* argv[])
 //
 //		ifstream string_file("test_files/encoded_ex10.txt");
 //
-//		// read string into vector from file
+//		// read string in from file
 //		if (string_file.is_open()){
 //			while( getline(string_file, line) ){
 //				base64_encoded += line;
@@ -765,47 +765,48 @@ int main(int argc, char* argv[])
 //		crypto_exercise_test(25, !failed);
 //	}
 //	tock();
-
-	/* Exercise 26 */
-	// CTR bit flipping attacks
-	tick();
-	{
-		// generate unknown key only once
-		static Xstr random_key = generate_random_AES_key();
-		// generate unknown nonce only once
-		static Xstr rand_nonce = generate_random_nonce(AES::CTR_NONCE_SIZE);
-		// create unknown string once
-		static Xstr unknown_string = Xstr(
-				"Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkg"
-				"aGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBq"
-				"dXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUg"
-				"YnkK", Xstr::BASE64_ENCODED);
-
-		static Xstr prefix = "comment1=cooking%20MCs;userdata=";
-		static Xstr suffix = ";comment2=%20like%20a%20pound%20of%20bacon";
-		static string admin_token = ";admin=true;";
-
-		Xstr message = "XXXXXXXXXXXXXXXX:admin<true:XXXX";
-		Xstr encrypted = BlockCipher::encrypt(EncryptType::CTR_ENCRYPT, prefix + message + suffix, random_key, rand_nonce);
-
-		// in the attack message we chose values for the tokens of interest
-		// such that we can just XOR them with 0b01 to obtain the desired tokens
-		//
-		// NOTE: the indices are the only thing different between this and Ex. 16
-		// 		Not sure why the indices should be different though... explanation needed
-		encrypted[48] ^= 1;
-		encrypted[54] ^= 1;
-		encrypted[59] ^= 1;
-
-		Xstr decrypted = BlockCipher::decrypt(EncryptType::CTR_ENCRYPT, encrypted, random_key, rand_nonce);
-		decrypted = decrypted.remove_padding(Xstr::UNKNOWN_PADDING);
-
-		crypto_exercise_test(26,
-					// find doesn't reach end of string
-					decrypted.as_ascii().find(admin_token) != std::string::npos
-				);
-	};
-	tock();
+//
+//	// TODO: Exercise 26 done but it seems too easy... must take another look later."
+//	/* Exercise 26 */
+//	// CTR bit flipping attacks
+//	tick();
+//	{
+//		// generate unknown key only once
+//		static Xstr random_key = generate_random_AES_key();
+//		// generate unknown nonce only once
+//		static Xstr rand_nonce = generate_random_nonce(AES::CTR_NONCE_SIZE);
+//		// create unknown string once
+//		static Xstr unknown_string = Xstr(
+//				"Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkg"
+//				"aGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBq"
+//				"dXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUg"
+//				"YnkK", Xstr::BASE64_ENCODED);
+//
+//		static Xstr prefix = "comment1=cooking%20MCs;userdata=";
+//		static Xstr suffix = ";comment2=%20like%20a%20pound%20of%20bacon";
+//		static string admin_token = ";admin=true;";
+//
+//		Xstr message = "XXXXXXXXXXXXXXXX:admin<true:XXXX";
+//		Xstr encrypted = BlockCipher::encrypt(EncryptType::CTR_ENCRYPT, prefix + message + suffix, random_key, rand_nonce);
+//
+//		// in the attack message we chose values for the tokens of interest
+//		// such that we can just XOR them with 0b01 to obtain the desired tokens
+//		//
+//		// NOTE: the indices are the only thing different between this and Ex. 16
+//		// 		Not sure why the indices should be different though... explanation needed
+//		encrypted[48] ^= 1;
+//		encrypted[54] ^= 1;
+//		encrypted[59] ^= 1;
+//
+//		Xstr decrypted = BlockCipher::decrypt(EncryptType::CTR_ENCRYPT, encrypted, random_key, rand_nonce);
+//		decrypted = decrypted.remove_padding(Xstr::UNKNOWN_PADDING);
+//
+//		crypto_exercise_test(26,
+//					// find doesn't reach end of string
+//					decrypted.as_ascii().find(admin_token) != std::string::npos
+//				);
+//	};
+//	tock();
 
 	return 0;
 }

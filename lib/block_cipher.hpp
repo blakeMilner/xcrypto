@@ -144,8 +144,10 @@ public:
 	static Xstr encrypt(EncryptType e, CipherData info);
 	static Xstr decrypt(EncryptType e, CipherData info);
 
-	// returns re-encrypted ciphertext - plaintext is never revealed
+	static vector<Xstr> encrypt_batch(EncryptType e, vector<Xstr> messages, Xstr key, Xstr IV_nonce = Xstr());
+	static vector<Xstr> decrypt_batch(EncryptType e, vector<Xstr> messages, Xstr key, Xstr IV_nonce = Xstr());
 
+	// returns re-encrypted ciphertext - plaintext is never revealed
 	static Xstr edit_ciphertext(EncryptType e, Xstr cipher, Xstr key, Xstr nonce, int offset, Xstr newtext);
 
 	static Xstr MT19937_encrypt(Xstr decrypted, Xstr key);

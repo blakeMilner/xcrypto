@@ -1069,6 +1069,29 @@ Xstr BlockCipher::decrypt(EncryptType e, CipherData info){
 }
 
 
+vector<Xstr> BlockCipher::encrypt_batch(EncryptType e, vector<Xstr> messages, Xstr key, Xstr IV_nonce){
+	vector<Xstr> outputs;
+
+	for(Xstr new_text: messages) {
+		Xstr new_output = BlockCipher::encrypt(e, new_text, key, IV_nonce);
+		outputs.push_back(new_output);
+	}
+
+	return outputs;
+}
+
+vector<Xstr> BlockCipher::decrypt_batch(EncryptType e, vector<Xstr> messages, Xstr key, Xstr IV_nonce){
+	vector<Xstr> outputs;
+
+	for(Xstr new_text: messages) {
+		Xstr new_output = BlockCipher::decrypt(e, new_text, key, IV_nonce);
+		outputs.push_back(new_output);
+	}
+
+	return outputs;
+}
+
+
 Xstr BlockCipher::edit_ciphertext(EncryptType e, Xstr cipher, Xstr key, Xstr nonce, int offset, Xstr newtext){
 	Xstr decoded = BlockCipher::decrypt(e, cipher, key, nonce);
 	Xstr edited = decoded.embed_string(newtext, offset, offset);
