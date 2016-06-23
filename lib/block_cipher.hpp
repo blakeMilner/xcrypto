@@ -21,6 +21,7 @@ using namespace std;
 // TODO: put these in AES class
 Xstr generate_random_AES_IV();
 Xstr generate_random_AES_key();
+Xstr generate_random_AES_nonce();
 
 
 
@@ -123,6 +124,8 @@ private:
 
 // TODO: should this be a non static class? since other pieces of code could
 // change the mode without other pieces knowing
+// TODO: Above idea is good, just make nonstatic and then single class for crypto_test
+// TODO: changed EncryptType to just switched by user
 
 // TODO: need to make all routines do checks on input message
 // TODO: make generic input checking functions, so we don't have to repeat code
@@ -140,6 +143,10 @@ public:
 	static Xstr decrypt(EncryptType e, Xstr message, Xstr key, Xstr IV_nonce = Xstr());
 	static Xstr encrypt(EncryptType e, CipherData info);
 	static Xstr decrypt(EncryptType e, CipherData info);
+
+	// returns re-encrypted ciphertext - plaintext is never revealed
+
+	static Xstr edit_ciphertext(EncryptType e, Xstr cipher, Xstr key, Xstr nonce, int offset, Xstr newtext);
 
 	static Xstr MT19937_encrypt(Xstr decrypted, Xstr key);
 	static Xstr MT19937_decrypt(Xstr encrypted, Xstr key);
@@ -164,10 +171,14 @@ private:
 	static Xstr (*cipher_decode)(Xstr, Xstr);
 };
 
+
+// TODO: put this in BLockCIpher
 Xstr encrypt_using_CBC_or_ECB(Xstr message);
 EncryptType detect_ECB_or_CBC_encryption(Xstr (*encryption_fnc)(Xstr message));
 
 bool detect_ECB_AES_encryption(Xstr message);
+
+// TODO: put the rest in different file/class
 
 // Challenge 12
 Xstr append_unknown_string_and_encrypt_ECB(Xstr message);
@@ -187,5 +198,8 @@ Xstr break_fixed_nonce_CTR_by_substituting(vector<Xstr> input);
 
 // Challenge 20
 vector<Xstr> break_fixed_nonce_CTR_statistically(vector<Xstr> input);
+
+// Challenge 25
+Xstr server_API_cipher_edit(EncryptType e, Xstr cipher, int offset, Xstr newtext);
 
 #endif

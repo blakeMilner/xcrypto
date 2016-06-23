@@ -72,6 +72,7 @@ void crypto_exercise_test(int num, bool test){
 // e.g. ./crypto_test 3 8 12 18
 // include ALL command for all test
 
+// TODO: make exercises loaded in once, since some exercises reuse files
 
 int main(int argc, char* argv[])
 {
@@ -123,56 +124,56 @@ int main(int argc, char* argv[])
 //
 //
 //	/* Exercise 7 */
-	tick();
-	{
-		bool failed = false;
-		string line;
-		string base64_encoded = string("");
-		Xstr encoded, decoded;
-
-		Xstr decoded_part = "I'm back and I'm ringin' the bell \n"
-							"A rockin' on the mike while the fly girls yell \n"
-							"In ecstasy in the back of me \n"
-							"Well that's my DJ Deshay cuttin' all them Z's \n"
-							"Hittin' hard and the girlies goin' crazy \n"
-							"Vanilla's on the mike, man I'm not lazy.";
-
-		ifstream string_file("test_files/encoded_ex7.txt");
-		string key = string("YELLOW SUBMARINE");
-
-
-		// read string into vector from file
-		if (string_file.is_open()){
-			while( getline(string_file, line) ){
-				base64_encoded += line;
-			}
-
-			string_file.close();
-		}
-		else{
-			cout << "ERROR: Unable to open file" << endl;
-			//TODO: put two next lines in all file open operations
-			//TODO: also, make read_file() function
-			failed = true;
-			goto eval7;
-		}
-
-		encoded = Xstr( base64_encoded, Xstr::BASE64_ENCODED );
-		decoded = BlockCipher::decrypt(EncryptType::ECB_ENCRYPT, encoded, key);
-
-//		cout << decoded_part.size() << endl;
-//		cout << decoded.substr(0, decoded_part.size()).size() << endl;
-//		cout << decoded.substr(0, decoded_part.size()) << endl;
-
-		if(decoded.substr(0, decoded_part.size()) != decoded_part){
-			failed = true;
-		}
-
-		eval7: ;
-		crypto_exercise_test(7, !failed);
-
-	};
-	tock();
+//	tick();
+//	{
+//		bool failed = false;
+//		string line;
+//		string base64_encoded = string("");
+//		Xstr encoded, decoded;
+//
+//		Xstr decoded_part = "I'm back and I'm ringin' the bell \n"
+//							"A rockin' on the mike while the fly girls yell \n"
+//							"In ecstasy in the back of me \n"
+//							"Well that's my DJ Deshay cuttin' all them Z's \n"
+//							"Hittin' hard and the girlies goin' crazy \n"
+//							"Vanilla's on the mike, man I'm not lazy.";
+//
+//		ifstream string_file("test_files/encoded_ex7.txt");
+//		string key = string("YELLOW SUBMARINE");
+//
+//
+//		// read string into vector from file
+//		if (string_file.is_open()){
+//			while( getline(string_file, line) ){
+//				base64_encoded += line;
+//			}
+//
+//			string_file.close();
+//		}
+//		else{
+//			cout << "ERROR: Unable to open file" << endl;
+//			//TODO: put two next lines in all file open operations
+//			//TODO: also, make read_file() function
+//			failed = true;
+//			goto eval7;
+//		}
+//
+//		encoded = Xstr( base64_encoded, Xstr::BASE64_ENCODED );
+//		decoded = BlockCipher::decrypt(EncryptType::ECB_ENCRYPT, encoded, key);
+//
+////		cout << decoded_part.size() << endl;
+////		cout << decoded.substr(0, decoded_part.size()).size() << endl;
+////		cout << decoded.substr(0, decoded_part.size()) << endl;
+//
+//		if(decoded.substr(0, decoded_part.size()) != decoded_part){
+//			failed = true;
+//		}
+//
+//		eval7: ;
+//		crypto_exercise_test(7, !failed);
+//
+//	};
+//	tock();
 //
 //
 //	/* Set 2 */
@@ -707,6 +708,59 @@ int main(int argc, char* argv[])
 //		eval24:	crypto_exercise_test(24, !failed);
 //	}
 //	tock();
+//
+//
+//	/* Set 4 */
+	cout << ">> Now testing: Set 4" << endl;
+
+	/* Exercise 25 */
+	// TODO: Needs fixing, decoded output is returning known_text (all X's)
+	tick();
+	{
+		bool failed = false;
+		string line;
+		string base64_encoded = string("");
+		Xstr cipher, intermediate, decoded, edited_cipher;
+		Xstr known_text;
+
+		ifstream string_file("test_files/encoded_ex7.txt");
+
+
+		// read string into vector from file
+		if (string_file.is_open()){
+			while( getline(string_file, line) ){
+				base64_encoded += line;
+			}
+
+			string_file.close();
+		}
+		else{
+			cout << "ERROR: Unable to open file" << endl;
+			failed = true;
+			goto eval25;
+		}
+
+		cipher = Xstr( base64_encoded, Xstr::BASE64_ENCODED );
+		known_text = Xstr(cipher.size(), 'X'); // fill known text with X's
+
+
+		edited_cipher = server_API_cipher_edit(EncryptType::CTR_ENCRYPT, cipher, 0, known_text);
+
+		intermediate = edited_cipher ^ known_text;
+
+		decoded = intermediate ^ cipher;
+
+		cout << decoded << endl;
+
+
+//		if(decoded.substr(0, decoded_part.size()) != decoded_part){
+//			failed = true;
+//		}
+
+		eval25: ;
+		crypto_exercise_test(25, !failed);
+	}
+	tock();
 
 	return 0;
 }

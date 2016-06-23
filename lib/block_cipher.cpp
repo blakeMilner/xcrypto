@@ -1,13 +1,17 @@
 #include "block_cipher.hpp"
 
 
-// TODO: put these in BlockCipher class
+// TODO: put these in AES class
 Xstr generate_random_AES_IV(){
 	return RNG::rand_ascii_string(AES::BLOCKSIZE);
 }
 
 Xstr generate_random_AES_key(){
 	return RNG::rand_ascii_string(AES::BLOCKSIZE);
+}
+
+Xstr generate_random_AES_nonce(){
+	return RNG::rand_ascii_string(AES::CTR_NONCE_SIZE);
 }
 
 /* AES ENCRYPTION STUFF */
@@ -945,26 +949,24 @@ vector<Xstr> break_fixed_nonce_CTR_statistically(vector<Xstr> input){
 //	cout << decoded_message << endl;
 }
 
+/* Challenge 25 */
+Xstr server_API_cipher_edit(EncryptType e, Xstr cipher, int offset, Xstr newtext){
+	static Xstr key = generate_random_AES_key();
+	static Xstr nonce = generate_random_AES_nonce();
+
+	return BlockCipher::edit_ciphertext(e, cipher, key, nonce, offset, newtext);
+}
+
 
 
 
 
 
 /*
- *
- *
- *
- *
- *
- *
  * BLOCK CIPHER
- *
- *
- *
- *
  */
 
-// Set AES as default
+// Set AES as default for func pointers
 CipherType BlockCipher::cipher_mode = CipherType::AES;
 Xstr (* BlockCipher::cipher_encode)(Xstr, Xstr) = AES::encrypt;
 Xstr (* BlockCipher::cipher_decode)(Xstr, Xstr) = AES::decrypt;
@@ -1065,6 +1067,16 @@ Xstr BlockCipher::encrypt(EncryptType e, CipherData info){
 Xstr BlockCipher::decrypt(EncryptType e, CipherData info){
 	return decrypt(e, info.message, info.key, info.IV_nonce);
 }
+
+
+Xstr BlockCipher::edit_ciphertext(EncryptType e, Xstr cipher, Xstr key, Xstr nonce, int offset, Xstr newtext){
+	Xstr decoded = BlockCipher::decrypt(e, cipher, key, nonce);
+	Xstr edited = decoded.embed_string(newtext, offset, offset);
+	Xstr encoded = BlockCipher::encrypt(e, edited, key, nonce);
+
+	return encoded;
+}
+
 
 void BlockCipher::set_AES_mode(){
 	BlockCipher::cipher_mode = CipherType::AES;
