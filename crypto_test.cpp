@@ -327,18 +327,21 @@ int main(int argc, char* argv[])
 //		// generate unknown IV only once
 //		static Xstr rand_IV = generate_random_AES_IV();
 //		// create unknown string once
-//		static Xstr unknown_string = Xstr("Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkg"
-//													"aGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBq"
-//													"dXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUg"
-//													"YnkK", Xstr::BASE64_ENCODED);
+//		static Xstr unknown_string = Xstr(
+//				"Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkg"
+//				"aGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBq"
+//				"dXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUg"
+//				"YnkK", Xstr::BASE64_ENCODED);
 //
 //		static Xstr prefix = "comment1=cooking%20MCs;userdata=";
 //		static Xstr suffix = ";comment2=%20like%20a%20pound%20of%20bacon";
-//		static string output_token = ";admin=true;";
+//		static string admin_token = ";admin=true;";
 //
 //		Xstr message = "XXXXXXXXXXXXXXXX:admin<true:XXXX";
 //		Xstr encrypted = BlockCipher::encrypt(EncryptType::CBC_ENCRYPT, prefix + message + suffix, random_key, rand_IV);
 //
+//		// in the attack message we chose values for the tokens of interest
+//		// such that we can just XOR them with 0b01 to obtain the desired tokens
 //		encrypted[32] ^= 1;
 //		encrypted[38] ^= 1;
 //		encrypted[43] ^= 1;
@@ -347,7 +350,8 @@ int main(int argc, char* argv[])
 //		decrypted = decrypted.remove_padding(Xstr::UNKNOWN_PADDING);
 //
 //		crypto_exercise_test(16,
-//					decrypted.as_ascii().find(output_token) != std::string::npos
+//					// find doesn't reach end of string
+//					decrypted.as_ascii().find(admin_token) != std::string::npos
 //				);
 //
 //	}
@@ -711,55 +715,96 @@ int main(int argc, char* argv[])
 //
 //
 //	/* Set 4 */
-	cout << ">> Now testing: Set 4" << endl;
+//	cout << ">> Now testing: Set 4" << endl;
+//
+//	/* Exercise 25 */
+//	// TODO: Needs fixing, decoded output is returning known_text (all X's)
+//	tick();
+//	{
+//		bool failed = false;
+//		string line;
+//		string base64_encoded = string("");
+//		Xstr cipher, intermediate, decoded, edited_cipher;
+//		Xstr known_text;
+//
+//		ifstream string_file("test_files/encoded_ex7.txt");
+//
+//
+//		// read string into vector from file
+//		if (string_file.is_open()){
+//			while( getline(string_file, line) ){
+//				base64_encoded += line;
+//			}
+//
+//			string_file.close();
+//		}
+//		else{
+//			cout << "ERROR: Unable to open file" << endl;
+//			failed = true;
+//			goto eval25;
+//		}
+//
+//		cipher = Xstr( base64_encoded, Xstr::BASE64_ENCODED );
+//		known_text = Xstr(cipher.size(), 'X'); // fill known text with X's
+//
+//
+//		edited_cipher = server_API_cipher_edit(EncryptType::CTR_ENCRYPT, cipher, 0, known_text);
+//
+//		intermediate = edited_cipher ^ known_text;
+//
+//		decoded = intermediate ^ cipher;
+//
+//		cout << decoded << endl;
+//
+//
+////		if(decoded.substr(0, decoded_part.size()) != decoded_part){
+////			failed = true;
+////		}
+//
+//		eval25: ;
+//		crypto_exercise_test(25, !failed);
+//	}
+//	tock();
 
-	/* Exercise 25 */
-	// TODO: Needs fixing, decoded output is returning known_text (all X's)
+	/* Exercise 26 */
+	// CTR bit flipping attacks
 	tick();
 	{
-		bool failed = false;
-		string line;
-		string base64_encoded = string("");
-		Xstr cipher, intermediate, decoded, edited_cipher;
-		Xstr known_text;
+		// generate unknown key only once
+		static Xstr random_key = generate_random_AES_key();
+		// generate unknown nonce only once
+		static Xstr rand_nonce = generate_random_nonce(AES::CTR_NONCE_SIZE);
+		// create unknown string once
+		static Xstr unknown_string = Xstr(
+				"Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkg"
+				"aGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBq"
+				"dXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUg"
+				"YnkK", Xstr::BASE64_ENCODED);
 
-		ifstream string_file("test_files/encoded_ex7.txt");
+		static Xstr prefix = "comment1=cooking%20MCs;userdata=";
+		static Xstr suffix = ";comment2=%20like%20a%20pound%20of%20bacon";
+		static string admin_token = ";admin=true;";
 
+		Xstr message = "XXXXXXXXXXXXXXXX:admin<true:XXXX";
+		Xstr encrypted = BlockCipher::encrypt(EncryptType::CTR_ENCRYPT, prefix + message + suffix, random_key, rand_nonce);
 
-		// read string into vector from file
-		if (string_file.is_open()){
-			while( getline(string_file, line) ){
-				base64_encoded += line;
-			}
+		// in the attack message we chose values for the tokens of interest
+		// such that we can just XOR them with 0b01 to obtain the desired tokens
+		//
+		// NOTE: the indices are the only thing different between this and Ex. 16
+		// 		Not sure why the indices should be different though... explanation needed
+		encrypted[48] ^= 1;
+		encrypted[54] ^= 1;
+		encrypted[59] ^= 1;
 
-			string_file.close();
-		}
-		else{
-			cout << "ERROR: Unable to open file" << endl;
-			failed = true;
-			goto eval25;
-		}
+		Xstr decrypted = BlockCipher::decrypt(EncryptType::CTR_ENCRYPT, encrypted, random_key, rand_nonce);
+		decrypted = decrypted.remove_padding(Xstr::UNKNOWN_PADDING);
 
-		cipher = Xstr( base64_encoded, Xstr::BASE64_ENCODED );
-		known_text = Xstr(cipher.size(), 'X'); // fill known text with X's
-
-
-		edited_cipher = server_API_cipher_edit(EncryptType::CTR_ENCRYPT, cipher, 0, known_text);
-
-		intermediate = edited_cipher ^ known_text;
-
-		decoded = intermediate ^ cipher;
-
-		cout << decoded << endl;
-
-
-//		if(decoded.substr(0, decoded_part.size()) != decoded_part){
-//			failed = true;
-//		}
-
-		eval25: ;
-		crypto_exercise_test(25, !failed);
-	}
+		crypto_exercise_test(26,
+					// find doesn't reach end of string
+					decrypted.as_ascii().find(admin_token) != std::string::npos
+				);
+	};
 	tock();
 
 	return 0;

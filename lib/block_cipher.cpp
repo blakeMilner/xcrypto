@@ -10,8 +10,8 @@ Xstr generate_random_AES_key(){
 	return RNG::rand_ascii_string(AES::BLOCKSIZE);
 }
 
-Xstr generate_random_AES_nonce(){
-	return RNG::rand_ascii_string(AES::CTR_NONCE_SIZE);
+Xstr generate_random_nonce(int nonce_size){
+	return RNG::rand_ascii_string(nonce_size);
 }
 
 /* AES ENCRYPTION STUFF */
@@ -952,7 +952,7 @@ vector<Xstr> break_fixed_nonce_CTR_statistically(vector<Xstr> input){
 /* Challenge 25 */
 Xstr server_API_cipher_edit(EncryptType e, Xstr cipher, int offset, Xstr newtext){
 	static Xstr key = generate_random_AES_key();
-	static Xstr nonce = generate_random_AES_nonce();
+	static Xstr nonce = generate_random_nonce(AES::CTR_NONCE_SIZE);
 
 	return BlockCipher::edit_ciphertext(e, cipher, key, nonce, offset, newtext);
 }

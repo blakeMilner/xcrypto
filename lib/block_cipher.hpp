@@ -21,7 +21,7 @@ using namespace std;
 // TODO: put these in AES class
 Xstr generate_random_AES_IV();
 Xstr generate_random_AES_key();
-Xstr generate_random_AES_nonce();
+Xstr generate_random_nonce(int nonce_size);
 
 
 
