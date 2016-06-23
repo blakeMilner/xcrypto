@@ -97,6 +97,7 @@ public:
     Xstr(const Xstr&); // copy constructor for CR_string
     Xstr(const char*); // copy constructor for C-style char*
 	Xstr(uint64_t); // form string based on binary representation of of int
+	Xstr(int); // more limited case of previous constructor
 	Xstr(string); // assume lone string is in ascii
 	Xstr(string, EncodeType); // user specifies type
 	Xstr(size_t n, char c);
@@ -357,6 +358,6 @@ decoded_message solve_repeating_key_xor(Xstr encoded);
 decoded_message solve_repeating_key_xor_2(Xstr encoded, int keysize);
 
 bool contains_space_xor_with_special(char ch);
-bool contains_english_characters(char ch);
+bool is_english_character(char ch);
 
 #endif

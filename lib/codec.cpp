@@ -46,13 +46,13 @@ Xstr::Xstr(const Xstr& s){
 	this->ascii_str = s.ascii_str;
 }
 
-// for when a string is to be extracted from string binary
-//Xstr::Xstr(uint64_t number){
-//	this->ascii_str = int_to_ascii(number);
-//}
-
 // form string based on binary representation of of int
 Xstr::Xstr(uint64_t number){
+	this->ascii_str = int_to_binary(number);
+}
+
+// more limited case of previous constructor
+Xstr::Xstr(int number){
 	this->ascii_str = int_to_binary(number);
 }
 
@@ -1250,7 +1250,7 @@ bool contains_space_xor_with_special(char ch){
 
 }
 
-bool contains_english_characters(char ch){
+bool is_english_character(char ch){
 	if(
 			(ch >= '0' && ch <= '9')
 		|| (ch >= 'a' && ch <= 'z')

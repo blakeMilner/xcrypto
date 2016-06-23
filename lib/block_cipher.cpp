@@ -862,7 +862,7 @@ Xstr break_fixed_nonce_CTR_by_substituting(vector<Xstr> input){
 			Xstr combined = inner_cipher ^ outer_cipher;
 
 			for(int i = 0; i < combined.size(); i++){
-				if( !contains_english_characters(combined[i]) and
+				if( !is_english_character(combined[i]) and
 					!contains_space_xor_with_special(combined[i]) )
 				{
 					space_elements.remove(i);
@@ -1389,9 +1389,11 @@ Xstr BlockCipher::gen_MT19937_keystream(Xstr key, int stream_size){
 	return keystream;
 }
 
+// The encrypt and decrypt for MT19937 are identical (just like for CTR)
+// need only implement once
 Xstr BlockCipher::MT19937_encrypt(Xstr decrypted, Xstr key){
 	if(key.size() != 2){ // key must be 16 bit
-		cout << "BlockCipher::MT19937_encrypt(): input key is not 16 bytes long." << endl;
+		cout << "BlockCipher::MT19937_encrypt(): input key is not 16 bits long." << endl;
 
 		return Xstr();
 	}
@@ -1405,14 +1407,11 @@ Xstr BlockCipher::MT19937_encrypt(Xstr decrypted, Xstr key){
 
 Xstr BlockCipher::MT19937_decrypt(Xstr encrypted, Xstr key){
 	if(key.size() != 2){ // key must be 16 bit
-		cout << "BlockCipher::MT19937_decrypt(): input key is not 16 bytes long." << endl;
+		cout << "BlockCipher::MT19937_decrypt(): input key is not 16 bits long." << endl;
 
 		return Xstr();
 	}
-
-	Xstr keystream = gen_MT19937_keystream(key, encrypted.size());
-
-	Xstr decrypted = encrypted ^ keystream;
-
-	return decrypted;
+	else{
+		return MT19937_encrypt(encrypted, key);
+	}
 }

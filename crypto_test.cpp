@@ -602,18 +602,53 @@ int main(int argc, char* argv[])
 	{
 		bool failed = false;
 
+		int max_score = 1;
+		Xstr best_key = Xstr();
+		Xstr test_str = Xstr("This is test str");
+		Xstr key_guess = Xstr(2, 0); // 2 bytes, start at 0x0000
+		Xstr result = Xstr();
+
 		// testing MT19937 encryption/decryption
-		Xstr test_str = "AAAAAAAAAAAAAAAA";
 		Xstr encrypted = BlockCipher::MT19937_encrypt(test_str, "AA");
 		Xstr decrypted = BlockCipher::MT19937_decrypt(encrypted, "AA");
 
 		if(decrypted != test_str){
 			failed = true;
-			goto eval2;
+			goto eval24;
 		}
 
+		// testing MT19937 key cracking
+		failed = false;
 
-		eval2:	crypto_exercise_test(24, !failed);
+		// 0xFFFF represents the capacity of 16 bits
+		// iterate through possibilities (65536) and evaluate for common
+		// egnlish characters
+		for(int i = 0; i < 0xFFFF; i++){
+			result = BlockCipher::MT19937_decrypt(test_str, key_guess);
+
+			char element;
+			int score = 0;
+
+			do{
+				element = result[result.size() - score - 1];
+			}while(is_english_character(element) and ++score < result.size());
+
+			if(score > max_score){
+				best_key = key_guess;
+				max_score = score;
+			}
+
+			key_guess++;
+		}
+
+		decrypted = BlockCipher::MT19937_decrypt(test_str, best_key);
+
+		if(decrypted != test_str){
+			failed = true;
+			goto eval24;
+		}
+
+		eval24:	crypto_exercise_test(24, !failed);
 	}
 	tock();
 
