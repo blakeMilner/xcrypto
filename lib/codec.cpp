@@ -110,7 +110,7 @@ uint32_t Xstr::hex_char_to_int(char hex){
 		return (hex - '0');
 	}
 	else{
-		cout << "hex_char_to_int out of bounds: " << hex << endl;
+		cout << "Xstr::hex_char_to_int out of bounds: " << hex << endl;
 		return 0;
 	}
 }
@@ -123,12 +123,17 @@ char Xstr::int_to_hex_char(uint32_t int_c){
 		return int_c + 'A' - 10;
 	}
 	else{
-		cout << "int_to_hex_char out of bounds: " << int_c << endl;
+		cout << "Xstr::int_to_hex_char out of bounds: " << int_c << endl;
 		return 0;
 	}
 }
 
 string Xstr::hex_to_ascii(string data){
+	if(find_encoding_type(data) != Xstr::HEX_ENCODED){
+		cout << "Xstr::hex_to_ascii: ERROR: input string is not valid HEX format." << endl;
+		return string();
+	}
+
     int out_length = data.size() / 2;
     if (data[data.size() - 1] == '=') out_length--;
 
@@ -238,6 +243,11 @@ string Xstr::int_to_ascii(uint64_t input){
 // TODO: valgrind is returning read errors for these functions...
 // TODO: document why we use % 3 or % 4
 string Xstr::base64_to_ascii(string input){
+	if(find_encoding_type(input) != Xstr::BASE64_ENCODED){
+		cout << "Xstr::base64_to_ascii: ERROR: input string is not valid base64 format." << endl;
+		return string();
+	}
+
 	int in_len = input.size();
 
 	// removing any trailing bit padding
@@ -247,11 +257,9 @@ string Xstr::base64_to_ascii(string input){
     // make sure we don't have less than 1 character left
 	if(in_len <= 0){
 		cout << "Xstr::base64_to_ascii(): ERROR: input base64 string has less than 1 meaningful character." << endl;
-
 		return string();
 	}
 
-	/* Make sure that input characters are valid base64 chars */
 	for(int i = 0; i < in_len - 1; i++){
 		if(decoding_table[input[i]] == INVALID_BASE64_CHAR){
 			cout << "Xstr::base64_to_ascii(): ERROR: input base64 string has invalid base64 characters." << endl;
@@ -435,8 +443,6 @@ string Xstr::int_to_binary(uint64_t input){
 
 	return output;
 }
-
-
 
 
 string Xstr::as_ascii(){
@@ -1054,6 +1060,14 @@ string Xstr::pretty(EncodeType encoding /* = BASE64_ENCODED */){
 }
 
 
+char Xstr::begin(){
+	return ascii_str[0];
+}
+
+char Xstr::end(){
+	return ascii_str[size() - 1];
+}
+
 
 /* Challenge 3 */
 
@@ -1158,7 +1172,7 @@ decoded_message solve_repeating_key_xor(Xstr encoded){
 
 		    // find single-byte key that best solves according to histgram.
 	    	decoded_message single_byte_key = solve_single_byte_xor(tposed_block);
-	    	multi_byte_key[key_pos] = single_byte_key.key[0];
+	    	multi_byte_key[key_pos] = single_byte_key.key.begin();
 	    }
 
 	    // decode message according to key and score it based on english characters
@@ -1269,4 +1283,49 @@ bool is_english_character(char ch){
 	else{
 		return false;
 	}
+}
+Xstr::EncodeType find_encoding_type(string input){
+	if(input.size() == 0){
+		cout << "find_encoding_type(): ERROR: input string has less than 1 meaningful character." << endl;
+
+		return Xstr::UNKNOWN_ENCODING;
+	}
+
+	bool failed = false;
+
+	// Do hex checking first because HEX chars are a subset of base64 chars
+	// in other words, base 64 will also fit a hex string
+	// HEX checking
+	for(int i = 0; i < input.size(); i++){
+		char hex = input[i];
+
+		if(	not
+			((hex >= 'A' and hex <= 'F') or
+			(hex >= 'a' and hex <= 'f') or
+			(hex >= '0' and hex <= '9'))
+			)
+		{
+			failed = true;
+			break;
+		}
+	}
+
+	if(!failed)
+		return Xstr::HEX_ENCODED;
+	else
+		failed = false;
+
+	// BASE-64 checking
+	for(int i = 0; i < input.size() - 1; i++){
+		if(decoding_table[input[i]] == INVALID_BASE64_CHAR){
+			failed = true;
+			break;
+		}
+	}
+
+	if(!failed)
+		return Xstr::BASE64_ENCODED;
+	else
+		// if not base-64 or hex, then assume ASCII
+		return Xstr::ASCII_ENCODED;
 }

@@ -66,18 +66,7 @@ extern const char* decoding_table;
 
 
 
-
-// TODO: Store encoding representations (e.g. b64). Once they are created
-// or possibly when they are initially provided.
-// However will this eat up memory for large amounts of Xstr's?
-
-// make flag as to whether underlying ascii string has been altered.
-// or store old ascii string along with encoded string, check old ascii == new
-
 // TODO: reimplement using char[] - will this even be faster?
-
-
-// TODO: make end() and begin() methods
 
 // TODO: in the future maybe make encoding finder function that tests to see if
 // all characters are within a range , e.g. all chars are in the base64 char set
@@ -94,7 +83,7 @@ public:
 			};
 
 	// TODO: add base32?
-	enum EncodeType { ASCII_ENCODED, BASE64_ENCODED, HEX_ENCODED };
+	enum EncodeType { ASCII_ENCODED, BASE64_ENCODED, HEX_ENCODED, UNKNOWN_ENCODING };
 
 	/* Constructors / Destructor */
 	Xstr();
@@ -161,6 +150,9 @@ public:
 	PaddingType find_padding_type();
 
 	string pretty(EncodeType encoding = BASE64_ENCODED);
+
+	char begin();
+	char end();
 
 	/* Overloaded operators */
 
@@ -348,7 +340,7 @@ inline ostream& operator<<(ostream& os, const Xstr& str)
 
 
 
-/* OTHER FUNCTIONS AND STRUCTURES */
+/* OTHER HELPER FUNCTIONS AND STRUCTURES */
 
 typedef struct {
 	Xstr decoded;
@@ -363,5 +355,6 @@ decoded_message solve_repeating_key_xor_2(Xstr encoded, int keysize);
 
 bool contains_space_xor_with_special(char ch);
 bool is_english_character(char ch);
+Xstr::EncodeType find_encoding_type(string input);
 
 #endif
