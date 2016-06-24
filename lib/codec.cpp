@@ -3,12 +3,12 @@
 
 /* tables for encoding */
 // TODO: put this in namspace
-const char common_chars_UC[NUMBER_COMMON_CHARS] =
+const char common_chars_UC[_CONST::NUM_COMMON_CHARS] =
 		{'E','T','A','O','I','N'};
 
 // TODO: perhaps convert this to a vector in the future?
 // we must search this array to see if an input b64 char is valid, so it would help.
-const char encoding_table[NUMBER_BASE64_CHARS] =
+const char encoding_table[_CONST::NUM_BASE64_CHARS] =
 		{'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
 		'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
 		'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
@@ -243,11 +243,6 @@ string Xstr::int_to_ascii(uint64_t input){
 // TODO: valgrind is returning read errors for these functions...
 // TODO: document why we use % 3 or % 4
 string Xstr::base64_to_ascii(string input){
-	if(find_encoding_type(input) != Xstr::BASE64_ENCODED){
-		cout << "Xstr::base64_to_ascii: ERROR: input string is not valid base64 format." << endl;
-		return string();
-	}
-
 	int in_len = input.size();
 
 	// removing any trailing bit padding
@@ -256,16 +251,13 @@ string Xstr::base64_to_ascii(string input){
 
     // make sure we don't have less than 1 character left
 	if(in_len <= 0){
-		cout << "Xstr::base64_to_ascii(): ERROR: input base64 string has less than 1 meaningful character." << endl;
+		cout << "Xstr::base64_to_ascii: ERROR: input base64 string has less than 1 meaningful character." << endl;
 		return string();
 	}
 
-	for(int i = 0; i < in_len - 1; i++){
-		if(decoding_table[input[i]] == INVALID_BASE64_CHAR){
-			cout << "Xstr::base64_to_ascii(): ERROR: input base64 string has invalid base64 characters." << endl;
-
-			return string();
-		}
+	if(find_encoding_type(input) != Xstr::BASE64_ENCODED){
+		cout << "Xstr::base64_to_ascii: ERROR: input string is not valid base64 format." << endl;
+		return string();
 	}
 
     // 8 bits for ASCII, 6 bits for B64
@@ -1087,7 +1079,8 @@ decoded_message solve_single_byte_xor(Xstr encoded){
 	int max_score = 0;
 	int max_key = 0;
 
-	for(int key = 0; key < ASCII_MAX_VALUE; key++){
+	//
+	for(int key = 0; key < 256; key++){
 		string key_string = string();
 		key_string.resize(encoded.size(), key);
 
@@ -1129,7 +1122,7 @@ decoded_message solve_repeating_key_xor(Xstr encoded){
 
 	// compute hamming distance between first and second groups of KEYSIZE LENGTH
 	// save in vector as pair for sorting
-	for(int keysize = MIN_XOR_KEYSIZE; keysize <= MAX_XOR_KEYSIZE; keysize++){
+	for(int keysize = _CONST::MIN_XOR_KEYSIZE; keysize <= _CONST::MAX_XOR_KEYSIZE; keysize++){
 		int dist = 0;
 
 		// sum together distances for all successive pairs
@@ -1317,7 +1310,7 @@ Xstr::EncodeType find_encoding_type(string input){
 
 	// BASE-64 checking
 	for(int i = 0; i < input.size() - 1; i++){
-		if(decoding_table[input[i]] == INVALID_BASE64_CHAR){
+		if(decoding_table[input[i]] == _CONST::INVALID_BASE64_CHAR){
 			failed = true;
 			break;
 		}

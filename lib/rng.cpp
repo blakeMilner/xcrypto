@@ -286,7 +286,7 @@ char RNG::rand_ascii_char(){
 }
 
 char RNG::rand_base64_char(){
-	int rand_char = rand_in_range(0, NUMBER_BASE64_CHARS - 1);
+	int rand_char = rand_in_range(0, _CONST::NUM_BASE64_CHARS - 1);
 
 	return (char) encoding_table[rand_char];
 }

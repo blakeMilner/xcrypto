@@ -18,44 +18,26 @@
 using namespace std;
 
 
-// TODO: but these at const vars in own namespace, change references in code
-#define LC_TO_US_ADJUSTER 32
-#define ASCII_MAX_VALUE 256
-
-#define NUMBER_BASE64_CHARS 64
-#define NUMBER_ASCII_CHARS 256
-
-#define MIN_XOR_KEYSIZE 2
-#define MAX_XOR_KEYSIZE 40
-
-#define NUMBER_COMMON_CHARS 6
-
-#define INVALID_BASE64_CHAR (char)255
-
-
-
-
-
 /* functions and tables related to encoding BASE64 */
 
-extern const char common_chars_UC[NUMBER_COMMON_CHARS];
+extern const char common_chars_UC[_CONST::NUM_COMMON_CHARS];
 
-extern const char encoding_table[NUMBER_BASE64_CHARS];
+extern const char encoding_table[_CONST::NUM_BASE64_CHARS];
 
 static const char* BUILD_DECODING_TABLE() {
-	char* table = (char*) malloc(NUMBER_ASCII_CHARS * sizeof(char));
+	char* table = (char*) malloc(_CONST::NUMBER_ASCII_CHARS * sizeof(char));
 
 	// initialize with INVALID_CHAR so we can quickly figure out
 	// if a user-supplied base64 char is invalid
-	for(int i = 0; i < NUMBER_ASCII_CHARS; i++){
-		table[i] = INVALID_BASE64_CHAR;
+	for(int i = 0; i < _CONST::NUMBER_ASCII_CHARS; i++){
+		table[i] = _CONST::INVALID_BASE64_CHAR;
 	}
 
 	// make placeholder char (=) the same as the b64 char 'A', which is 0
 	table[(unsigned char) '='] = 0;
 
 	// build table
-	for (int i = 0; i < NUMBER_BASE64_CHARS; i++)
+	for (int i = 0; i < _CONST::NUM_BASE64_CHARS; i++)
 		table[(unsigned char) encoding_table[i]] = i;
 
 

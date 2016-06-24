@@ -12,6 +12,18 @@
 // TODO: refactor all uint8_t as uint8
 typedef uint8_t uint8;
 
+// constants related to encoding and settings
+namespace _CONST{
+	const int NUM_BASE64_CHARS = 64;
+	const int NUMBER_ASCII_CHARS = 256;
+
+	const int MIN_XOR_KEYSIZE = 2;
+	const int MAX_XOR_KEYSIZE = 40;
+
+	const int NUM_COMMON_CHARS = 6;
+
+	const char INVALID_BASE64_CHAR = (char) 255;
+}
 
 enum BlockSize {
 	_4BYTE = 4, 	_8BYTE = 8, 	_16BYTE = 16,
