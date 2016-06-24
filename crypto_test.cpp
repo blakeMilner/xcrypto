@@ -145,6 +145,83 @@ int main(int argc, char* argv[])
 	};
 	tock();
 
+	/* Exercise 4 */
+	// Detect single-character XOR
+	tick();
+	{
+		bool failed = false;
+
+		vector<Xstr> possible_strings;
+		string line;
+		ifstream string_file("test_files/encoded_ex4.txt");
+		Xstr output("Now that the party is jumping\n");
+
+		int max_idx = -1;
+		bool max_found = false;
+
+		decoded_message max_message;
+		max_message.score = 0;
+		max_message.decoded = Xstr();
+
+		// read string into vector from file
+		if (string_file.is_open()){
+			while( getline(string_file, line) ){
+				Xstr ascii_string(line, Xstr::HEX_ENCODED );
+				possible_strings.push_back( ascii_string );
+			}
+
+			string_file.close();
+		}
+		else{
+			cout << "Unable to open file" << endl;
+			failed = true;
+			goto eval4;
+		}
+
+		// iterate through potential strings and find the best solution for each.
+		// Regard string with highest score as encoded string
+		for(Xstr next_str: possible_strings){
+			decoded_message message = solve_single_byte_xor( next_str );
+
+			if(message.score > max_message.score){
+				max_found = true;
+				max_message.score = message.score;
+				max_message.decoded = message.decoded;
+			}
+		}
+
+		if(max_message.decoded != output)
+			failed = true;
+
+		eval4:
+			crypto_exercise_test(4, !failed);
+
+	};
+	tock();
+
+	/* Exercise 5 */
+	// Implement repeating-key XOR
+	tick();
+	{
+		bool failed = false;
+
+		Xstr expected = Xstr(
+				"0b3637272a2b2e63622c2e69692a23693a2a3c6324202d623d63343c2"
+				"a26226324272765272a282b2f20430a652e2c652a3124333a653e2b20"
+				"27630c692b20283165286326302e27282f", Xstr::HEX_ENCODED);
+
+		Xstr message = "Burning 'em, if you ain't quick and nimble I go crazy when I hear a cymbal";
+		Xstr key = "ICE";
+
+		Xstr encoded = message.XOR_wraparound(key);
+
+		if(encoded == expected)
+			failed = false;
+
+		crypto_exercise_test(5, !failed);
+
+	};
+	tock();
 
 	/* Exercise 6 */
 	// Break repeating-key XOR
