@@ -175,6 +175,59 @@ int main(int argc, char* argv[])
 //	};
 //	tock();
 //
+
+	/* Exercise 8 */
+	tick();
+	{
+		bool failed = false;
+
+		Xstr expected_ECB_cipher = Xstr(
+				"D880619740A8A19B7840A8A31C810A3D08649AF70DC06F4FD5D2D69C744C"
+				"D283E2DD052F6B641DBF9D11B0348542BB5708649AF70DC06F4FD5D2D69C"
+				"744CD2839475C9DFDBC1D46597949D9C7E82BF5A08649AF70DC06F4FD5D2"
+				"D69C744CD28397A93EAB8D6AECD566489154789A6B0308649AF70DC06F4F"
+				"D5D2D69C744CD283D403180C98C8F6DB1F2A3F9C4040DEB0AB51B29933F2"
+				"C123C58386B06FBA186A", Xstr::HEX_ENCODED);
+
+		ifstream string_file("test_files/encoded_ex8.txt");
+
+		vector<Xstr> possible_ciphers;
+		string line;
+		Xstr ECB_found;
+
+
+		// read string into vector from file
+		if (string_file.is_open()){
+			while( getline(string_file, line) ){
+				Xstr ascii_string = Xstr( line, Xstr::HEX_ENCODED );
+				possible_ciphers.push_back( ascii_string );
+			}
+
+			string_file.close();
+		}
+		else{
+			failed = true;
+			goto eval8;
+			cout << "ERROR: Unable to open file" << endl;;
+		}
+
+		// iterate through ciphers and see if they are ECB encoded
+		for(Xstr cipher: possible_ciphers){
+			if( detect_ECB_AES_encryption( cipher ) ){
+				ECB_found = cipher;
+				break;
+			}
+		}
+
+		if(expected_ECB_cipher != ECB_found)
+			failed = true;
+
+		eval8: ;
+		crypto_exercise_test(8, !failed);
+
+	};
+	tock();
+
 //
 //	/* Set 2 */
 //	cout << ">> Now testing: Set 2" << endl;
