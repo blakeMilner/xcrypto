@@ -79,6 +79,10 @@ extern const char* decoding_table;
 
 // TODO: make end() and begin() methods
 
+// TODO: in the future maybe make encoding finder function that tests to see if
+// all characters are within a range , e.g. all chars are in the base64 char set
+// could passing strings to functions without specifying encoding type
+
 class Xstr {
 
 public:

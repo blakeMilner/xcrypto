@@ -122,6 +122,86 @@ int main(int argc, char* argv[])
 //	}
 //	tock();
 //
+	/* Exercise 3 */
+	// Single-byte XOR cipher
+	tick();
+	{
+		bool failed = false;
+
+		Xstr test_string("1b37373331363f78151b7f2b783431333"
+						"d78397828372d363c78373e783a393b3736", Xstr::HEX_ENCODED);
+
+		Xstr output("Cooking MC's like a pound of bacon");
+
+		decoded_message message = solve_single_byte_xor( test_string );
+
+		if(message.key_found){
+			if(message.decoded != output)
+				failed = true;
+		}
+
+		crypto_exercise_test(3, !failed);
+
+	};
+	tock();
+
+
+	/* Exercise 6 */
+	// Break repeating-key XOR
+	tick();
+	{
+		bool failed = false;
+
+		Xstr decoded_part = "I'm back and I'm ringin' the bell \n"
+							"A rockin' on the mike while the fly girls yell \n"
+							"In ecstasy in the back of me \n"
+							"Well that's my DJ Deshay cuttin' all them Z's \n"
+							"Hittin' hard and the girlies goin' crazy \n"
+							"Vanilla's on the mike, man I'm not lazy.";
+
+		string line;
+		string base64_encoded = string("");
+		ifstream string_file("test_files/encoded_ex6.txt");
+
+		Xstr ascii_encoded;
+		decoded_message message;
+		Xstr decoded;
+
+		// testing hamming distance - should be 37
+		int hamming_dist = Xstr("this is a test").hamming_distance("wokka wokka!!!");
+
+		if(hamming_dist != 37){
+			failed = true;
+			goto eval6;
+		}
+
+		// read string into vector from file
+		if (string_file.is_open()){
+			while( getline(string_file, line) ){
+				base64_encoded += line;
+			}
+
+			string_file.close();
+		}
+		else{
+			cout << "ERROR: Unable to open file" << endl;
+			failed = true;
+			goto eval6;
+		}
+
+		ascii_encoded = Xstr(base64_encoded, Xstr::BASE64_ENCODED );
+		message = solve_repeating_key_xor( ascii_encoded );
+
+		decoded = ascii_encoded.XOR_wraparound(message.key);
+
+		if(decoded.substr(0, decoded_part.size()) != decoded_part)
+			failed = true;
+
+		eval6: ;
+		crypto_exercise_test(6, !failed);
+
+	};
+	tock();
 //
 //	/* Exercise 7 */
 //	tick();
@@ -175,59 +255,59 @@ int main(int argc, char* argv[])
 //	};
 //	tock();
 //
-
-	/* Exercise 8 */
-	tick();
-	{
-		bool failed = false;
-
-		Xstr expected_ECB_cipher = Xstr(
-				"D880619740A8A19B7840A8A31C810A3D08649AF70DC06F4FD5D2D69C744C"
-				"D283E2DD052F6B641DBF9D11B0348542BB5708649AF70DC06F4FD5D2D69C"
-				"744CD2839475C9DFDBC1D46597949D9C7E82BF5A08649AF70DC06F4FD5D2"
-				"D69C744CD28397A93EAB8D6AECD566489154789A6B0308649AF70DC06F4F"
-				"D5D2D69C744CD283D403180C98C8F6DB1F2A3F9C4040DEB0AB51B29933F2"
-				"C123C58386B06FBA186A", Xstr::HEX_ENCODED);
-
-		ifstream string_file("test_files/encoded_ex8.txt");
-
-		vector<Xstr> possible_ciphers;
-		string line;
-		Xstr ECB_found;
-
-
-		// read string into vector from file
-		if (string_file.is_open()){
-			while( getline(string_file, line) ){
-				Xstr ascii_string = Xstr( line, Xstr::HEX_ENCODED );
-				possible_ciphers.push_back( ascii_string );
-			}
-
-			string_file.close();
-		}
-		else{
-			failed = true;
-			goto eval8;
-			cout << "ERROR: Unable to open file" << endl;;
-		}
-
-		// iterate through ciphers and see if they are ECB encoded
-		for(Xstr cipher: possible_ciphers){
-			if( detect_ECB_AES_encryption( cipher ) ){
-				ECB_found = cipher;
-				break;
-			}
-		}
-
-		if(expected_ECB_cipher != ECB_found)
-			failed = true;
-
-		eval8: ;
-		crypto_exercise_test(8, !failed);
-
-	};
-	tock();
-
+//
+//	/* Exercise 8 */
+//	tick();
+//	{
+//		bool failed = false;
+//
+//		Xstr expected_ECB_cipher = Xstr(
+//				"D880619740A8A19B7840A8A31C810A3D08649AF70DC06F4FD5D2D69C744C"
+//				"D283E2DD052F6B641DBF9D11B0348542BB5708649AF70DC06F4FD5D2D69C"
+//				"744CD2839475C9DFDBC1D46597949D9C7E82BF5A08649AF70DC06F4FD5D2"
+//				"D69C744CD28397A93EAB8D6AECD566489154789A6B0308649AF70DC06F4F"
+//				"D5D2D69C744CD283D403180C98C8F6DB1F2A3F9C4040DEB0AB51B29933F2"
+//				"C123C58386B06FBA186A", Xstr::HEX_ENCODED);
+//
+//		ifstream string_file("test_files/encoded_ex8.txt");
+//
+//		vector<Xstr> possible_ciphers;
+//		string line;
+//		Xstr ECB_found;
+//
+//
+//		// read string into vector from file
+//		if (string_file.is_open()){
+//			while( getline(string_file, line) ){
+//				Xstr ascii_string = Xstr( line, Xstr::HEX_ENCODED );
+//				possible_ciphers.push_back( ascii_string );
+//			}
+//
+//			string_file.close();
+//		}
+//		else{
+//			failed = true;
+//			goto eval8;
+//			cout << "ERROR: Unable to open file" << endl;;
+//		}
+//
+//		// iterate through ciphers and see if they are ECB encoded
+//		for(Xstr cipher: possible_ciphers){
+//			if( detect_ECB_AES_encryption( cipher ) ){
+//				ECB_found = cipher;
+//				break;
+//			}
+//		}
+//
+//		if(expected_ECB_cipher != ECB_found)
+//			failed = true;
+//
+//		eval8: ;
+//		crypto_exercise_test(8, !failed);
+//
+//	};
+//	tock();
+//
 //
 //	/* Set 2 */
 //	cout << ">> Now testing: Set 2" << endl;

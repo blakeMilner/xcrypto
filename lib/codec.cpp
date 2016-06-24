@@ -540,7 +540,7 @@ int Xstr::hamming_distance(Xstr string2){
 	// scan through each char, evaluating each bit with XOR
 	for(int chr = 0; chr < this->size(); chr++){
 		// produces bit sequence where 0 bits represent equal elements
-		uint8_t val = (this->ascii_str)[chr] ^ string2[chr];
+		uint8_t val = ascii_str[chr] ^ string2[chr];
 
 		// Wegner algorithm
 		// counts 0, i.e. counts equal elements in bit sequences
@@ -552,7 +552,7 @@ int Xstr::hamming_distance(Xstr string2){
 	}
 
 	// normalize the hamming distance by the length of the strings
-	distance /= this->size();
+//	distance /= this->size();
 
 	return distance;
 }
@@ -1135,7 +1135,7 @@ decoded_message solve_repeating_key_xor(Xstr encoded){
 	std::sort (key_distances.begin(), key_distances.end(), hamming_distance_sort_struct);
 
 	// variables for finding key that has the largest amount of english characters
-	int max_score = 0;
+	double max_score = 0;
 	string max_key = string();
 
 	// iterate through 5 keysizes smallest with the smallest hamming distance
@@ -1150,7 +1150,8 @@ decoded_message solve_repeating_key_xor(Xstr encoded){
 
 	    for(int key_pos = 0; key_pos < keysize; key_pos++){
 
-	    	// make transposed block of size keysize by picking out every n'th element (n = key_chr)
+	    	// make transposed block of size keysize
+	    	// by picking out every n'th element (n = key_chr)
 		    for(int i = 0; i < tposed_block_size; i++){
 		    	tposed_block[i] = encoded[(i * keysize) + key_pos];
 		    }
@@ -1162,7 +1163,11 @@ decoded_message solve_repeating_key_xor(Xstr encoded){
 
 	    // decode message according to key and score it based on english characters
 	    Xstr decoded_message = encoded ^ multi_byte_key;
-	    int key_score = decoded_message.get_num_english_characters( );
+	    double key_score = decoded_message.get_num_english_characters( );
+
+	    // normalize by message size - our message should be the only one at a perfect
+	    // 1.0, meaning that every character is english
+	    key_score /= decoded_message.size();
 
 	    // check if we've found maximum
 	    if(key_score > max_score){
