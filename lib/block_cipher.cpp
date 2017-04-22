@@ -848,10 +848,14 @@ Xstr break_fixed_nonce_CTR_by_substituting(vector<Xstr> input){
 
 	vector<int> space_elements(256);
 
+	// search each element individually, ranking by which keybyte
+	// causes the most plaintext ' '
 	for(int i = 0; i < max_cipher_size; i++){
 
 		std::fill(space_elements.begin(), space_elements.end(), 0);
 
+		// assume every plaintext character is 0 - you can rank the most likely
+		// keystream element by the result of: ciphers[i] ^ plaintxt (' ') = keystream[i]
 		for(auto cipher : input){
 			if(cipher.size() <= i)
 				break;
@@ -859,6 +863,8 @@ Xstr break_fixed_nonce_CTR_by_substituting(vector<Xstr> input){
 			uint8_t c = cipher[i] ^ ' ';
 			space_elements[c]++;
 		}
+
+		// find which keystream element value had the most number of spaces
 
 		int smax = 0;
 		int v = 0;
@@ -870,16 +876,15 @@ Xstr break_fixed_nonce_CTR_by_substituting(vector<Xstr> input){
 			}
 		}
 
+		// add most keystream guess that resulted in most spaces
 		keystream[i] = v;
 	}
 
 
-	/* can uncomment if you want to look at guesses we started from */
+	/* can uncomment if you want to look at guesses we start from */
 //	for(auto cipher : input){
 //		cout << (keystream ^ cipher) << endl;
 //	}
-
-
 
 	return keystream;
 }
@@ -1339,20 +1344,31 @@ Xstr BlockCipher::CTR_encrypt(Xstr message, Xstr key, Xstr nonce){
 	Xstr counter;
 	counter.fill(AES::CTR_COUNTER_SIZE, 0);
 
+//	cout << "XXXXXXXXXXXXXXXXXX" << endl;
+
 	for(int cipher = 0; cipher < num_ciphers; cipher++){
+//		cout << "1" << endl;
 		Xstr plaintext = message.substr(cipher * AES::BLOCKSIZE, AES::BLOCKSIZE);
 
+//		cout << "2" << endl;
 		cipher_input = nonce.little_endian() + counter.little_endian();
+
+//		cout << "2" << endl;
+//		cout << cipher_input.as_base64() << endl;
+//		cout << key.as_base64() << endl;
 		Xstr encrypted_nonce = cipher_encode(cipher_input, key);
 
+//		cout << "3" << endl;
 		// TODO: IDEA: instead of copying blocks over, just use container as accumulator that gets XOR'd
 
 		// add new ciphertext by XORing with encrypted nonce
 		ciphertext += encrypted_nonce ^ plaintext;
 
+//		cout << "4" << endl;
 		// add 1 to the integer represented by the string
 		counter.increment();
 	}
+
 
 	return ciphertext;
 }

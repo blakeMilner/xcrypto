@@ -642,100 +642,98 @@ int main(int argc, char* argv[])
 //
 //	vector.push_back() is busted
 //
-	/* Exercise 19 */
-	// TODO: fix base64 encoding because it works when feeding in raw ascii
-	tick();
-	{
-		Xstr keystream("Z/kf0FmwkR2EwZr1qdZfgqaoWbSlLy/QGY/VRRhA9LAAA===", Xstr::BASE64_ENCODED);
-
-		string strings[38] = {
-				"SSBoYXZlIG1ldCB0aGVtIGF0IGNsb3NlIG9mIGRheQ==",
-				"Q29taW5nIHdpdGggdml2aWQgZmFjZXM=",
-				"RnJvbSBjb3VudGVyIG9yIGRlc2sgYW1vbmcgZ3JleQ==",
-				"RWlnaHRlZW50aC1jZW50dXJ5IGhvdXNlcy4=",
-				"SSBoYXZlIHBhc3NlZCB3aXRoIGEgbm9kIG9mIHRoZSBoZWFk",
-				"T3IgcG9saXRlIG1lYW5pbmdsZXNzIHdvcmRzLA==",
-				"T3IgaGF2ZSBsaW5nZXJlZCBhd2hpbGUgYW5kIHNhaWQ=",
-				"UG9saXRlIG1lYW5pbmdsZXNzIHdvcmRzLA==",
-				"QW5kIHRob3VnaHQgYmVmb3JlIEkgaGFkIGRvbmU=",
-				"T2YgYSBtb2NraW5nIHRhbGUgb3IgYSBnaWJl",
-				"VG8gcGxlYXNlIGEgY29tcGFuaW9u",
-				"QXJvdW5kIHRoZSBmaXJlIGF0IHRoZSBjbHViLA==",
-				"QmVpbmcgY2VydGFpbiB0aGF0IHRoZXkgYW5kIEk=",
-				"QnV0IGxpdmVkIHdoZXJlIG1vdGxleSBpcyB3b3JuOg==",
-				"QWxsIGNoYW5nZWQsIGNoYW5nZWQgdXR0ZXJseTo=",
-				"QSB0ZXJyaWJsZSBiZWF1dHkgaXMgYm9ybi4=",
-				"VGhhdCB3b21hbidzIGRheXMgd2VyZSBzcGVudA==",
-				"VW50aWwgaGVyIHZvaWNlIGdyZXcgc2hyaWxsLg==",
-				"V2hhdCB2b2ljZSBtb3JlIHN3ZWV0IHRoYW4gaGVycw==",
-				"V2hlbiB5b3VuZyBhbmQgYmVhdXRpZnVsLA==",
-				"U2hlIHJvZGUgdG8gaGFycmllcnM/",
-				"VGhpcyBtYW4gaGFkIGtlcHQgYSBzY2hvb2w=",
-				"QW5kIHJvZGUgb3VyIHdpbmdlZCBob3JzZS4=",
-				"VGhpcyBvdGhlciBoaXMgaGVscGVyIGFuZCBmcmllbmQ=",
-				"V2FzIGNvbWluZyBpbnRvIGhpcyBmb3JjZTs=",
-				"SGUgbWlnaHQgaGF2ZSB3b24gZmFtZSBpbiB0aGUgZW5kLA==",
-				"U28gc2Vuc2l0aXZlIGhpcyBuYXR1cmUgc2VlbWVkLA==",
-				"U28gZGFyaW5nIGFuZCBzd2VldCBoaXMgdGhvdWdodC4=",
-				"VGhpcyBvdGhlciBtYW4gSSBoYWQgZHJlYW1lZA==",
-				"QSBkcnVua2VuLCB2YWluLWdsb3Jpb3VzIGxvdXQu",
-				"SGUgaGFkIGRvbmUgbW9zdCBiaXR0ZXIgd3Jvbmc=",
-				"VG8gc29tZSB3aG8gYXJlIG5lYXIgbXkgaGVhcnQs",
-				"WWV0IEkgbnVtYmVyIGhpbSBpbiB0aGUgc29uZzs=",
-				"SGUsIHRvbywgaGFzIHJlc2lnbmVkIGhpcyBwYXJ0",
-				"SW4gdGhlIGNhc3VhbCBjb21lZHk7",
-				"VHJhbnNmb3JtZWQgdXR0ZXJseTo=",
-				"QSB0ZXJyaWJsZSBiZWF1dHkgaXMgYm9ybi4=",
-		};
-
-		vector<Xstr> ciphers;
-		Xstr random_key("Rfh9orvO75Iba9PsvseQPg==",  Xstr::BASE64_ENCODED);
-
-
-		/* Make 8-byte nonce for CTR, fill with 0's
-		 * We use the same nonce for all encryptions, which is where the
-		 * weakness is */
-		Xstr nonce;
-		nonce.resize(AES::CTR_NONCE_SIZE, 0);
-
-
-		Xstr next_str;
-		Xstr next_cipher;
-		Xstr newstr;
-		string s;
-
-		// encrypt the strings
-		for(int i = 0; i < 37; i++){
-			newstr = Xstr(strings[i], Xstr::BASE64_ENCODED);
-
-			next_cipher = BlockCipher::encrypt(EncryptType::CTR_ENCRYPT, newstr, random_key, nonce);
-
-			ciphers.push_back( next_cipher );
-		}
-
-		// get keystream with partially solved characters
-		Xstr cracked_keystream = break_fixed_nonce_CTR_by_substituting(ciphers);
-
-		// I could waste my time guessing and complete the keystream, but I
-		// have better things to do :)
-
-		crypto_exercise_test(19,
-					keystream == cracked_keystream
-				);
-
-	}
-	tock();
+//	/* Exercise 19 */
+//	tick();
+//	{
+//		Xstr keystream("Z/kf0FmwkR2EwZr1qdZfgqaoWbSlLy/QGY/VRRhA9LAAA===", Xstr::BASE64_ENCODED);
+//
+//		string strings[38] = {
+//				"SSBoYXZlIG1ldCB0aGVtIGF0IGNsb3NlIG9mIGRheQ==",
+//				"Q29taW5nIHdpdGggdml2aWQgZmFjZXM=",
+//				"RnJvbSBjb3VudGVyIG9yIGRlc2sgYW1vbmcgZ3JleQ==",
+//				"RWlnaHRlZW50aC1jZW50dXJ5IGhvdXNlcy4=",
+//				"SSBoYXZlIHBhc3NlZCB3aXRoIGEgbm9kIG9mIHRoZSBoZWFk",
+//				"T3IgcG9saXRlIG1lYW5pbmdsZXNzIHdvcmRzLA==",
+//				"T3IgaGF2ZSBsaW5nZXJlZCBhd2hpbGUgYW5kIHNhaWQ=",
+//				"UG9saXRlIG1lYW5pbmdsZXNzIHdvcmRzLA==",
+//				"QW5kIHRob3VnaHQgYmVmb3JlIEkgaGFkIGRvbmU=",
+//				"T2YgYSBtb2NraW5nIHRhbGUgb3IgYSBnaWJl",
+//				"VG8gcGxlYXNlIGEgY29tcGFuaW9u",
+//				"QXJvdW5kIHRoZSBmaXJlIGF0IHRoZSBjbHViLA==",
+//				"QmVpbmcgY2VydGFpbiB0aGF0IHRoZXkgYW5kIEk=",
+//				"QnV0IGxpdmVkIHdoZXJlIG1vdGxleSBpcyB3b3JuOg==",
+//				"QWxsIGNoYW5nZWQsIGNoYW5nZWQgdXR0ZXJseTo=",
+//				"QSB0ZXJyaWJsZSBiZWF1dHkgaXMgYm9ybi4=",
+//				"VGhhdCB3b21hbidzIGRheXMgd2VyZSBzcGVudA==",
+//				"VW50aWwgaGVyIHZvaWNlIGdyZXcgc2hyaWxsLg==",
+//				"V2hhdCB2b2ljZSBtb3JlIHN3ZWV0IHRoYW4gaGVycw==",
+//				"V2hlbiB5b3VuZyBhbmQgYmVhdXRpZnVsLA==",
+//				"U2hlIHJvZGUgdG8gaGFycmllcnM/",
+//				"VGhpcyBtYW4gaGFkIGtlcHQgYSBzY2hvb2w=",
+//				"QW5kIHJvZGUgb3VyIHdpbmdlZCBob3JzZS4=",
+//				"VGhpcyBvdGhlciBoaXMgaGVscGVyIGFuZCBmcmllbmQ=",
+//				"V2FzIGNvbWluZyBpbnRvIGhpcyBmb3JjZTs=",
+//				"SGUgbWlnaHQgaGF2ZSB3b24gZmFtZSBpbiB0aGUgZW5kLA==",
+//				"U28gc2Vuc2l0aXZlIGhpcyBuYXR1cmUgc2VlbWVkLA==",
+//				"U28gZGFyaW5nIGFuZCBzd2VldCBoaXMgdGhvdWdodC4=",
+//				"VGhpcyBvdGhlciBtYW4gSSBoYWQgZHJlYW1lZA==",
+//				"QSBkcnVua2VuLCB2YWluLWdsb3Jpb3VzIGxvdXQu",
+//				"SGUgaGFkIGRvbmUgbW9zdCBiaXR0ZXIgd3Jvbmc=",
+//				"VG8gc29tZSB3aG8gYXJlIG5lYXIgbXkgaGVhcnQs",
+//				"WWV0IEkgbnVtYmVyIGhpbSBpbiB0aGUgc29uZzs=",
+//				"SGUsIHRvbywgaGFzIHJlc2lnbmVkIGhpcyBwYXJ0",
+//				"SW4gdGhlIGNhc3VhbCBjb21lZHk7",
+//				"VHJhbnNmb3JtZWQgdXR0ZXJseTo=",
+//				"QSB0ZXJyaWJsZSBiZWF1dHkgaXMgYm9ybi4=",
+//		};
+//
+//		vector<Xstr> ciphers;
+//		Xstr random_key("Rfh9orvO75Iba9PsvseQPg==",  Xstr::BASE64_ENCODED);
 //
 //
-//	vector.push_back() is busted
+//		/* Make 8-byte nonce for CTR, fill with 0's
+//		 * We use the same nonce for all encryptions, which is where the
+//		 * weakness is */
+//		Xstr nonce;
+//		nonce.resize(AES::CTR_NONCE_SIZE, 0);
 //
+//
+//		Xstr next_str;
+//		Xstr next_cipher;
+//		Xstr newstr;
+//		string s;
+//
+//		// encrypt the strings
+//		for(int i = 0; i < 37; i++){
+//			newstr = Xstr(strings[1], Xstr::BASE64_ENCODED);
+//
+//			next_cipher = BlockCipher::encrypt(EncryptType::CTR_ENCRYPT, newstr, random_key, nonce);
+//
+//			ciphers.push_back( next_cipher );
+//		}
+//
+//		// get keystream with partially solved characters
+//		Xstr cracked_keystream = break_fixed_nonce_CTR_by_substituting(ciphers);
+//
+//		// I could waste my time guessing and complete the keystream, but I
+//		// have better things to do :)
+//
+//		crypto_exercise_test(19,
+//					keystream == cracked_keystream
+//				);
+//
+//	}
+//	tock();
+//
+////
+////	vector.push_back() is busted
+////
+//// ONLY EXERCISE THAT HAS NOT BEEN FIXED
 //	/* Exercise 20 */
 //	tick();
 //	{
 //		vector<Xstr> strings;
 //		vector<Xstr> ciphers;
-//		strings.reserve(60);
-//		ciphers.reserve(60);
 //
 //		Xstr random_key = generate_random_AES_key();
 //
@@ -748,7 +746,7 @@ int main(int argc, char* argv[])
 //		Xstr nonce;
 //		nonce.resize(AES::CTR_NONCE_SIZE, 0);
 //
-//		ifstream string_file("plaintext_ex20.txt");
+//		ifstream string_file("test_files/plaintext_ex20.txt");
 //		string line;
 //
 //		cout << "HERE" << endl;
@@ -758,17 +756,20 @@ int main(int argc, char* argv[])
 //		if (string_file.is_open()){
 //			while( getline(string_file, line) ){
 //				newstr = Xstr(line, Xstr::BASE64_ENCODED);
-//				cout << "\tHERE0" << endl;
-//				strings[i] = ( newstr );
+////				cout << "\tHERE0" << endl;
+////				strings[i] = ( newstr );
 //
-//				cout << "\tHERE1" << endl;
+////				cout << "\tHERE1" << endl;
 //				next_cipher = BlockCipher::encrypt(
-//						EncryptType::CTR_ENCRYPT, newstr, random_key, nonce);
+//						EncryptType::CTR_ENCRYPT, nonce, random_key, nonce);
 //
-//				cout << "\tHERE2" << endl;
-//				ciphers[i] = (next_cipher);
-//				cout << "\tHERE3" << endl;
+////				cout << newstr.as_base64() << endl;
+//
+////				cout << "\tHERE2" << endl;
+////				ciphers.push_back(next_cipher);
+////				cout << "\tHERE3" << endl;
 //				i++;
+//				cout << ">>>>> " << i << endl;
 //			}
 //			cout << "HERE" << endl;
 //			string_file.close();
@@ -978,47 +979,47 @@ int main(int argc, char* argv[])
 //	}
 //	tock();
 //
-//	// TODO: Exercise 26 done but it seems too easy... must take another look later."
-//	/* Exercise 26 */
-//	// CTR bit flipping attacks
-//	tick();
-//	{
-//		// generate unknown key only once
-//		static Xstr random_key = generate_random_AES_key();
-//		// generate unknown nonce only once
-//		static Xstr rand_nonce = generate_random_nonce(AES::CTR_NONCE_SIZE);
-//		// create unknown string once
-//		static Xstr unknown_string = Xstr(
-//				"Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkg"
-//				"aGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBq"
-//				"dXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUg"
-//				"YnkK", Xstr::BASE64_ENCODED);
-//
-//		static Xstr prefix = "comment1=cooking%20MCs;userdata=";
-//		static Xstr suffix = ";comment2=%20like%20a%20pound%20of%20bacon";
-//		static string admin_token = ";admin=true;";
-//
-//		Xstr message = "XXXXXXXXXXXXXXXX:admin<true:XXXX";
-//		Xstr encrypted = BlockCipher::encrypt(EncryptType::CTR_ENCRYPT, prefix + message + suffix, random_key, rand_nonce);
-//
-//		// in the attack message we chose values for the tokens of interest
-//		// such that we can just XOR them with 0b01 to obtain the desired tokens
-//		//
-//		// NOTE: the indices are the only thing different between this and Ex. 16
-//		// 		Not sure why the indices should be different though... explanation needed
-//		encrypted[48] ^= 1;
-//		encrypted[54] ^= 1;
-//		encrypted[59] ^= 1;
-//
-//		Xstr decrypted = BlockCipher::decrypt(EncryptType::CTR_ENCRYPT, encrypted, random_key, rand_nonce);
-//		decrypted = decrypted.remove_padding(Xstr::UNKNOWN_PADDING);
-//
-//		crypto_exercise_test(26,
-//					// find doesn't reach end of string
-//					decrypted.as_ascii().find(admin_token) != std::string::npos
-//				);
-//	};
-//	tock();
+	/* Exercise 26 */
+	// CTR bit flipping attacks
+	tick();
+	{
+		// generate unknown key only once
+		static Xstr random_key = generate_random_AES_key();
+		// generate unknown nonce only once
+		static Xstr rand_nonce = generate_random_nonce(AES::CTR_NONCE_SIZE);
+		// create unknown string once
+		static Xstr unknown_string = Xstr(
+				"Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkg"
+				"aGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBq"
+				"dXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUg"
+				"YnkK", Xstr::BASE64_ENCODED);
+
+		static Xstr prefix = "comment1=cooking%20MCs;userdata=";
+		static Xstr suffix = ";comment2=%20like%20a%20pound%20of%20bacon";
+		static string admin_token = ";admin=true;";
+
+		Xstr message = "XXXXXXXXXXXXXXXX:admin<true:XXXX";
+		Xstr encrypted = BlockCipher::encrypt(EncryptType::CTR_ENCRYPT, prefix + message + suffix, random_key, rand_nonce);
+
+		// in the attack message we chose values for the tokens of interest
+		// such that we can just XOR them with 0b01 to obtain the desired tokens
+		//
+		// NOTE: the indices are the only thing different between this and Ex. 16
+		// 		Not sure why the indices should be different though... explanation needed
+		encrypted[48] ^= 1;
+		encrypted[54] ^= 1;
+		encrypted[59] ^= 1;
+
+		Xstr decrypted = BlockCipher::decrypt(EncryptType::CTR_ENCRYPT, encrypted, random_key, rand_nonce);
+		decrypted = decrypted.remove_padding(Xstr::UNKNOWN_PADDING);
+
+		crypto_exercise_test(26,
+					// find doesn't reach end of string = successfully found
+					// our injected admin token
+					decrypted.as_ascii().find(admin_token) != std::string::npos
+				);
+	};
+	tock();
 
 	return 0;
 }
