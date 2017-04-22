@@ -73,6 +73,8 @@ public:
     Xstr(const char*); // copy constructor for C-style char*
 	Xstr(uint64_t); // form string based on binary representation of of int
 	Xstr(int); // more limited case of previous constructor
+	/* TODO: Make function that guesses encoding type */
+	/* TODO: Make sure no input values to b64toascii and others aren't out of range */
 	Xstr(string); // assume lone string is in ascii
 	Xstr(string, EncodeType); // user specifies type
 	Xstr(size_t n, char c);

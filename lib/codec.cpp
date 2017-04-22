@@ -337,6 +337,7 @@ string Xstr::base64_to_ascii(string input){
 // TODO: document why we use % 3 or % 4
 
 string Xstr::ascii_to_base64(string input){
+
 	int in_len = input.size();
     int out_len = 4 * (in_len / 3);
 

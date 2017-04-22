@@ -840,47 +840,46 @@ bool server_decrypt_CBC_leak_padding(BlockCipher::CipherData info){
 
 /* Challenge 19 */
 Xstr break_fixed_nonce_CTR_by_substituting(vector<Xstr> input){
+	int max_cipher_size = 34;
+
 	// make keystream holder
-	// we don't know max length of cipher right now but we will
 	Xstr keystream;
-	keystream.fill(250, 0);
+	keystream.fill(max_cipher_size, 0);
 
-	int max_cipher_size = 0;
+	vector<int> space_elements(256);
 
-	list<int> space_elements;
+	for(int i = 0; i < max_cipher_size; i++){
 
-	for(auto outer_cipher : input){
-		if(outer_cipher.size() > max_cipher_size){
-			max_cipher_size = outer_cipher.size();
+		std::fill(space_elements.begin(), space_elements.end(), 0);
+
+		for(auto cipher : input){
+			if(cipher.size() <= i)
+				break;
+
+			uint8_t c = cipher[i] ^ ' ';
+			space_elements[c]++;
 		}
 
-		// Initialize vector with all elements
-		space_elements.clear();
-		for(int i = 0; i < outer_cipher.size(); i++){
-			space_elements.push_back(i);
-		}
+		int smax = 0;
+		int v = 0;
 
-		// do analysis on ciphers, search one byte at a time
-		for(auto inner_cipher : input){
-			// results in a cipher same length as shortest input cipher
-			Xstr combined = inner_cipher ^ outer_cipher;
-
-			for(int i = 0; i < combined.size(); i++){
-				if( !is_english_character(combined[i]) and
-					!contains_space_xor_with_special(combined[i]) )
-				{
-					space_elements.remove(i);
-				}
+		for(int j = 0; j < 256; j++){
+			if(space_elements[j] > smax){
+				smax = space_elements[j];
+				v = j;
 			}
 		}
 
-		// using info gleaned from this cipher, partially reconstruct keystream
-		for(int space_pos: space_elements){
-			keystream[space_pos] = outer_cipher[space_pos] ^ ' ';
-		}
+		keystream[i] = v;
 	}
 
-	keystream.resize(max_cipher_size);
+
+	/* can uncomment if you want to look at guesses we started from */
+//	for(auto cipher : input){
+//		cout << (keystream ^ cipher) << endl;
+//	}
+
+
 
 	return keystream;
 }

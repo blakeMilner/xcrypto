@@ -121,26 +121,24 @@ int main(int argc, char* argv[])
 //
 //	}
 //	tock();
-
-	tick();
-	{
-		bool failed = false;
-
-		Xstr str1("1c0111001f010100061a024b53535009181c", Xstr::HEX_ENCODED);
-		Xstr str2("686974207468652062756c6c277320657965", Xstr::HEX_ENCODED);
-		Xstr str3("746865206b696420646f6e277420706c6179", Xstr::HEX_ENCODED);
-
-		if((str1 ^ str2) != str3){
-			failed = true;
-			goto eval2;
-		}
-
-		eval2:	crypto_exercise_test(2,	!failed);
-
-	}
-	tock();
-
-
+//
+//	tick();
+//	{
+//		bool failed = false;
+//
+//		Xstr str1("1c0111001f010100061a024b53535009181c", Xstr::HEX_ENCODED);
+//		Xstr str2("686974207468652062756c6c277320657965", Xstr::HEX_ENCODED);
+//		Xstr str3("746865206b696420646f6e277420706c6179", Xstr::HEX_ENCODED);
+//
+//		if((str1 ^ str2) != str3)
+//			failed = true;
+//
+//		eval2:	crypto_exercise_test(2,	!failed);
+//
+//	}
+//	tock();
+//
+//
 //
 //	/* Exercise 3 */
 //	// Single-byte XOR cipher
@@ -644,105 +642,89 @@ int main(int argc, char* argv[])
 //
 //	vector.push_back() is busted
 //
-//	/* Exercise 19 */
-//	// TODO: fix base64 encoding because it works when feeding in raw ascii
-//	tick();
-//	{
-//		vector<Xstr> strings;
-//
-//		ifstream string_file("test_files/encoded_b64_ex19.txt");
-//		string line;
-//
-//		// read string into vector from file and encrypt
-//		// TODO: make function that will encrypt batch
-//		if (string_file.is_open()){
-//			while( getline(string_file, line) ){
-////				cout << 1 << endl;
-////				cout << "before decoding: " << line << endl;
-//
-//				Xstr newstr = Xstr(line, Xstr::BASE64_ENCODED);
-////				cout << 2 << endl;
-//
-////				cout << "after decoding:  " << newstr.as_base64() << endl;
-////				cout << 3 << endl;
-//				strings.push_back( newstr );
-//			}
-//			string_file.close();
-//		}
-//		else{
-//			cout << " Unable to open file" << endl;
-//		}
-//
-//		vector<Xstr> ciphers;
-//		Xstr random_key = generate_random_AES_key();
-//
-//		/* Make 8-byte nonce for CTR, fill with 0's
-//		 * We use the same nonce for all encryptions, which is where the
-//		 * weakness is */
-//		Xstr nonce;
-//		nonce.resize(AES::CTR_NONCE_SIZE, 0);
-//
-//
-//		Xstr next_str;
-//		Xstr next_cipher;
-//
-//		// encrypt the strings
-//		for(int i = 0; i < strings.size(); i++){
-////			cout << "1" << endl;
-//			next_str = Xstr(strings[i], Xstr::BASE64_ENCODED);
-////			cout << "2" << endl;
-////			cout << "after decoding: " << next_str.as_base64() << endl;
-//			next_cipher = BlockCipher::encrypt(EncryptType::CTR_ENCRYPT, next_str, random_key, nonce);
-//
-//			ciphers.push_back( next_cipher );
-//
-////			cout << "3" << endl;
-//		}
-//
-////		cout << "4" << endl;
-//		Xstr keystream = break_fixed_nonce_CTR_by_substituting(ciphers);
-//
-//		// guesses based on partially decoded ciphers (wheel of fortune style)
-//	    keystream[0]  = (ciphers[4][0] ^ 'I');
-//	    keystream[30] = (ciphers[4][30] ^ 'e');
-//	    keystream[33] = (ciphers[4][33] ^ 'e');
-//	    keystream[34] = (ciphers[4][34] ^ 'a');
-//	    keystream[35] = (ciphers[4][35] ^ 'd');
-//	    keystream[36] = (ciphers[37][36] ^ 'n');
-//	    keystream[37] = (ciphers[37][37] ^ ',');
-//
-//		// decrypt the strings with the hacked keystream
-//		for(Xstr cipher: ciphers){
-//			cout << (keystream ^ cipher).as_ascii() << endl;
-//		}
-//
-////		for(int i = 0; i < 27; i++){
-////
-////			cout <<  (uint8_t)keystream[i] << " " << (uint8_t)ciphers[0][i] << " " << (uint8_t)first_cipher[i] << endl;
-////
-////			cout << (int) (keystream[i] ^ ciphers[0][i]) << " " << (int) first_cipher[i];
-////			cout << endl;
-////			cout << ((keystream[i] ^ ciphers[0][i]) == first_cipher[i]);
-////			cout << endl;
-////
-////		}
-//
-////		cout << (keystream ^ ciphers[0]) << endl;
-////		cout << Xstr(first_cipher) << endl;
-////		cout << Xstr(first_cipher).size() << endl;
-////		cout << (keystream.substr(0,Xstr(first_cipher).size()) ^ ciphers[0]).size() << endl;
-//
-//
-////		Xstr cracked_cipher = keystream.substr(0,Xstr(first_cipher).size()) ^ ciphers[0];
-////
-////		cout << Xstr(first_cipher).substr(0,10) << " " << cracked_cipher.substr(0,10) << endl;
-////
-////		crypto_exercise_test(19,
-////					Xstr(first_cipher).substr(0,10) == cracked_cipher.substr(0,10)
-////				);
-//
-//	}
-//	tock();
+	/* Exercise 19 */
+	// TODO: fix base64 encoding because it works when feeding in raw ascii
+	tick();
+	{
+		Xstr keystream("Z/kf0FmwkR2EwZr1qdZfgqaoWbSlLy/QGY/VRRhA9LAAA===", Xstr::BASE64_ENCODED);
+
+		string strings[38] = {
+				"SSBoYXZlIG1ldCB0aGVtIGF0IGNsb3NlIG9mIGRheQ==",
+				"Q29taW5nIHdpdGggdml2aWQgZmFjZXM=",
+				"RnJvbSBjb3VudGVyIG9yIGRlc2sgYW1vbmcgZ3JleQ==",
+				"RWlnaHRlZW50aC1jZW50dXJ5IGhvdXNlcy4=",
+				"SSBoYXZlIHBhc3NlZCB3aXRoIGEgbm9kIG9mIHRoZSBoZWFk",
+				"T3IgcG9saXRlIG1lYW5pbmdsZXNzIHdvcmRzLA==",
+				"T3IgaGF2ZSBsaW5nZXJlZCBhd2hpbGUgYW5kIHNhaWQ=",
+				"UG9saXRlIG1lYW5pbmdsZXNzIHdvcmRzLA==",
+				"QW5kIHRob3VnaHQgYmVmb3JlIEkgaGFkIGRvbmU=",
+				"T2YgYSBtb2NraW5nIHRhbGUgb3IgYSBnaWJl",
+				"VG8gcGxlYXNlIGEgY29tcGFuaW9u",
+				"QXJvdW5kIHRoZSBmaXJlIGF0IHRoZSBjbHViLA==",
+				"QmVpbmcgY2VydGFpbiB0aGF0IHRoZXkgYW5kIEk=",
+				"QnV0IGxpdmVkIHdoZXJlIG1vdGxleSBpcyB3b3JuOg==",
+				"QWxsIGNoYW5nZWQsIGNoYW5nZWQgdXR0ZXJseTo=",
+				"QSB0ZXJyaWJsZSBiZWF1dHkgaXMgYm9ybi4=",
+				"VGhhdCB3b21hbidzIGRheXMgd2VyZSBzcGVudA==",
+				"VW50aWwgaGVyIHZvaWNlIGdyZXcgc2hyaWxsLg==",
+				"V2hhdCB2b2ljZSBtb3JlIHN3ZWV0IHRoYW4gaGVycw==",
+				"V2hlbiB5b3VuZyBhbmQgYmVhdXRpZnVsLA==",
+				"U2hlIHJvZGUgdG8gaGFycmllcnM/",
+				"VGhpcyBtYW4gaGFkIGtlcHQgYSBzY2hvb2w=",
+				"QW5kIHJvZGUgb3VyIHdpbmdlZCBob3JzZS4=",
+				"VGhpcyBvdGhlciBoaXMgaGVscGVyIGFuZCBmcmllbmQ=",
+				"V2FzIGNvbWluZyBpbnRvIGhpcyBmb3JjZTs=",
+				"SGUgbWlnaHQgaGF2ZSB3b24gZmFtZSBpbiB0aGUgZW5kLA==",
+				"U28gc2Vuc2l0aXZlIGhpcyBuYXR1cmUgc2VlbWVkLA==",
+				"U28gZGFyaW5nIGFuZCBzd2VldCBoaXMgdGhvdWdodC4=",
+				"VGhpcyBvdGhlciBtYW4gSSBoYWQgZHJlYW1lZA==",
+				"QSBkcnVua2VuLCB2YWluLWdsb3Jpb3VzIGxvdXQu",
+				"SGUgaGFkIGRvbmUgbW9zdCBiaXR0ZXIgd3Jvbmc=",
+				"VG8gc29tZSB3aG8gYXJlIG5lYXIgbXkgaGVhcnQs",
+				"WWV0IEkgbnVtYmVyIGhpbSBpbiB0aGUgc29uZzs=",
+				"SGUsIHRvbywgaGFzIHJlc2lnbmVkIGhpcyBwYXJ0",
+				"SW4gdGhlIGNhc3VhbCBjb21lZHk7",
+				"VHJhbnNmb3JtZWQgdXR0ZXJseTo=",
+				"QSB0ZXJyaWJsZSBiZWF1dHkgaXMgYm9ybi4=",
+		};
+
+		vector<Xstr> ciphers;
+		Xstr random_key("Rfh9orvO75Iba9PsvseQPg==",  Xstr::BASE64_ENCODED);
+
+
+		/* Make 8-byte nonce for CTR, fill with 0's
+		 * We use the same nonce for all encryptions, which is where the
+		 * weakness is */
+		Xstr nonce;
+		nonce.resize(AES::CTR_NONCE_SIZE, 0);
+
+
+		Xstr next_str;
+		Xstr next_cipher;
+		Xstr newstr;
+		string s;
+
+		// encrypt the strings
+		for(int i = 0; i < 37; i++){
+			newstr = Xstr(strings[i], Xstr::BASE64_ENCODED);
+
+			next_cipher = BlockCipher::encrypt(EncryptType::CTR_ENCRYPT, newstr, random_key, nonce);
+
+			ciphers.push_back( next_cipher );
+		}
+
+		// get keystream with partially solved characters
+		Xstr cracked_keystream = break_fixed_nonce_CTR_by_substituting(ciphers);
+
+		// I could waste my time guessing and complete the keystream, but I
+		// have better things to do :)
+
+		crypto_exercise_test(19,
+					keystream == cracked_keystream
+				);
+
+	}
+	tock();
 //
 //
 //	vector.push_back() is busted
