@@ -72,7 +72,7 @@ void crypto_exercise_test(int num, bool test){
 // e.g. ./crypto_test 3 8 12 18
 // include ALL command for all test
 
-// TODO: make exercises loaded in once, since some exercises reuse files
+// TODO: make files loaded in once, since some exercises reuse files
 
 int main(int argc, char* argv[])
 {
@@ -106,8 +106,8 @@ int main(int argc, char* argv[])
 //
 //			Xstr ascii_str = Xstr(test[s], Xstr::BASE64_ENCODED);
 //
-////			cout << test[s] << endl;
-////			cout << ascii_str.as_base64() << endl;
+//			cout << test[s] << endl;
+//			cout << ascii_str.as_base64() << endl << endl;
 //
 //			if(ascii_str.as_base64() != test[s]){
 //				failed = true;
@@ -121,164 +121,184 @@ int main(int argc, char* argv[])
 //
 //	}
 //	tock();
+
+	tick();
+	{
+		bool failed = false;
+
+		Xstr str1("1c0111001f010100061a024b53535009181c", Xstr::HEX_ENCODED);
+		Xstr str2("686974207468652062756c6c277320657965", Xstr::HEX_ENCODED);
+		Xstr str3("746865206b696420646f6e277420706c6179", Xstr::HEX_ENCODED);
+
+		if((str1 ^ str2) != str3){
+			failed = true;
+			goto eval2;
+		}
+
+		eval2:	crypto_exercise_test(2,	!failed);
+
+	}
+	tock();
+
+
 //
-	/* Exercise 3 */
-	// Single-byte XOR cipher
-	tick();
-	{
-		bool failed = false;
-
-		Xstr test_string("1b37373331363f78151b7f2b783431333"
-						"d78397828372d363c78373e783a393b3736", Xstr::HEX_ENCODED);
-
-		Xstr output("Cooking MC's like a pound of bacon");
-
-		decoded_message message = solve_single_byte_xor( test_string );
-
-		if(message.key_found){
-			if(message.decoded != output)
-				failed = true;
-		}
-
-		crypto_exercise_test(3, !failed);
-
-	};
-	tock();
-
-	/* Exercise 4 */
-	// Detect single-character XOR
-	tick();
-	{
-		bool failed = false;
-
-		vector<Xstr> possible_strings;
-		string line;
-		ifstream string_file("test_files/encoded_ex4.txt");
-		Xstr output("Now that the party is jumping\n");
-
-		int max_idx = -1;
-		bool max_found = false;
-
-		decoded_message max_message;
-		max_message.score = 0;
-		max_message.decoded = Xstr();
-
-		// read string into vector from file
-		if (string_file.is_open()){
-			while( getline(string_file, line) ){
-				Xstr ascii_string(line, Xstr::HEX_ENCODED );
-				possible_strings.push_back( ascii_string );
-			}
-
-			string_file.close();
-		}
-		else{
-			cout << "Unable to open file" << endl;
-			failed = true;
-			goto eval4;
-		}
-
-		// iterate through potential strings and find the best solution for each.
-		// Regard string with highest score as encoded string
-		for(Xstr next_str: possible_strings){
-			decoded_message message = solve_single_byte_xor( next_str );
-
-			if(message.score > max_message.score){
-				max_found = true;
-				max_message.score = message.score;
-				max_message.decoded = message.decoded;
-			}
-		}
-
-		if(max_message.decoded != output)
-			failed = true;
-
-		eval4:
-			crypto_exercise_test(4, !failed);
-
-	};
-	tock();
-
-	/* Exercise 5 */
-	// Implement repeating-key XOR
-	tick();
-	{
-		bool failed = false;
-
-		Xstr expected = Xstr(
-				"0b3637272a2b2e63622c2e69692a23693a2a3c6324202d623d63343c2"
-				"a26226324272765272a282b2f20430a652e2c652a3124333a653e2b20"
-				"27630c692b20283165286326302e27282f", Xstr::HEX_ENCODED);
-
-		Xstr message = "Burning 'em, if you ain't quick and nimble I go crazy when I hear a cymbal";
-		Xstr key = "ICE";
-
-		Xstr encoded = message.XOR_wraparound(key);
-
-		if(encoded == expected)
-			failed = false;
-
-		crypto_exercise_test(5, !failed);
-
-	};
-	tock();
-
-	/* Exercise 6 */
-	// Break repeating-key XOR
-	tick();
-	{
-		bool failed = false;
-
-		Xstr decoded_part = "I'm back and I'm ringin' the bell \n"
-							"A rockin' on the mike while the fly girls yell \n"
-							"In ecstasy in the back of me \n"
-							"Well that's my DJ Deshay cuttin' all them Z's \n"
-							"Hittin' hard and the girlies goin' crazy \n"
-							"Vanilla's on the mike, man I'm not lazy.";
-
-		string line;
-		string base64_encoded = string("");
-		ifstream string_file("test_files/encoded_ex6.txt");
-
-		Xstr ascii_encoded;
-		decoded_message message;
-		Xstr decoded;
-
-		// testing hamming distance - should be 37
-		int hamming_dist = Xstr("this is a test").hamming_distance("wokka wokka!!!");
-
-		if(hamming_dist != 37){
-			failed = true;
-			goto eval6;
-		}
-
-		// read string into vector from file
-		if (string_file.is_open()){
-			while( getline(string_file, line) ){
-				base64_encoded += line;
-			}
-
-			string_file.close();
-		}
-		else{
-			cout << "ERROR: Unable to open file" << endl;
-			failed = true;
-			goto eval6;
-		}
-
-		ascii_encoded = Xstr(base64_encoded, Xstr::BASE64_ENCODED );
-		message = solve_repeating_key_xor( ascii_encoded );
-
-		decoded = ascii_encoded.XOR_wraparound(message.key);
-
-		if(decoded.substr(0, decoded_part.size()) != decoded_part)
-			failed = true;
-
-		eval6: ;
-		crypto_exercise_test(6, !failed);
-
-	};
-	tock();
+//	/* Exercise 3 */
+//	// Single-byte XOR cipher
+//	tick();
+//	{
+//		bool failed = false;
+//
+//		Xstr test_string("1b37373331363f78151b7f2b783431333"
+//						"d78397828372d363c78373e783a393b3736", Xstr::HEX_ENCODED);
+//
+//		Xstr output("Cooking MC's like a pound of bacon");
+//
+//		decoded_message message = solve_single_byte_xor( test_string );
+//
+//		if(message.key_found){
+//			if(message.decoded != output)
+//				failed = true;
+//		}
+//
+//		crypto_exercise_test(3, !failed);
+//
+//	};
+//	tock();
+//
+//	/* Exercise 4 */
+//	// Detect single-character XOR
+//	tick();
+//	{
+//		bool failed = false;
+//
+//		vector<Xstr> possible_strings;
+//		string line;
+//		ifstream string_file("test_files/encoded_ex4.txt");
+//		Xstr output("Now that the party is jumping\n");
+//
+//		int max_idx = -1;
+//		bool max_found = false;
+//
+//		decoded_message max_message;
+//		max_message.score = 0;
+//		max_message.decoded = Xstr();
+//
+//		// read string into vector from file
+//		if (string_file.is_open()){
+//			while( getline(string_file, line) ){
+//				Xstr ascii_string(line, Xstr::HEX_ENCODED );
+//				possible_strings.push_back( ascii_string );
+//			}
+//
+//			string_file.close();
+//		}
+//		else{
+//			cout << "Unable to open file" << endl;
+//			failed = true;
+//			goto eval4;
+//		}
+//
+//		// iterate through potential strings and find the best solution for each.
+//		// Regard string with highest score as encoded string
+//		for(Xstr next_str: possible_strings){
+//			decoded_message message = solve_single_byte_xor( next_str );
+//
+//			if(message.score > max_message.score){
+//				max_found = true;
+//				max_message.score = message.score;
+//				max_message.decoded = message.decoded;
+//			}
+//		}
+//
+//		if(max_message.decoded != output)
+//			failed = true;
+//
+//		eval4:
+//			crypto_exercise_test(4, !failed);
+//
+//	};
+//	tock();
+//
+//	/* Exercise 5 */
+//	// Implement repeating-key XOR
+//	tick();
+//	{
+//		bool failed = false;
+//
+//		Xstr expected = Xstr(
+//				"0b3637272a2b2e63622c2e69692a23693a2a3c6324202d623d63343c2"
+//				"a26226324272765272a282b2f20430a652e2c652a3124333a653e2b20"
+//				"27630c692b20283165286326302e27282f", Xstr::HEX_ENCODED);
+//
+//		Xstr message = "Burning 'em, if you ain't quick and nimble I go crazy when I hear a cymbal";
+//		Xstr key = "ICE";
+//
+//		Xstr encoded = message.XOR_wraparound(key);
+//
+//		if(encoded == expected)
+//			failed = false;
+//
+//		crypto_exercise_test(5, !failed);
+//
+//	};
+//	tock();
+//
+//	/* Exercise 6 */
+//	// Break repeating-key XOR
+//	tick();
+//	{
+//		bool failed = false;
+//
+//		Xstr decoded_part = "I'm back and I'm ringin' the bell \n"
+//							"A rockin' on the mike while the fly girls yell \n"
+//							"In ecstasy in the back of me \n"
+//							"Well that's my DJ Deshay cuttin' all them Z's \n"
+//							"Hittin' hard and the girlies goin' crazy \n"
+//							"Vanilla's on the mike, man I'm not lazy.";
+//
+//		string line;
+//		string base64_encoded = string("");
+//		ifstream string_file("test_files/encoded_ex6.txt");
+//
+//		Xstr ascii_encoded;
+//		decoded_message message;
+//		Xstr decoded;
+//
+//		// testing hamming distance - should be 37
+//		int hamming_dist = Xstr("this is a test").hamming_distance("wokka wokka!!!");
+//
+//		if(hamming_dist != 37){
+//			failed = true;
+//			goto eval6;
+//		}
+//
+//		// read string into vector from file
+//		if (string_file.is_open()){
+//			while( getline(string_file, line) ){
+//				base64_encoded += line;
+//			}
+//
+//			string_file.close();
+//		}
+//		else{
+//			cout << "ERROR: Unable to open file" << endl;
+//			failed = true;
+//			goto eval6;
+//		}
+//
+//		ascii_encoded = Xstr(base64_encoded, Xstr::BASE64_ENCODED );
+//		message = solve_repeating_key_xor( ascii_encoded );
+//
+//		decoded = ascii_encoded.XOR_wraparound(message.key);
+//
+//		if(decoded.substr(0, decoded_part.size()) != decoded_part)
+//			failed = true;
+//
+//		eval6: ;
+//		crypto_exercise_test(6, !failed);
+//
+//	};
+//	tock();
 //
 //	/* Exercise 7 */
 //	tick();
