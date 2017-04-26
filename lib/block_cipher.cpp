@@ -963,6 +963,42 @@ Xstr server_API_cipher_edit(EncryptType e, Xstr cipher, int offset, Xstr newtext
 
 
 
+/* Challenge 27 */
+
+// Change: C_1, C_2, C_3 -> C_1, 0, C_1
+Xstr attacker_modify_message(Xstr cipher){
+	Xstr hacked =
+			cipher.get_single_block(0)
+			+ Xstr(16, 0)
+			+ cipher.get_single_block(0);
+
+	return hacked;
+}
+
+Xstr attacker_decode_server_error_result(DECODE_ERROR_RESULT server_error){
+	return server_error.bad_decrypted_result.get_single_block(0)
+		^ server_error.bad_decrypted_result.get_single_block(2);
+}
+
+// TODO: maybe make this throw an exception someday?
+// return value is whether high ASCII was detected
+DECODE_ERROR_RESULT receiver_decrypt_message_raise_ASCII_error(Xstr cipher, Xstr random_key){
+	DECODE_ERROR_RESULT result;
+
+	// decrypt using key as IV
+	Xstr decrypted = BlockCipher::decrypt(EncryptType::CBC_ENCRYPT, cipher, random_key, random_key);
+
+	if(decrypted.is_valid_ascii()){
+		result.bad_decrypted_result = Xstr();
+		result.ERROR = false;
+	}
+	else{ // only give bad decrypted output if there is an error
+		result.bad_decrypted_result = decrypted;
+		result.ERROR = true;
+	}
+
+	return result;
+}
 
 
 
@@ -1373,7 +1409,6 @@ Xstr BlockCipher::CTR_encrypt(Xstr message, Xstr key, Xstr nonce){
 	return ciphertext;
 }
 
-// TODO: need to make AES::BLOCKSIE and others more general
 // TODO: put these checks in their own encapsulated checking functions
 
 Xstr BlockCipher::CTR_decrypt(Xstr message, Xstr key, Xstr nonce){

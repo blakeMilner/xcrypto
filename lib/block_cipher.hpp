@@ -180,7 +180,7 @@ EncryptType detect_ECB_or_CBC_encryption(Xstr (*encryption_fnc)(Xstr message));
 
 bool detect_ECB_AES_encryption(Xstr message);
 
-// TODO: put the rest in different file/class
+// TODO: make a Server class that will hold all of the different interfaces and leak types
 
 // Challenge 12
 Xstr append_unknown_string_and_encrypt_ECB(Xstr message);
@@ -203,5 +203,15 @@ vector<Xstr> break_fixed_nonce_CTR_statistically(vector<Xstr> input);
 
 // Challenge 25
 Xstr server_API_cipher_edit(EncryptType e, Xstr cipher, int offset, Xstr newtext);
+
+// Challenge 27
+typedef struct{
+	bool ERROR;
+	Xstr bad_decrypted_result;
+} DECODE_ERROR_RESULT;
+
+Xstr attacker_modify_message(Xstr cipher);
+Xstr attacker_decode_server_error_result(DECODE_ERROR_RESULT server_error);
+DECODE_ERROR_RESULT receiver_decrypt_message_raise_ASCII_error(Xstr cipher, Xstr random_key);
 
 #endif

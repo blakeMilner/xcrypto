@@ -300,7 +300,7 @@ Xstr RNG::rand_ascii_string(int num_bytes){
 
 	// fill each byte of the key up with random results
 	for(int i = 0; i < num_bytes; i++){
-		rand_s[i] = (uint8_t) rand_in_range(0, 256);
+		rand_s[i] = (uint8_t) rand_in_range(0, 255);
 	}
 
 	return rand_s;

@@ -82,7 +82,7 @@ Xstr::Xstr(string input, EncodeType encoding){
 			break;
 
 		default:
-			cout << "CR_string constructor: Invalid string encoding type " <<
+			cout << "CR_string(): Invalid string encoding type " <<
 					"specified, assuming ascii" << endl;
 
 			this->ascii_str = input;
@@ -442,6 +442,13 @@ string Xstr::as_ascii(){
 	return ascii_str;
 }
 
+bool Xstr::is_valid_ascii(){
+	if(this->max_element() < 128)
+		return true;
+	else
+		return false;
+}
+
 string Xstr::as_hex(){
 	return ascii_to_hex(ascii_str);
 }
@@ -696,6 +703,31 @@ Xstr Xstr::little_endian(){
 	}
 
 	return litend;
+}
+
+// must use uint8_t because string[] naturally gives signed numbers
+int Xstr::max_element(){
+	uint8_t maxval = 0;
+
+	for(int i = 0; i < size(); i++){
+		if((uint8_t) ascii_str[i] > maxval){
+			maxval = (uint8_t) ascii_str[i];
+		}
+	}
+
+	return maxval;
+}
+
+int Xstr::min_element(){
+	uint8_t minval = 255;
+
+	for(int i = 0; i < size(); i++){
+		if((uint8_t) ascii_str[i] < minval){
+			minval = (uint8_t) ascii_str[i];
+		}
+	}
+
+	return minval;
 }
 
 int Xstr::get_num_blocks(){

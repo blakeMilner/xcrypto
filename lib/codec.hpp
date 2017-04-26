@@ -77,6 +77,7 @@ public:
 	/* TODO: Make sure no input values to b64toascii and others aren't out of range */
 	Xstr(string); // assume lone string is in ascii
 	Xstr(string, EncodeType); // user specifies type
+	//TODO: make other size,value constructors like this but make values for uint8, etc
 	Xstr(size_t n, char c);
 	virtual ~Xstr();
 
@@ -92,6 +93,7 @@ public:
 
 	/* members that return a raw std::string in a specific encoding */
 	string as_ascii();
+	bool is_valid_ascii();
 	string as_hex();
 	string as_base64();
 	string as_encoded(EncodeType format); // general case where the user inputs desired encoding format
@@ -119,6 +121,8 @@ public:
 	Xstr XOR_wraparound(Xstr xor_str);
 	Xstr embed_string(Xstr substring, int position, int bytes);
 	Xstr little_endian();
+	int max_element();
+	int min_element();
 
 	/* block-wise operations */
 	// block_num starts at 0
@@ -177,6 +181,10 @@ public:
 
 
 private:
+    // TODO: technically this isn't an ascii_str since it goes from 0-256
+    // whereas ascii is only valid 0-128.
+    // need to refactor at some point
+
 	// assuming that strings are stored in big endian order
 	string ascii_str;
 

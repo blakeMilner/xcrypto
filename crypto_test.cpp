@@ -74,6 +74,9 @@ void crypto_exercise_test(int num, bool test){
 
 // TODO: make files loaded in once, since some exercises reuse files
 
+// TODO: remove static vars... ex. 27 has proven that they can be harmful with
+// Xstr for some reason.
+
 int main(int argc, char* argv[])
 {
 	/* Set 1 */
@@ -105,9 +108,6 @@ int main(int argc, char* argv[])
 //		for(int s = 0; s <= 3; s++){
 //
 //			Xstr ascii_str = Xstr(test[s], Xstr::BASE64_ENCODED);
-//
-//			cout << test[s] << endl;
-//			cout << ascii_str.as_base64() << endl << endl;
 //
 //			if(ascii_str.as_base64() != test[s]){
 //				failed = true;
@@ -640,7 +640,7 @@ int main(int argc, char* argv[])
 //	tock();
 //
 //
-//	vector.push_back() is busted
+////	vector.push_back() is busted
 //
 //	/* Exercise 19 */
 //	tick();
@@ -705,7 +705,7 @@ int main(int argc, char* argv[])
 //
 //		// encrypt the strings
 //		for(int i = 0; i < 37; i++){
-//			newstr = Xstr(strings[1], Xstr::BASE64_ENCODED);
+//			newstr = Xstr(strings[i], Xstr::BASE64_ENCODED);
 //
 //			next_cipher = BlockCipher::encrypt(EncryptType::CTR_ENCRYPT, newstr, random_key, nonce);
 //
@@ -725,10 +725,10 @@ int main(int argc, char* argv[])
 //	}
 //	tock();
 //
-////
-////	vector.push_back() is busted
-////
-//// ONLY EXERCISE THAT HAS NOT BEEN FIXED
+//
+//	vector.push_back() is busted
+//
+// ONLY EXERCISE THAT HAS NOT BEEN FIXED
 //	/* Exercise 20 */
 //	tick();
 //	{
@@ -967,9 +967,6 @@ int main(int argc, char* argv[])
 //
 //		decoded = intermediate ^ cipher;
 //
-//		cout << decoded << endl;
-//
-//
 ////		if(decoded.substr(0, decoded_part.size()) != decoded_part){
 ////			failed = true;
 ////		}
@@ -979,44 +976,83 @@ int main(int argc, char* argv[])
 //	}
 //	tock();
 //
-	/* Exercise 26 */
-	// CTR bit flipping attacks
+//	/* Exercise 26 */
+//	// CTR bit flipping attacks
+//	tick();
+//	{
+//		// generate unknown key only once
+//		static Xstr random_key = generate_random_AES_key();
+//		// generate unknown nonce only once
+//		static Xstr rand_nonce = generate_random_nonce(AES::CTR_NONCE_SIZE);
+//		// create unknown string once
+//		static Xstr unknown_string = Xstr(
+//				"Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkg"
+//				"aGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBq"
+//				"dXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUg"
+//				"YnkK", Xstr::BASE64_ENCODED);
+//
+//		static Xstr prefix = "comment1=cooking%20MCs;userdata=";
+//		static Xstr suffix = ";comment2=%20like%20a%20pound%20of%20bacon";
+//		static string admin_token = ";admin=true;";
+//
+//		Xstr message = "XXXXXXXXXXXXXXXX:admin<true:XXXX";
+//		Xstr encrypted = BlockCipher::encrypt(EncryptType::CTR_ENCRYPT, prefix + message + suffix, random_key, rand_nonce);
+//
+//		// in the attack message we chose values for the tokens of interest
+//		// such that we can just XOR them with 0b01 to obtain the desired tokens
+//		//
+//		// NOTE: the indices are the only thing different between this and Ex. 16
+//		// 		Not sure why the indices should be different though... explanation needed
+//		encrypted[48] ^= 1;
+//		encrypted[54] ^= 1;
+//		encrypted[59] ^= 1;
+//
+//		Xstr decrypted = BlockCipher::decrypt(EncryptType::CTR_ENCRYPT, encrypted, random_key, rand_nonce);
+//		decrypted = decrypted.remove_padding(Xstr::UNKNOWN_PADDING);
+//
+//		crypto_exercise_test(26,
+//					// find doesn't reach end of string = successfully found
+//					// our injected admin token
+//					decrypted.as_ascii().find(admin_token) != std::string::npos
+//				);
+//	};
+//	tock();
+
+	/* Exercise 27 */
+	// Recover the key from CBC with IV=Key
 	tick();
 	{
 		// generate unknown key only once
-		static Xstr random_key = generate_random_AES_key();
-		// generate unknown nonce only once
-		static Xstr rand_nonce = generate_random_nonce(AES::CTR_NONCE_SIZE);
-		// create unknown string once
-		static Xstr unknown_string = Xstr(
-				"Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkg"
-				"aGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBq"
-				"dXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUg"
-				"YnkK", Xstr::BASE64_ENCODED);
+		Xstr random_key;
 
-		static Xstr prefix = "comment1=cooking%20MCs;userdata=";
-		static Xstr suffix = ";comment2=%20like%20a%20pound%20of%20bacon";
-		static string admin_token = ";admin=true;";
+		Xstr unknown_string = RNG::rand_ascii_string(AES::BLOCKSIZE * 3);
 
-		Xstr message = "XXXXXXXXXXXXXXXX:admin<true:XXXX";
-		Xstr encrypted = BlockCipher::encrypt(EncryptType::CTR_ENCRYPT, prefix + message + suffix, random_key, rand_nonce);
+		Xstr hacked_cipher, hacked_key, cipher;
+		DECODE_ERROR_RESULT server_error_result;
 
-		// in the attack message we chose values for the tokens of interest
-		// such that we can just XOR them with 0b01 to obtain the desired tokens
-		//
-		// NOTE: the indices are the only thing different between this and Ex. 16
-		// 		Not sure why the indices should be different though... explanation needed
-		encrypted[48] ^= 1;
-		encrypted[54] ^= 1;
-		encrypted[59] ^= 1;
+		int i = 0;
 
-		Xstr decrypted = BlockCipher::decrypt(EncryptType::CTR_ENCRYPT, encrypted, random_key, rand_nonce);
-		decrypted = decrypted.remove_padding(Xstr::UNKNOWN_PADDING);
+		// keep making new strings to try until we get one that raises an error
+		// TODO: give this a max number of iter
+		do{
+			random_key = generate_random_AES_key();
 
-		crypto_exercise_test(26,
-					// find doesn't reach end of string = successfully found
-					// our injected admin token
-					decrypted.as_ascii().find(admin_token) != std::string::npos
+			// encrypt using random key as IV
+			cipher = BlockCipher::encrypt(EncryptType::CBC_ENCRYPT,
+					unknown_string, random_key, random_key);
+
+			hacked_cipher = attacker_modify_message(cipher);
+
+			server_error_result =
+					receiver_decrypt_message_raise_ASCII_error(hacked_cipher, random_key);
+
+			i++;
+		}while(server_error_result.ERROR == false && i < 1000);
+
+		hacked_key = attacker_decode_server_error_result(server_error_result);
+
+		crypto_exercise_test(27,
+					hacked_key == random_key
 				);
 	};
 	tock();
