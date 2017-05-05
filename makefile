@@ -5,8 +5,8 @@ OBJS = crypto_test.o
 
 DEPS = lib/*.hpp
 LIB = cryptolib.a
-LIB_SRC = lib/*.cpp
-LIB_OBJS = lib/codec.o lib/block_cipher.o lib/cookie.o lib/rng.o
+LIB_SRC = exercises.cpp lib/*.cpp
+LIB_OBJS = exercises.o lib/codec.o lib/block_cipher.o lib/cookie.o lib/rng.o
 #$(LIB_SRC:.cpp=.o) 
 #TEST = crypto_test
 CXXFLAGS = -lstdc++ -lm -g -std=c++0x 
