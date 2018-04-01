@@ -88,6 +88,8 @@ public:
 	Xstr substr(unsigned int position, size_t size);
 	const char* c_str();
 	void fill(const size_t s, const char& val);
+	void set_encrypt_type(EncryptType et);
+	EncryptType get_encrypt_type();
 
 	bool empty();
 
@@ -190,7 +192,7 @@ private:
 
 	// attributes
 	PaddingType padding = PaddingType::UNKNOWN_PADDING;
-	EncryptType encryption = EncryptType::UKNOWN_ENCRYPTION;
+	EncryptType encryption = EncryptType::UKNOWN_ENCRYPT;
 	EncodeType encoding = EncodeType::ASCII_ENCODED;
 	BlockSize blksz = BlockSize::_16BYTE;
 };

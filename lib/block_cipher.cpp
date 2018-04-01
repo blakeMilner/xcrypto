@@ -519,15 +519,6 @@ Xstr encrypt_using_CBC_or_ECB(Xstr message){
 	}
 }
 
-
-
-
-
-
-///////// next: make an attribute for CR_str that tells what kind of encryption it has
-////////// when detect ECB_CBC is used, it sets this attribute
-
-
 // accepts a function pointer that implements an arbitrary encryption fucntion
 // inputs - message to be encrypted
 // outputs - encrypted message
@@ -538,15 +529,17 @@ EncryptType detect_ECB_or_CBC_encryption(Xstr (*encryption_fnc)(Xstr message)){
 	message.resize(48, 0);
 
 	Xstr encrypted_message = encryption_fnc(message);
+	EncryptType detected_encryption_type = EncryptType::UKNOWN_ENCRYPT;
+
 
 	if(encrypted_message.get_single_block(1) == encrypted_message.get_single_block(2)){
-//		cout << "ECB" << endl;
-		return EncryptType::ECB_ENCRYPT;
+		detected_encryption_type = EncryptType::ECB_ENCRYPT;
 	}
 	else{
-//		cout << "CBC" << endl;
-		return EncryptType::CBC_ENCRYPT;
+		detected_encryption_type = EncryptType::CBC_ENCRYPT;
 	}
+
+	return detected_encryption_type;
 }
 
 /* Challenge 12 */
@@ -1199,6 +1192,8 @@ Xstr BlockCipher::ECB_encrypt(Xstr message, Xstr key){
 		ciphertext = ciphertext.embed_string(encrypted, cipher * AES::BLOCKSIZE, AES::BLOCKSIZE);
 	}
 
+	ciphertext.set_encrypt_type(EncryptType::ECB_ENCRYPT);
+
 	return ciphertext;
 }
 
@@ -1231,6 +1226,8 @@ Xstr BlockCipher::ECB_decrypt(Xstr message, Xstr key){
 
 	// remove any padding
 	plaintext = plaintext.remove_padding(Xstr::PKCS7_PADDING);
+
+	plaintext.set_encrypt_type(EncryptType::NO_ENCRYPT);
 
 	return plaintext;
 }
@@ -1293,6 +1290,8 @@ Xstr BlockCipher::CBC_encrypt(Xstr message, Xstr key, Xstr IV){
 		ciphertext = ciphertext.embed_string(holder, cipher * AES::BLOCKSIZE, AES::BLOCKSIZE);
 	}
 
+	ciphertext.set_encrypt_type(EncryptType::CBC_ENCRYPT);
+
 	return ciphertext;
 }
 
@@ -1345,6 +1344,8 @@ Xstr BlockCipher::CBC_decrypt(Xstr message, Xstr key, Xstr IV){
 		// copy newly decrypted ciphertext into it's home
 		plaintext = plaintext.embed_string(holder, cipher * AES::BLOCKSIZE, AES::BLOCKSIZE);
 	}
+
+	plaintext.set_encrypt_type(EncryptType::NO_ENCRYPT);
 
 	return plaintext;
 }
@@ -1405,6 +1406,7 @@ Xstr BlockCipher::CTR_encrypt(Xstr message, Xstr key, Xstr nonce){
 		counter.increment();
 	}
 
+	ciphertext.set_encrypt_type(EncryptType::CTR_ENCRYPT);
 
 	return ciphertext;
 }
@@ -1455,6 +1457,8 @@ Xstr BlockCipher::CTR_decrypt(Xstr message, Xstr key, Xstr nonce){
 		counter.increment();
 	}
 
+	plaintext.set_encrypt_type(EncryptType::NO_ENCRYPT);
+
 	return plaintext;
 }
 
@@ -1487,6 +1491,8 @@ Xstr BlockCipher::MT19937_encrypt(Xstr decrypted, Xstr key){
 
 	Xstr encrypted = decrypted ^ keystream;
 
+	encrypted.set_encrypt_type(EncryptType::MT19937_ENCRYPT);
+
 	return encrypted;
 }
 
@@ -1497,6 +1503,9 @@ Xstr BlockCipher::MT19937_decrypt(Xstr encrypted, Xstr key){
 		return Xstr();
 	}
 	else{
-		return MT19937_encrypt(encrypted, key);
+		Xstr decrypted = MT19937_encrypt(encrypted, key);
+		decrypted.set_encrypt_type(EncryptType::NO_ENCRYPT);
+
+		return decrypted;
 	}
 }

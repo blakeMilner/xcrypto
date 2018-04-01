@@ -34,7 +34,6 @@ int sign(int x) {
 
 
 
-
 // if no arguments passed, make empty string
 Xstr::Xstr():
 	ascii_str("")
@@ -528,6 +527,14 @@ const char* Xstr::c_str(){
 // TODO: just make constructor with these params and fill by initializing
 void Xstr::fill(const size_t s, const char& val){
 	ascii_str = string(s, val); // create new string of length s
+}
+
+void Xstr::set_encrypt_type(EncryptType et){
+	this->encryption = et;
+}
+
+EncryptType Xstr::get_encrypt_type(){
+	return (this->encryption);
 }
 
 bool Xstr::empty(){

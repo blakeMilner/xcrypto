@@ -376,23 +376,23 @@ void exercise10(){
 			);
 }
 
-// TODO: make true encryption type known so we can do a pass/fail.
 void exercise11(){
 /* Exercise 11 */
+	EncryptType detected_encryption_type = detect_ECB_or_CBC_encryption(encrypt_using_CBC_or_ECB);
+	bool passed = false;
 
-	//TODO: add this to hacker class maybe?
-	EncryptType encryption_type = detect_ECB_or_CBC_encryption(encrypt_using_CBC_or_ECB);
-
-	cout << "\t" << "Exercise " << 11 << ":\t";
-
-	if(encryption_type == EncryptType::CBC_ENCRYPT){
-		cout << "Detected CBC";
-	}else if(encryption_type == EncryptType::ECB_ENCRYPT){
-		cout << "Detected ECB";
+	if(
+		detected_encryption_type == EncryptType::CBC_ENCRYPT or
+		detected_encryption_type == EncryptType::ECB_ENCRYPT)
+	{
+		passed = true;
 	}
-	else{
-		cout << "Unknown Encryption";
-	}
+
+
+	//TODO: add detect_ECB....  to hacker class maybe?
+	crypto_exercise_test(11,
+				passed
+			);
 }
 
 void exercise12(){

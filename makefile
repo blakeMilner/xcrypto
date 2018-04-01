@@ -20,7 +20,6 @@ all: lib $(PROJECT)
 
 %.o: %.cpp $(DEPS)
 	$(CC) -c -o $@ $< $(CXXFLAGS)
-	-@echo ' '		
         
 $(PROJECT): $(OBJS)
 		-@echo ' '
